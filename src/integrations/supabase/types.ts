@@ -14,7 +14,186 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      additional_charges: {
+        Row: {
+          amount: number
+          bill_id: string
+          created_at: string
+          id: string
+          label: string
+          owner_id: string
+        }
+        Insert: {
+          amount: number
+          bill_id: string
+          created_at?: string
+          id?: string
+          label: string
+          owner_id?: string
+        }
+        Update: {
+          amount?: number
+          bill_id?: string
+          created_at?: string
+          id?: string
+          label?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "additional_charges_bill_id_fkey"
+            columns: ["bill_id"]
+            isOneToOne: false
+            referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bills: {
+        Row: {
+          bs_month: number
+          bs_year: number
+          carry_forward_credit: number
+          created_at: string
+          electricity_curr_reading: number | null
+          electricity_direct_amount: number | null
+          electricity_mode: Database["public"]["Enums"]["electricity_mode"]
+          electricity_prev_reading: number | null
+          electricity_rate_snapshot: number | null
+          electricity_service_charge: number
+          id: string
+          last_modified_at: string
+          notes: string | null
+          owner_id: string
+          rent_this_month: number
+          tenant_id: string
+          water_bill: number
+        }
+        Insert: {
+          bs_month: number
+          bs_year: number
+          carry_forward_credit?: number
+          created_at?: string
+          electricity_curr_reading?: number | null
+          electricity_direct_amount?: number | null
+          electricity_mode?: Database["public"]["Enums"]["electricity_mode"]
+          electricity_prev_reading?: number | null
+          electricity_rate_snapshot?: number | null
+          electricity_service_charge?: number
+          id?: string
+          last_modified_at?: string
+          notes?: string | null
+          owner_id?: string
+          rent_this_month?: number
+          tenant_id: string
+          water_bill?: number
+        }
+        Update: {
+          bs_month?: number
+          bs_year?: number
+          carry_forward_credit?: number
+          created_at?: string
+          electricity_curr_reading?: number | null
+          electricity_direct_amount?: number | null
+          electricity_mode?: Database["public"]["Enums"]["electricity_mode"]
+          electricity_prev_reading?: number | null
+          electricity_rate_snapshot?: number | null
+          electricity_service_charge?: number
+          id?: string
+          last_modified_at?: string
+          notes?: string | null
+          owner_id?: string
+          rent_this_month?: number
+          tenant_id?: string
+          water_bill?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bills_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_paid: number
+          bill_id: string
+          created_at: string
+          id: string
+          note: string | null
+          owner_id: string
+          payment_date_bs: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+        }
+        Insert: {
+          amount_paid: number
+          bill_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          owner_id?: string
+          payment_date_bs: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+        }
+        Update: {
+          amount_paid?: number
+          bill_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          owner_id?: string
+          payment_date_bs?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_bill_id_fkey"
+            columns: ["bill_id"]
+            isOneToOne: false
+            referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          move_in_date_bs: string | null
+          name: string
+          notes: string | null
+          owner_id: string
+          phone: string | null
+          room_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          move_in_date_bs?: string | null
+          name: string
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          room_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          move_in_date_bs?: string | null
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          room_number?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +202,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      electricity_mode: "per_unit" | "direct"
+      payment_method: "cash" | "bank" | "esewa" | "khalti" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +330,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      electricity_mode: ["per_unit", "direct"],
+      payment_method: ["cash", "bank", "esewa", "khalti", "other"],
+    },
   },
 } as const
