@@ -9,38 +9,163 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedTenantsTenantIdRouteImport } from './routes/_authenticated/tenants.$tenantId'
+import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills.new'
+import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills.$billId'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedTenantsRoute = AuthenticatedTenantsRouteImport.update({
+  id: '/tenants',
+  path: '/tenants',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedExportRoute = AuthenticatedExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTenantsTenantIdRoute =
+  AuthenticatedTenantsTenantIdRouteImport.update({
+    id: '/$tenantId',
+    path: '/$tenantId',
+    getParentRoute: () => AuthenticatedTenantsRoute,
+  } as any)
+const AuthenticatedBillsNewRoute = AuthenticatedBillsNewRouteImport.update({
+  id: '/bills/new',
+  path: '/bills/new',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedBillsBillIdRoute =
+  AuthenticatedBillsBillIdRouteImport.update({
+    id: '/bills/$billId',
+    path: '/bills/$billId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/export': typeof AuthenticatedExportRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
+  '/bills/new': typeof AuthenticatedBillsNewRoute
+  '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/export': typeof AuthenticatedExportRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
+  '/bills/new': typeof AuthenticatedBillsNewRoute
+  '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/export': typeof AuthenticatedExportRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
+  '/_authenticated/bills/new': typeof AuthenticatedBillsNewRoute
+  '/_authenticated/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/export'
+    | '/settings'
+    | '/tenants'
+    | '/bills/$billId'
+    | '/bills/new'
+    | '/tenants/$tenantId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/export'
+    | '/settings'
+    | '/tenants'
+    | '/bills/$billId'
+    | '/bills/new'
+    | '/tenants/$tenantId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/export'
+    | '/_authenticated/settings'
+    | '/_authenticated/tenants'
+    | '/_authenticated/bills/$billId'
+    | '/_authenticated/bills/new'
+    | '/_authenticated/tenants/$tenantId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +173,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/tenants': {
+      id: '/_authenticated/tenants'
+      path: '/tenants'
+      fullPath: '/tenants'
+      preLoaderRoute: typeof AuthenticatedTenantsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/export': {
+      id: '/_authenticated/export'
+      path: '/export'
+      fullPath: '/export'
+      preLoaderRoute: typeof AuthenticatedExportRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tenants/$tenantId': {
+      id: '/_authenticated/tenants/$tenantId'
+      path: '/$tenantId'
+      fullPath: '/tenants/$tenantId'
+      preLoaderRoute: typeof AuthenticatedTenantsTenantIdRouteImport
+      parentRoute: typeof AuthenticatedTenantsRoute
+    }
+    '/_authenticated/bills/new': {
+      id: '/_authenticated/bills/new'
+      path: '/bills/new'
+      fullPath: '/bills/new'
+      preLoaderRoute: typeof AuthenticatedBillsNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/bills/$billId': {
+      id: '/_authenticated/bills/$billId'
+      path: '/bills/$billId'
+      fullPath: '/bills/$billId'
+      preLoaderRoute: typeof AuthenticatedBillsBillIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
+interface AuthenticatedTenantsRouteChildren {
+  AuthenticatedTenantsTenantIdRoute: typeof AuthenticatedTenantsTenantIdRoute
+}
+
+const AuthenticatedTenantsRouteChildren: AuthenticatedTenantsRouteChildren = {
+  AuthenticatedTenantsTenantIdRoute: AuthenticatedTenantsTenantIdRoute,
+}
+
+const AuthenticatedTenantsRouteWithChildren =
+  AuthenticatedTenantsRoute._addFileChildren(AuthenticatedTenantsRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedExportRoute: typeof AuthenticatedExportRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRouteWithChildren
+  AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
+  AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedExportRoute: AuthenticatedExportRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTenantsRoute: AuthenticatedTenantsRouteWithChildren,
+  AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
+  AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
