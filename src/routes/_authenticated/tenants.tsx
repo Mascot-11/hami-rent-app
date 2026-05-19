@@ -53,13 +53,13 @@ function TenantsPage() {
 
       {isLoading && <p className="text-muted-foreground">Loading…</p>}
 
-      <TenantList title="Active" tenants={active} onEdit={openEdit} onArchive={(id) => archive.mutate({ id, is_active: false })} onDelete={(id) => del.mutate(id)} />
+      <TenantList title="Active" tenants={active} onEdit={openEdit} onArchive={(id: string) => archive.mutate({ id, is_active: false })} onDelete={(id: string) => del.mutate(id)} />
       {archived.length > 0 && (
-        <TenantList title="Archived" tenants={archived} onEdit={openEdit} onReactivate={(id) => archive.mutate({ id, is_active: true })} onDelete={(id) => del.mutate(id)} />
+        <TenantList title="Archived" tenants={archived} onEdit={openEdit} onReactivate={(id: string) => archive.mutate({ id, is_active: true })} onDelete={(id: string) => del.mutate(id)} />
       )}
 
       <TenantFormDialog open={showForm} onOpenChange={setShowForm} initial={editing}
-        onSave={async (v) => {
+        onSave={async (v: any) => {
           await upsertFn({ data: v });
           qc.invalidateQueries({ queryKey: ["tenants"] });
           setShowForm(false);
