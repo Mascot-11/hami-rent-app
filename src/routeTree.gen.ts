@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills.new'
+import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills.$billId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -45,12 +46,19 @@ const AuthenticatedBillsNewRoute = AuthenticatedBillsNewRouteImport.update({
   path: '/bills/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBillsBillIdRoute =
+  AuthenticatedBillsBillIdRouteImport.update({
+    id: '/bills/$billId',
+    path: '/bills/$billId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
 }
 export interface FileRoutesByTo {
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
 }
 export interface FileRoutesById {
@@ -67,13 +76,26 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
+  '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills/new': typeof AuthenticatedBillsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard' | '/tenants' | '/bills/new'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/tenants'
+    | '/bills/$billId'
+    | '/bills/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard' | '/tenants' | '/bills/new'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/tenants'
+    | '/bills/$billId'
+    | '/bills/new'
   id:
     | '__root__'
     | '/'
@@ -81,6 +103,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/dashboard'
     | '/_authenticated/tenants'
+    | '/_authenticated/bills/$billId'
     | '/_authenticated/bills/new'
   fileRoutesById: FileRoutesById
 }
@@ -134,18 +157,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/bills/$billId': {
+      id: '/_authenticated/bills/$billId'
+      path: '/bills/$billId'
+      fullPath: '/bills/$billId'
+      preLoaderRoute: typeof AuthenticatedBillsBillIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
+  AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
+  AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
 }
 
