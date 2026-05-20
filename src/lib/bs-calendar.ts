@@ -285,6 +285,15 @@ export function approxCurrentBS(): { year: number; month: number } {
   return result;
 }
 
+/**
+ * Returns the next BS month and year.
+ * Used for advance rent labelling — rent collected in Baisakh is for Jestha.
+ */
+export function nextBSMonth(year: number, month: number): { year: number; month: number } {
+  if (month === 12) return { year: year + 1, month: 1 };
+  return { year, month: month + 1 };
+}
+
 export function formatBSDate(s: string | null | undefined): string {
   if (!s) return "—";
   return s;
