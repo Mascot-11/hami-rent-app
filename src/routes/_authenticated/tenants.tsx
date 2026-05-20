@@ -45,13 +45,13 @@ function TenantsPage() {
   const archived = tenants.filter((t: any) => !t.is_active);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-display">Tenants</h1>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-1.5" />Add tenant</Button>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">Tenants</h1>
+        <Button onClick={openNew} className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1.5" />Add tenant</Button>
       </div>
 
-      {isLoading && <p className="text-muted-foreground">Loading…</p>}
+      {isLoading && <p className="text-muted-foreground text-sm">Loading…</p>}
 
       <TenantList title="Active" tenants={active} onEdit={openEdit} onArchive={(id: string) => archive.mutate({ id, is_active: false })} onDelete={(id: string) => del.mutate(id)} />
       {archived.length > 0 && (
@@ -72,20 +72,20 @@ function TenantsPage() {
 function TenantList({ title, tenants, onEdit, onArchive, onReactivate, onDelete }: any) {
   if (tenants.length === 0) return null;
   return (
-    <Card className="p-5">
-      <h2 className="font-semibold mb-3">{title} ({tenants.length})</h2>
+    <Card className="p-3 sm:p-5">
+      <h2 className="text-base sm:text-lg font-semibold mb-3">{title} ({tenants.length})</h2>
       <div className="space-y-2">
         {tenants.map((t: any) => (
-          <div key={t.id} className="flex items-center justify-between gap-3 p-3 rounded-md border">
+          <div key={t.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-md border">
             <Link to="/tenants/$tenantId" params={{ tenantId: t.id }} className="flex-1 min-w-0">
-              <div className="font-medium">{t.name}</div>
-              <div className="text-sm text-muted-foreground">Room {t.room_number ?? "—"} {t.phone ? `· ${t.phone}` : ""}</div>
+              <div className="font-medium text-sm sm:text-base truncate">{t.name}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground truncate">Room {t.room_number ?? "—"} {t.phone ? `· ${t.phone}` : ""}</div>
             </Link>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="sm" onClick={() => onEdit(t)}>Edit</Button>
-              {onArchive && <Button variant="ghost" size="sm" onClick={() => onArchive(t.id)} title="Archive"><Archive className="h-4 w-4" /></Button>}
-              {onReactivate && <Button variant="ghost" size="sm" onClick={() => onReactivate(t.id)} title="Reactivate"><ArchiveRestore className="h-4 w-4" /></Button>}
-              <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Delete ${t.name}? This removes all bills and payments.`)) onDelete(t.id); }}><Trash2 className="h-4 w-4" /></Button>
+            <div className="flex gap-0.5 flex-wrap sm:gap-1 sm:flex-nowrap flex-shrink-0">
+              <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => onEdit(t)}>Edit</Button>
+              {onArchive && <Button variant="ghost" size="icon" title="Archive" className="h-8 w-8"><Archive className="h-4 w-4" /></Button>}
+              {onReactivate && <Button variant="ghost" size="icon" title="Reactivate" className="h-8 w-8"><ArchiveRestore className="h-4 w-4" /></Button>}
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { if (confirm(`Delete ${t.name}? This removes all bills and payments.`)) onDelete(t.id); }}><Trash2 className="h-4 w-4" /></Button>
             </div>
           </div>
         ))}

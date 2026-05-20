@@ -75,15 +75,15 @@ function BillPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="flex items-start justify-between gap-3 no-print">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 no-print">
         <div>
           <Link to="/tenants/$tenantId" params={{ tenantId: bill.tenant_id }} className="text-sm text-primary underline">← {bill.tenants?.name}</Link>
-          <h1 className="text-3xl font-display mt-1">{bsLabel(bill.bs_year, bill.bs_month)}</h1>
+          <h1 className="text-2xl sm:text-3xl font-display mt-1">{bsLabel(bill.bs_year, bill.bs_month)}</h1>
         </div>
-        <div className="flex gap-2 flex-wrap items-center">
+        <div className="flex flex-wrap gap-2 items-center">
           <StatusBadge status={status} />
-          <Button variant="outline" size="sm" onClick={() => window.print()} title="Opens print dialog — choose 'Save as PDF'">
-            <FileDown className="h-4 w-4 mr-1" />Download PDF
+          <Button variant="outline" size="sm" onClick={() => window.print()} title="Opens print dialog — choose 'Save as PDF'" className="text-xs sm:text-sm">
+            <FileDown className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Download PDF</span><span className="sm:hidden">PDF</span>
           </Button>
           <Button variant="outline" size="sm" onClick={async () => {
             const url = `${window.location.origin}/share/${bill.share_token}`;
@@ -91,8 +91,8 @@ function BillPage() {
               if (navigator.share) await navigator.share({ title: `Bill — ${bill.tenants?.name}`, url });
               else { await navigator.clipboard.writeText(url); toast.success("Share link copied"); }
             } catch { await navigator.clipboard.writeText(url); toast.success("Share link copied"); }
-          }}>
-            <Share2 className="h-4 w-4 mr-1" />Share link
+          }} className="text-xs sm:text-sm">
+            <Share2 className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Share link</span><span className="sm:hidden">Share</span>
           </Button>
           <HelpTip text={HELP.shareLink} label="Share" />
           <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete this bill and all its payments?")) removeBill.mutate(); }}>
@@ -110,30 +110,30 @@ function BillPage() {
         </div>
       </div>
 
-      <Card className="p-5">
-        <h2 className="font-semibold mb-3">Bill breakdown</h2>
+      <Card className="p-3 sm:p-5">
+        <h2 className="text-base sm:text-lg font-semibold mb-3">Bill breakdown</h2>
         <Row label="Rent" value={fmtNPR(bill.rent_this_month)} />
         <Row label="Water" value={fmtNPR(bill.water_bill)} />
         <Row label={`Electricity (${bill.electricity_mode === "per_unit" ? "per unit" : "direct"})`} value={fmtNPR(elec)} />
         {charges.map((c: any) => <Row key={c.id} label={c.label} value={fmtNPR(c.amount)} />)}
         {bill.carry_forward_credit > 0 && <Row label="Carry-forward credit" value={`− ${fmtNPR(bill.carry_forward_credit)}`} />}
-        <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-lg">
+        <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-base sm:text-lg">
           <span className="flex items-center gap-1.5">Total <HelpTip text={HELP.billTotal} label="Total" /></span>
           <span>{fmtNPR(total)}</span>
         </div>
-        <div className="flex justify-between text-sm mt-2">
+        <div className="flex justify-between text-xs sm:text-sm mt-2">
           <span>Paid</span><span>{fmtNPR(paid)}</span>
         </div>
-        <div className="flex justify-between text-sm font-medium">
+        <div className="flex justify-between text-xs sm:text-sm font-medium">
           <span className="flex items-center gap-1.5">Remaining <HelpTip text={HELP.remainingBalance} label="Remaining" /></span>
           <span>{fmtNPR(remaining)}</span>
         </div>
-        {bill.notes && <p className="text-sm text-muted-foreground mt-3 italic">{bill.notes}</p>}
+        {bill.notes && <p className="text-xs sm:text-sm text-muted-foreground mt-3 italic">{bill.notes}</p>}
       </Card>
 
-      <Card className="p-5 no-print">
-        <h2 className="font-semibold mb-3">Record payment</h2>
-        <form onSubmit={submitPay} className="grid grid-cols-2 gap-3">
+      <Card className="p-3 sm:p-5 no-print">
+        <h2 className="text-base sm:text-lg font-semibold mb-3">Record payment</h2>
+        <form onSubmit={submitPay} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div><FieldLabel help={HELP.paymentDate} required>Date (BS)</FieldLabel><Input placeholder="2081-05-12" value={date} onChange={(e) => setDate(e.target.value)} /></div>
           <div><FieldLabel help={HELP.paymentAmount} required>Amount (NPR)</FieldLabel><Input type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
           <div><FieldLabel help={HELP.paymentMethod} required>Method</FieldLabel>
@@ -149,21 +149,21 @@ function BillPage() {
             </Select>
           </div>
           <div><FieldLabel help={HELP.paymentNote}>Note</FieldLabel><Textarea rows={1} value={note} onChange={(e) => setNote(e.target.value)} /></div>
-          <div className="col-span-2"><Button type="submit" disabled={pay.isPending}>{pay.isPending ? "Saving…" : "Add payment"}</Button></div>
+          <div className="col-span-full"><Button type="submit" disabled={pay.isPending} className="w-full">{pay.isPending ? "Saving…" : "Add payment"}</Button></div>
         </form>
       </Card>
 
-      <Card className="p-5">
-        <h2 className="font-semibold mb-3">Payments ({payments.length})</h2>
-        {payments.length === 0 ? <p className="text-sm text-muted-foreground">No payments yet.</p> : (
+      <Card className="p-3 sm:p-5">
+        <h2 className="text-base sm:text-lg font-semibold mb-3">Payments ({payments.length})</h2>
+        {payments.length === 0 ? <p className="text-xs sm:text-sm text-muted-foreground">No payments yet.</p> : (
           <div className="space-y-2">
             {payments.map((p: any) => (
-              <div key={p.id} className="flex items-center justify-between border-b pb-2">
-                <div>
-                  <div className="font-medium">{fmtNPR(p.amount_paid)} <span className="text-xs text-muted-foreground uppercase ml-1">{p.payment_method}</span></div>
-                  <div className="text-sm text-muted-foreground">{p.payment_date_bs} {p.note ? `· ${p.note}` : ""}</div>
+              <div key={p.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b pb-2 gap-1.5 sm:gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-sm sm:text-base">{fmtNPR(p.amount_paid)} <span className="text-xs text-muted-foreground uppercase ml-1">{p.payment_method}</span></div>
+                  <div className="text-xs text-muted-foreground truncate">{p.payment_date_bs} {p.note ? `· ${p.note}` : ""}</div>
                 </div>
-                <Button variant="ghost" size="sm" className="no-print" onClick={() => { if (confirm("Delete payment?")) removePay.mutate(p.id); }}>
+                <Button variant="ghost" size="icon" className="no-print h-8 w-8 flex-shrink-0" onClick={() => { if (confirm("Delete payment?")) removePay.mutate(p.id); }}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -176,5 +176,5 @@ function BillPage() {
 }
 
 function Row({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between text-sm py-1"><span>{label}</span><span>{value}</span></div>;
+  return <div className="flex justify-between text-xs sm:text-sm py-1 gap-2"><span className="truncate">{label}</span><span className="font-medium flex-shrink-0">{value}</span></div>;
 }

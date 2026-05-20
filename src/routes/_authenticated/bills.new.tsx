@@ -149,10 +149,10 @@ function NewBillPage() {
   });
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <h1 className="text-3xl font-display">New bill</h1>
+    <div className="space-y-4 sm:space-y-6 w-full">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">New bill</h1>
 
-      <Card className="p-5 space-y-4">
+      <Card className="p-3 sm:p-5 space-y-4">
         <div>
           <FieldLabel help={HELP.billTenant} required>Tenant</FieldLabel>
           <Select value={tenantId} onValueChange={setTenantId}>
@@ -168,7 +168,7 @@ function NewBillPage() {
           <FieldLabel help={HELP.billMonth} required>Bill month (BS)</FieldLabel>
           <BSMonthPicker year={year} month={month} onChange={(y, m) => { setYear(y); setMonth(m); }} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div><FieldLabel help={HELP.rent} required>Rent (NPR)</FieldLabel>
             <Input type="number" min="0" value={rent} onChange={(e) => setRent(e.target.value)} /></div>
           <div><FieldLabel help={HELP.water}>Water (NPR)</FieldLabel>
@@ -177,9 +177,9 @@ function NewBillPage() {
       </Card>
 
       {tenantId && (priorSummary.debit > 0 || priorSummary.credit > 0) && (
-        <Card className="p-4 bg-accent/30 border-primary/30 flex items-start gap-3">
-          <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-          <div className="text-sm space-y-1 flex-1">
+        <Card className="p-3 sm:p-4 bg-accent/30 border-primary/30 flex gap-2 sm:gap-3">
+          <Info className="h-5 w-5 text-primary shrink-0 flex-shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm space-y-1 flex-1">
             <div className="flex items-center gap-1.5 font-medium">
               Previous balance detected
               <HelpTip text={HELP.previousDue} label="Previous balance" />
@@ -191,14 +191,14 @@ function NewBillPage() {
         </Card>
       )}
 
-      <Card className="p-5 space-y-3">
+      <Card className="p-3 sm:p-5 space-y-3">
         <FieldLabel help={HELP.electricityMode} required>Electricity</FieldLabel>
-        <RadioGroup value={mode} onValueChange={(v) => setMode(v as ElectricityMode)} className="flex gap-6">
-          <div className="flex items-center gap-2"><RadioGroupItem value="per_unit" id="m1" /><Label htmlFor="m1">Per unit</Label><HelpTip text="Calculate from meter readings × rate." label="Per unit" /></div>
-          <div className="flex items-center gap-2"><RadioGroupItem value="direct" id="m2" /><Label htmlFor="m2">Direct amount</Label><HelpTip text="Enter a flat NPR figure (e.g. NEA bill)." label="Direct" /></div>
+        <RadioGroup value={mode} onValueChange={(v) => setMode(v as ElectricityMode)} className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+          <div className="flex items-center gap-2"><RadioGroupItem value="per_unit" id="m1" /><Label htmlFor="m1" className="text-sm">Per unit</Label><HelpTip text="Calculate from meter readings × rate." label="Per unit" /></div>
+          <div className="flex items-center gap-2"><RadioGroupItem value="direct" id="m2" /><Label htmlFor="m2" className="text-sm">Direct amount</Label><HelpTip text="Enter a flat NPR figure (e.g. NEA bill)." label="Direct" /></div>
         </RadioGroup>
         {mode === "per_unit" ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><FieldLabel help={HELP.electricityPrev}>Previous reading</FieldLabel><Input type="number" value={prev} onChange={(e) => setPrev(e.target.value)} /></div>
             <div><FieldLabel help={HELP.electricityCurr}>Current reading</FieldLabel><Input type="number" value={curr} onChange={(e) => setCurr(e.target.value)} /></div>
             <div><FieldLabel help={HELP.electricityRate}>Rate / unit (NPR)</FieldLabel><Input type="number" value={rate} onChange={(e) => setRate(e.target.value)} /></div>
@@ -207,7 +207,7 @@ function NewBillPage() {
         ) : (
           <div><FieldLabel help={HELP.electricityDirect}>Amount (NPR)</FieldLabel><Input type="number" value={direct} onChange={(e) => setDirect(e.target.value)} /></div>
         )}
-        <p className="text-sm text-muted-foreground">Electricity: {fmtNPR(elec)}</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">Electricity: {fmtNPR(elec)}</p>
       </Card>
 
       <Card className="p-5 space-y-3">
@@ -218,19 +218,21 @@ function NewBillPage() {
           </Button>
         </div>
         {charges.map((c, i) => (
-          <div key={i} className="flex gap-2 items-start">
-            <div className="flex-1">
+          <div key={i} className="flex flex-col sm:flex-row gap-2 items-start">
+            <div className="flex-1 w-full">
               <Input placeholder="Label (e.g. Internet)" value={c.label} onChange={(e) => {
                 const copy = [...charges]; copy[i] = { ...copy[i], label: e.target.value, auto: false }; setCharges(copy);
               }} />
               {c.auto && <p className="text-xs text-primary mt-1">Auto-added from previous balance · edit or remove if needed</p>}
             </div>
-            <Input type="number" placeholder="Amount" className="w-32" value={c.amount} onChange={(e) => {
-              const copy = [...charges]; copy[i] = { ...copy[i], amount: e.target.value, auto: false }; setCharges(copy);
-            }} />
-            <Button type="button" variant="ghost" size="icon" onClick={() => setCharges(charges.filter((_, j) => j !== i))}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Input type="number" placeholder="Amount" className="flex-1 sm:w-32" value={c.amount} onChange={(e) => {
+                const copy = [...charges]; copy[i] = { ...copy[i], amount: e.target.value, auto: false }; setCharges(copy);
+              }} />
+              <Button type="button" variant="ghost" size="icon" onClick={() => setCharges(charges.filter((_, j) => j !== i))}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ))}
       </Card>
@@ -243,17 +245,17 @@ function NewBillPage() {
       </Card>
 
       <Card className="p-5 bg-accent/30">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span className="text-sm font-medium flex items-center gap-1.5">Bill total <HelpTip text={HELP.billTotal} label="Total" /></span>
-          <span className="text-2xl font-display">{fmtNPR(total)}</span>
+          <span className="text-xl sm:text-2xl font-display">{fmtNPR(total)}</span>
         </div>
       </Card>
 
-      <div className="flex gap-2">
-        <Button onClick={() => submit.mutate()} disabled={submit.isPending}>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Button onClick={() => submit.mutate()} disabled={submit.isPending} className="w-full sm:w-auto">
           {submit.isPending ? "Saving…" : "Create bill"}
         </Button>
-        <Link to="/dashboard"><Button variant="outline">Cancel</Button></Link>
+        <Link to="/dashboard" className="w-full sm:w-auto"><Button variant="outline" className="w-full">Cancel</Button></Link>
       </div>
     </div>
   );
