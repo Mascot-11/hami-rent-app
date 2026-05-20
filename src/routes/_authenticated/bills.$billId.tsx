@@ -13,8 +13,9 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { HELP } from "@/lib/help-copy";
 import { bsLabel } from "@/lib/bs-calendar";
 import { computeBillTotal, computeElectricity, computePaid, computeRemaining, computeStatus, fmtNPR, type PaymentMethod, type BillStatus } from "@/lib/calc";
-import { Trash2, Printer } from "lucide-react";
+import { Trash2, Printer, Share2, FileDown } from "lucide-react";
 import { toast } from "sonner";
+import logo from "@/assets/hamro-rent-logo.jpeg";
 
 export const Route = createFileRoute("/_authenticated/bills/$billId")({
   head: () => ({ meta: [{ title: "Bill — Rent Manager" }] }),
@@ -79,12 +80,33 @@ function BillPage() {
           <Link to="/tenants/$tenantId" params={{ tenantId: bill.tenant_id }} className="text-sm text-primary underline">← {bill.tenants?.name}</Link>
           <h1 className="text-3xl font-display mt-1">{bsLabel(bill.bs_year, bill.bs_month)}</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap items-center">
           <StatusBadge status={status} />
-          <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4 mr-1" />Print</Button>
+          <Button variant="outline" size="sm" onClick={() => window.print()} title="Opens print dialog — choose 'Save as PDF'">
+            <FileDown className="h-4 w-4 mr-1" />Download PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={async () => {
+            const url = `${window.location.origin}/share/${bill.share_token}`;
+            try {
+              if (navigator.share) await navigator.share({ title: `Bill — ${bill.tenants?.name}`, url });
+              else { await navigator.clipboard.writeText(url); toast.success("Share link copied"); }
+            } catch { await navigator.clipboard.writeText(url); toast.success("Share link copied"); }
+          }}>
+            <Share2 className="h-4 w-4 mr-1" />Share link
+          </Button>
+          <HelpTip text={HELP.shareLink} label="Share" />
           <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete this bill and all its payments?")) removeBill.mutate(); }}>
             <Trash2 className="h-4 w-4" />
           </Button>
+        </div>
+      </div>
+
+      {/* Print-only header */}
+      <div className="hidden print:flex items-center gap-3 border-b pb-3">
+        <img src={logo} alt="" className="h-12 w-12 rounded-full object-cover" />
+        <div>
+          <div className="font-display text-xl">Hamro Rent</div>
+          <div className="text-xs text-muted-foreground">{bill.tenants?.name} · Room {bill.tenants?.room_number ?? "—"} · {bsLabel(bill.bs_year, bill.bs_month)}</div>
         </div>
       </div>
 

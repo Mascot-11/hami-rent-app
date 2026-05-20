@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listTenants } from "@/lib/tenants.functions";
 import { listBills, saveBill } from "@/lib/bills.functions";
 import { Card } from "@/components/ui/card";
@@ -15,12 +15,12 @@ import { FieldLabel, HelpTip } from "@/components/HelpTip";
 import { HELP } from "@/lib/help-copy";
 import { BSMonthPicker } from "@/components/BSMonthPicker";
 import { approxCurrentBS, bsLabel } from "@/lib/bs-calendar";
-import { computeBillTotal, computeElectricity, fmtNPR, type ElectricityMode } from "@/lib/calc";
-import { Plus, Trash2 } from "lucide-react";
+import { computeBillTotal, computeElectricity, computePaid, computeRemaining, fmtNPR, type ElectricityMode } from "@/lib/calc";
+import { Plus, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/bills/new")({
-  head: () => ({ meta: [{ title: "New bill — Rent Manager" }] }),
+  head: () => ({ meta: [{ title: "New bill — Hamro Rent" }] }),
   component: NewBillPage,
 });
 
@@ -45,14 +45,50 @@ function NewBillPage() {
   const [direct, setDirect] = useState("");
   const [carry, setCarry] = useState("0");
   const [notes, setNotes] = useState("");
-  const [charges, setCharges] = useState<{ label: string; amount: string }[]>([]);
+  const [charges, setCharges] = useState<{ label: string; amount: string; auto?: boolean }[]>([]);
 
-  // Compute carry-forward auto-suggestion from prior month overpayment
   const { data: priorBills = [] } = useQuery({
     queryKey: ["bills", tenantId],
     queryFn: () => billsFn({ data: { tenant_id: tenantId } }),
     enabled: !!tenantId,
   });
+
+  // Compute net outstanding (debit) or credit from prior bills (excluding this same month).
+  const priorSummary = useMemo(() => {
+    let debit = 0; // unpaid balance from prior bills
+    let credit = 0; // overpayment from prior bills
+    for (const b of priorBills as any[]) {
+      if (b.bs_year === year && b.bs_month === month) continue;
+      // Only consider bills strictly BEFORE current selected month
+      if (b.bs_year > year || (b.bs_year === year && b.bs_month >= month)) continue;
+      const total = computeBillTotal(b, b.additional_charges ?? []);
+      const paid = computePaid(b.payments ?? []);
+      const rem = total - paid;
+      if (rem > 0) debit += rem;
+      else if (rem < 0) credit += -rem;
+    }
+    const net = debit - credit; // positive = owed, negative = credit
+    return { debit, credit, net };
+  }, [priorBills, year, month]);
+
+  // Auto-fill previous balance line + carry-forward credit whenever tenant/month changes.
+  useEffect(() => {
+    if (!tenantId) return;
+    setCharges((prev) => {
+      // Remove any previous auto-injected balance line
+      const cleaned = prev.filter((c) => !c.auto);
+      if (priorSummary.net > 0.005) {
+        return [{ label: "Previous balance due", amount: String(Math.round(priorSummary.net * 100) / 100), auto: true }, ...cleaned];
+      }
+      return cleaned;
+    });
+    if (priorSummary.net < -0.005) {
+      setCarry(String(Math.round(-priorSummary.net * 100) / 100));
+    } else if (priorSummary.net > 0) {
+      setCarry("0");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, year, month, priorSummary.net]);
 
   const billObj = {
     rent_this_month: Number(rent) || 0,
@@ -72,7 +108,6 @@ function NewBillPage() {
 
   const submit = useMutation({
     mutationFn: async () => {
-      // Validations
       if (!tenantId) throw new Error("Pick a tenant");
       if (Number(rent) < 0) throw new Error("Rent cannot be negative");
       if (mode === "per_unit") {
@@ -83,8 +118,7 @@ function NewBillPage() {
         if (c.label.trim() && Number(c.amount) <= 0) throw new Error(`Charge "${c.label}" must have an amount > 0`);
         if (!c.label.trim() && c.amount) throw new Error("Additional charge label cannot be blank");
       }
-      // Duplicate check
-      if (priorBills.some((b: any) => b.bs_year === year && b.bs_month === month)) {
+      if ((priorBills as any[]).some((b) => b.bs_year === year && b.bs_month === month)) {
         throw new Error(`A bill already exists for ${bsLabel(year, month)}`);
       }
       if (!rent || Number(rent) === 0) {
@@ -120,7 +154,7 @@ function NewBillPage() {
 
       <Card className="p-5 space-y-4">
         <div>
-          <FieldLabel help="Pick the tenant this bill is for." required>Tenant</FieldLabel>
+          <FieldLabel help={HELP.billTenant} required>Tenant</FieldLabel>
           <Select value={tenantId} onValueChange={setTenantId}>
             <SelectTrigger><SelectValue placeholder="Select tenant" /></SelectTrigger>
             <SelectContent>
@@ -142,11 +176,26 @@ function NewBillPage() {
         </div>
       </Card>
 
+      {tenantId && (priorSummary.debit > 0 || priorSummary.credit > 0) && (
+        <Card className="p-4 bg-accent/30 border-primary/30 flex items-start gap-3">
+          <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <div className="text-sm space-y-1 flex-1">
+            <div className="flex items-center gap-1.5 font-medium">
+              Previous balance detected
+              <HelpTip text={HELP.previousDue} label="Previous balance" />
+            </div>
+            {priorSummary.debit > 0 && <div>Unpaid from earlier bills: <strong>{fmtNPR(priorSummary.debit)}</strong></div>}
+            {priorSummary.credit > 0 && <div>Overpayment carried as credit: <strong>{fmtNPR(priorSummary.credit)}</strong></div>}
+            <div className="text-muted-foreground">Auto-applied below. You can edit or remove the line.</div>
+          </div>
+        </Card>
+      )}
+
       <Card className="p-5 space-y-3">
         <FieldLabel help={HELP.electricityMode} required>Electricity</FieldLabel>
         <RadioGroup value={mode} onValueChange={(v) => setMode(v as ElectricityMode)} className="flex gap-6">
-          <div className="flex items-center gap-2"><RadioGroupItem value="per_unit" id="m1" /><Label htmlFor="m1">Per unit</Label></div>
-          <div className="flex items-center gap-2"><RadioGroupItem value="direct" id="m2" /><Label htmlFor="m2">Direct amount</Label></div>
+          <div className="flex items-center gap-2"><RadioGroupItem value="per_unit" id="m1" /><Label htmlFor="m1">Per unit</Label><HelpTip text="Calculate from meter readings × rate." label="Per unit" /></div>
+          <div className="flex items-center gap-2"><RadioGroupItem value="direct" id="m2" /><Label htmlFor="m2">Direct amount</Label><HelpTip text="Enter a flat NPR figure (e.g. NEA bill)." label="Direct" /></div>
         </RadioGroup>
         {mode === "per_unit" ? (
           <div className="grid grid-cols-2 gap-3">
@@ -169,12 +218,15 @@ function NewBillPage() {
           </Button>
         </div>
         {charges.map((c, i) => (
-          <div key={i} className="flex gap-2">
-            <Input placeholder="Label (e.g. Internet)" value={c.label} onChange={(e) => {
-              const copy = [...charges]; copy[i].label = e.target.value; setCharges(copy);
-            }} />
+          <div key={i} className="flex gap-2 items-start">
+            <div className="flex-1">
+              <Input placeholder="Label (e.g. Internet)" value={c.label} onChange={(e) => {
+                const copy = [...charges]; copy[i] = { ...copy[i], label: e.target.value, auto: false }; setCharges(copy);
+              }} />
+              {c.auto && <p className="text-xs text-primary mt-1">Auto-added from previous balance · edit or remove if needed</p>}
+            </div>
             <Input type="number" placeholder="Amount" className="w-32" value={c.amount} onChange={(e) => {
-              const copy = [...charges]; copy[i].amount = e.target.value; setCharges(copy);
+              const copy = [...charges]; copy[i] = { ...copy[i], amount: e.target.value, auto: false }; setCharges(copy);
             }} />
             <Button type="button" variant="ghost" size="icon" onClick={() => setCharges(charges.filter((_, j) => j !== i))}>
               <Trash2 className="h-4 w-4" />
