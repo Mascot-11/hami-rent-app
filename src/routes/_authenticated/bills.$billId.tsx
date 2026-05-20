@@ -106,15 +106,30 @@ function BillPage() {
           <Button variant="outline" size="sm" onClick={() => window.print()} title="Opens print dialog — choose 'Save as PDF'" className="text-xs sm:text-sm">
             <FileDown className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Download PDF</span><span className="sm:hidden">PDF</span>
           </Button>
-          <Button
+        <Button
   variant="outline"
   size="sm"
   onClick={async () => {
-    const url = `${window.location.origin}/share/${bill.share_token}`;
-
     try {
-      // Mobile share support
-      if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      // fallback protection
+      const token =
+        bill.share_token ||
+        bill.shareToken ||
+        bill.token;
+
+      if (!token) {
+        toast.error("Share token not found");
+        return;
+      }
+
+      // clean URL generation
+      const url = new URL(`/share/${token}`, window.location.origin).toString();
+
+      // mobile native share
+      if (
+        navigator.share &&
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      ) {
         await navigator.share({
           title: `Bill — ${bill.tenants?.name}`,
           url,
@@ -123,11 +138,11 @@ function BillPage() {
         return;
       }
 
-      // Modern clipboard API
+      // secure modern clipboard
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(url);
       } else {
-        // Windows / older browser fallback
+        // windows / old browser fallback
         const textArea = document.createElement("textarea");
         textArea.value = url;
 
@@ -142,10 +157,11 @@ function BillPage() {
 
         document.execCommand("copy");
 
-        textArea.remove();
+        document.body.removeChild(textArea);
       }
 
       toast.success("Share link copied");
+      console.log("Generated Share URL:", url);
     } catch (error) {
       console.error(error);
       toast.error("Failed to copy share link");
@@ -153,8 +169,10 @@ function BillPage() {
   }}
   className="text-xs sm:text-sm"
 >
-            <Share2 className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Share link</span><span className="sm:hidden">Share</span>
-          </Button>
+  <Share2 className="h-4 w-4 mr-1" />
+  <span className="hidden sm:inline">Share link</span>
+  <span className="sm:hidden">Share</span>
+</Button>
           <HelpTip text={HELP.shareLink} label="Share" />
           <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete this bill and all its payments?")) removeBill.mutate(); }}>
             <Trash2 className="h-4 w-4" />
