@@ -84,11 +84,11 @@ function ExportPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-3xl font-display">Export</h1>
-      <Card className="p-5 space-y-4">
+    <div className="space-y-4 sm:space-y-6 w-full">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">Export</h1>
+      <Card className="p-3 sm:p-5 space-y-4">
         <FieldLabel help={HELP.exportAllTenants}>All-tenants Excel export</FieldLabel>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <FieldLabel help={HELP.exportFilterYear}>BS Year</FieldLabel>
             <Select value={yearFilter} onValueChange={setYearFilter}>
@@ -113,7 +113,7 @@ function ExportPage() {
             </Select>
           </div>
         </div>
-        <Button onClick={exportAll}><Download className="h-4 w-4 mr-1.5" />Download Excel</Button>
+        <Button onClick={exportAll} className="w-full sm:w-auto"><Download className="h-4 w-4 mr-1.5" />Download Excel</Button>
       </Card>
     </div>
   );

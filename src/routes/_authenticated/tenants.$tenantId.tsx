@@ -35,24 +35,24 @@ function TenantPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link to="/tenants" className="text-sm text-primary underline">← Tenants</Link>
-        <h1 className="text-3xl font-display mt-1">{tenant.name}</h1>
-        <p className="text-muted-foreground text-sm">
+        <Link to="/tenants" className="text-xs sm:text-sm text-primary underline">← Tenants</Link>
+        <h1 className="text-2xl sm:text-3xl font-display mt-1">{tenant.name}</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm">
           Room {tenant.room_number ?? "—"} {tenant.phone ? `· ${tenant.phone}` : ""} {tenant.move_in_date_bs ? `· Moved in ${tenant.move_in_date_bs}` : ""}
         </p>
-        {tenant.notes && <p className="text-sm mt-2 italic text-muted-foreground">{tenant.notes}</p>}
+        {tenant.notes && <p className="text-xs sm:text-sm mt-2 italic text-muted-foreground">{tenant.notes}</p>}
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="p-4"><div className="text-xs uppercase text-muted-foreground">Lifetime billed</div><div className="text-xl font-display">{fmtNPR(lifetime.total)}</div></Card>
-        <Card className="p-4"><div className="text-xs uppercase text-muted-foreground">Lifetime paid</div><div className="text-xl font-display">{fmtNPR(lifetime.paid)}</div></Card>
-        <Card className="p-4"><div className="text-xs uppercase text-muted-foreground">Outstanding</div><div className="text-xl font-display">{fmtNPR(lifetime.total - lifetime.paid)}</div></Card>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+        <Card className="p-3 sm:p-4"><div className="text-xs uppercase text-muted-foreground">Lifetime billed</div><div className="text-lg sm:text-xl font-display line-clamp-2">{fmtNPR(lifetime.total)}</div></Card>
+        <Card className="p-3 sm:p-4"><div className="text-xs uppercase text-muted-foreground">Lifetime paid</div><div className="text-lg sm:text-xl font-display line-clamp-2">{fmtNPR(lifetime.paid)}</div></Card>
+        <Card className="p-3 sm:p-4"><div className="text-xs uppercase text-muted-foreground">Outstanding</div><div className="text-lg sm:text-xl font-display line-clamp-2">{fmtNPR(lifetime.total - lifetime.paid)}</div></Card>
       </div>
 
       <Card className="p-5">
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-3">
           <h2 className="font-semibold">Bills ({sorted.length})</h2>
-          <Link to="/bills/new"><Button size="sm"><Plus className="h-4 w-4 mr-1" />New</Button></Link>
+          <Link to="/bills/new" className="w-full sm:w-auto"><Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" />New</Button></Link>
         </div>
         {sorted.length === 0 ? <p className="text-sm text-muted-foreground">No bills yet.</p> : (
           <div className="space-y-2">
@@ -62,12 +62,12 @@ function TenantPage() {
               const status = computeStatus(b, b.additional_charges ?? [], b.payments ?? []) as BillStatus;
               return (
                 <Link key={b.id} to="/bills/$billId" params={{ billId: b.id }}
-                  className="flex items-center justify-between p-3 rounded-md border hover:bg-accent transition-colors">
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-md border hover:bg-accent transition-colors">
                   <div>
-                    <div className="font-medium">{bsLabel(b.bs_year, b.bs_month)}</div>
-                    <div className="text-sm text-muted-foreground">{fmtNPR(paid)} of {fmtNPR(total)}</div>
+                    <div className="font-medium text-sm sm:text-base">{bsLabel(b.bs_year, b.bs_month)}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">{fmtNPR(paid)} of {fmtNPR(total)}</div>
                   </div>
-                  <StatusBadge status={status} />
+                  <div className="flex-shrink-0"><StatusBadge status={status} /></div>
                 </Link>
               );
             })}

@@ -46,16 +46,16 @@ function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-3xl font-display">Settings</h1>
-      <Card className="p-5 space-y-3">
+    <div className="space-y-4 sm:space-y-6 w-full">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">Settings</h1>
+      <Card className="p-3 sm:p-5 space-y-3">
         <FieldLabel help={HELP.backup}>Backup</FieldLabel>
-        <Button onClick={backup}><Download className="h-4 w-4 mr-1.5" />Download JSON backup</Button>
+        <Button onClick={backup} className="w-full sm:w-auto"><Download className="h-4 w-4 mr-1.5" />Download JSON backup</Button>
       </Card>
-      <Card className="p-5 space-y-3">
+      <Card className="p-3 sm:p-5 space-y-3">
         <FieldLabel help={HELP.restore}>Restore</FieldLabel>
         <input ref={fileRef} type="file" accept="application/json" onChange={restore} className="hidden" />
-        <Button variant="outline" onClick={() => fileRef.current?.click()}>
+        <Button variant="outline" onClick={() => fileRef.current?.click()} className="w-full sm:w-auto">
           <Upload className="h-4 w-4 mr-1.5" />Choose JSON file
         </Button>
       </Card>

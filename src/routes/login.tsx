@@ -46,15 +46,15 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <Card className="w-full max-w-md p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-6">
+      <Card className="w-full max-w-md p-6 sm:p-8 space-y-6">
         <div className="flex flex-col items-center text-center gap-3">
-          <img src={logo} alt="Hamro Rent" className="h-20 w-20 rounded-full object-cover shadow-md" />
+          <img src={logo} alt="Hamro Rent" className="h-16 sm:h-20 w-16 sm:w-20 rounded-full object-cover shadow-md" />
           <div>
-            <h1 className="text-3xl font-display">Hamro Rent</h1>
-            <p className="text-xs text-muted-foreground">Landlord's Auto Calculator · हाम्रो रेन्ट</p>
+            <h1 className="text-2xl sm:text-3xl font-display">Hamro Rent</h1>
+            <p className="text-xs sm:text-xs text-muted-foreground">Landlord&apos;s Auto Calculator · हाम्रो रेन्ट</p>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {mode === "signin" ? "Sign in to your account" : "Create your account"}
           </p>
         </div>
@@ -71,10 +71,10 @@ function LoginPage() {
             {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
         </form>
-        <div className="flex items-center justify-center gap-1.5">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-1.5">
           <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="text-sm text-muted-foreground hover:text-primary text-center">
-            {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+            className="text-xs sm:text-sm text-muted-foreground hover:text-primary text-center">
+            {mode === "signin" ? "Don&apos;t have an account? Sign up" : "Already have an account? Sign in"}
           </button>
           <HelpTip text={HELP.authSwitchMode} label="Switch mode" />
         </div>
