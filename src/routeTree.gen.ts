@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
@@ -19,6 +20,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedTenantsTenantIdRouteImport } from './routes/_authenticated/tenants.$tenantId'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills.$billId'
+import { Route as ApiPublicBillTokenRouteImport } from './routes/api/public/bill.$token'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -32,6 +34,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShareTokenRoute = ShareTokenRouteImport.update({
+  id: '/share/$token',
+  path: '/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTenantsRoute = AuthenticatedTenantsRouteImport.update({
@@ -71,6 +78,11 @@ const AuthenticatedBillsBillIdRoute =
     path: '/bills/$billId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicBillTokenRoute = ApiPublicBillTokenRouteImport.update({
+  id: '/api/public/bill/$token',
+  path: '/api/public/bill/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -79,9 +91,11 @@ export interface FileRoutesByFullPath {
   '/export': typeof AuthenticatedExportRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/share/$token': typeof ShareTokenRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
+  '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -90,9 +104,11 @@ export interface FileRoutesByTo {
   '/export': typeof AuthenticatedExportRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/share/$token': typeof ShareTokenRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
+  '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -103,9 +119,11 @@ export interface FileRoutesById {
   '/_authenticated/export': typeof AuthenticatedExportRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/share/$token': typeof ShareTokenRoute
   '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills/new': typeof AuthenticatedBillsNewRoute
   '/_authenticated/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
+  '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,9 +134,11 @@ export interface FileRouteTypes {
     | '/export'
     | '/settings'
     | '/tenants'
+    | '/share/$token'
     | '/bills/$billId'
     | '/bills/new'
     | '/tenants/$tenantId'
+    | '/api/public/bill/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -127,9 +147,11 @@ export interface FileRouteTypes {
     | '/export'
     | '/settings'
     | '/tenants'
+    | '/share/$token'
     | '/bills/$billId'
     | '/bills/new'
     | '/tenants/$tenantId'
+    | '/api/public/bill/$token'
   id:
     | '__root__'
     | '/'
@@ -139,15 +161,19 @@ export interface FileRouteTypes {
     | '/_authenticated/export'
     | '/_authenticated/settings'
     | '/_authenticated/tenants'
+    | '/share/$token'
     | '/_authenticated/bills/$billId'
     | '/_authenticated/bills/new'
     | '/_authenticated/tenants/$tenantId'
+    | '/api/public/bill/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ShareTokenRoute: typeof ShareTokenRoute
+  ApiPublicBillTokenRoute: typeof ApiPublicBillTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -171,6 +197,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share/$token': {
+      id: '/share/$token'
+      path: '/share/$token'
+      fullPath: '/share/$token'
+      preLoaderRoute: typeof ShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/tenants': {
@@ -222,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillsBillIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/bill/$token': {
+      id: '/api/public/bill/$token'
+      path: '/api/public/bill/$token'
+      fullPath: '/api/public/bill/$token'
+      preLoaderRoute: typeof ApiPublicBillTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -262,6 +302,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  ShareTokenRoute: ShareTokenRoute,
+  ApiPublicBillTokenRoute: ApiPublicBillTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

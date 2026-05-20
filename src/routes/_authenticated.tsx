@@ -1,8 +1,9 @@
 import { createFileRoute, redirect, Link, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, FileText, Download, Settings, LogOut, Plus } from "lucide-react";
+import { LayoutDashboard, Users, Download, Settings, LogOut, Plus } from "lucide-react";
 import { toast } from "sonner";
+import logo from "@/assets/hamro-rent-logo.jpeg";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
@@ -35,7 +36,10 @@ function AuthLayout() {
     <div className="min-h-screen flex flex-col">
       <header className="border-b bg-card no-print">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-6 flex-wrap">
-          <Link to="/dashboard" className="font-display text-xl font-semibold">Rent Manager</Link>
+          <Link to="/dashboard" className="flex items-center gap-2 font-display text-xl font-semibold">
+            <img src={logo} alt="Hamro Rent" className="h-9 w-9 rounded-full object-cover" />
+            <span>Hamro Rent</span>
+          </Link>
           <nav className="flex gap-1 flex-1 flex-wrap">
             {links.map((l) => (
               <Link key={l.to} to={l.to}
