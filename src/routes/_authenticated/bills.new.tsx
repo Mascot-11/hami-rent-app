@@ -53,13 +53,11 @@ function NewBillPage() {
     enabled: !!tenantId,
   });
 
-  // Compute net outstanding (debit) or credit from prior bills (excluding this same month).
   const priorSummary = useMemo(() => {
-    let debit = 0; // unpaid balance from prior bills
-    let credit = 0; // overpayment from prior bills
+    let debit = 0;
+    let credit = 0;
     for (const b of priorBills as any[]) {
       if (b.bs_year === year && b.bs_month === month) continue;
-      // Only consider bills strictly BEFORE current selected month
       if (b.bs_year > year || (b.bs_year === year && b.bs_month >= month)) continue;
       const total = computeBillTotal(b, b.additional_charges ?? []);
       const paid = computePaid(b.payments ?? []);
@@ -67,15 +65,13 @@ function NewBillPage() {
       if (rem > 0) debit += rem;
       else if (rem < 0) credit += -rem;
     }
-    const net = debit - credit; // positive = owed, negative = credit
+    const net = debit - credit;
     return { debit, credit, net };
   }, [priorBills, year, month]);
 
-  // Auto-fill previous balance line + carry-forward credit whenever tenant/month changes.
   useEffect(() => {
     if (!tenantId) return;
     setCharges((prev) => {
-      // Remove any previous auto-injected balance line
       const cleaned = prev.filter((c) => !c.auto);
       if (priorSummary.net > 0.005) {
         return [{ label: "Previous balance due", amount: String(Math.round(priorSummary.net * 100) / 100), auto: true }, ...cleaned];
@@ -218,18 +214,18 @@ function NewBillPage() {
           </Button>
         </div>
         {charges.map((c, i) => (
-          <div key={i} className="flex flex-col sm:flex-row gap-2">
-            <div className="flex-1 w-full min-w-0">
+          <div key={i} className="flex flex-col sm:flex-row gap-2 items-start">
+            <div className="flex-1 w-full">
               <Input placeholder="Label (e.g. Internet)" value={c.label} onChange={(e) => {
                 const copy = [...charges]; copy[i] = { ...copy[i], label: e.target.value, auto: false }; setCharges(copy);
               }} />
               {c.auto && <p className="text-xs text-primary mt-1">Auto-added from previous balance · edit or remove if needed</p>}
             </div>
-            <div className="flex gap-2 w-full sm:w-auto flex-shrink-0">
-              <Input type="number" placeholder="Amount" className="flex-1 sm:w-28" value={c.amount} onChange={(e) => {
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Input type="number" placeholder="Amount" className="flex-1 sm:w-32" value={c.amount} onChange={(e) => {
                 const copy = [...charges]; copy[i] = { ...copy[i], amount: e.target.value, auto: false }; setCharges(copy);
               }} />
-              <Button type="button" variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0" onClick={() => setCharges(charges.filter((_, j) => j !== i))}>
+              <Button type="button" variant="ghost" size="icon" onClick={() => setCharges(charges.filter((_, j) => j !== i))}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
@@ -252,50 +248,12 @@ function NewBillPage() {
       </Card>
 
       <div className="flex flex-col sm:flex-row gap-2">
-        <Button onClick={() => submit.mutate()} disabled={submit.isPending} className="sm:w-auto">
-          {submit.isPending ? "Saving…" : "Create bill"}
-        </Button>
-        <Link to="/dashboard" className="flex-1 sm:flex-none"><Button variant="outline" className="w-full sm:w-auto">Cancel</Button></Link>
-      </div>
-        {charges.map((c, i) => (
-          <div key={i} className="flex flex-col sm:flex-row gap-2 items-start">
-            <div className="flex-1 w-full">
-              <Input placeholder="Label (e.g. Internet)" value={c.label} onChange={(e) => {
-                const copy = [...charges]; copy[i] = { ...copy[i], label: e.target.value, auto: false }; setCharges(copy);
-              }} />
-              {c.auto && <p className="text-xs text-primary mt-1">Auto-added from previous balance · edit or remove if needed</p>}
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Input type="number" placeholder="Amount" className="flex-1 sm:w-32" value={c.amount} onChange={(e) => {
-                const copy = [...charges]; copy[i] = { ...copy[i], amount: e.target.value, auto: false }; setCharges(copy);
-              }} />
-              <Button type="button" variant="ghost" size="icon" onClick={() => setCharges(charges.filter((_, j) => j !== i))}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </Card>
-
-      <Card className="p-5 space-y-3">
-        <div><FieldLabel help={HELP.carryForward}>Carry-forward credit (NPR)</FieldLabel>
-          <Input type="number" min="0" value={carry} onChange={(e) => setCarry(e.target.value)} /></div>
-        <div><FieldLabel help={HELP.billNotes}>Notes</FieldLabel>
-          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
-      </Card>
-
-      <Card className="p-5 bg-accent/30">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <span className="text-sm font-medium flex items-center gap-1.5">Bill total <HelpTip text={HELP.billTotal} label="Total" /></span>
-          <span className="text-xl sm:text-2xl font-display">{fmtNPR(total)}</span>
-        </div>
-      </Card>
-
-      <div className="flex flex-col sm:flex-row gap-2">
         <Button onClick={() => submit.mutate()} disabled={submit.isPending} className="w-full sm:w-auto">
           {submit.isPending ? "Saving…" : "Create bill"}
         </Button>
-        <Link to="/dashboard" className="w-full sm:w-auto"><Button variant="outline" className="w-full">Cancel</Button></Link>
+        <Link to="/dashboard" className="w-full sm:w-auto">
+          <Button variant="outline" className="w-full sm:w-auto">Cancel</Button>
+        </Link>
       </div>
     </div>
   );
