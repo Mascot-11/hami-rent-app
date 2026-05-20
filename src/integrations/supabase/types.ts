@@ -66,6 +66,7 @@ export type Database = {
           notes: string | null
           owner_id: string
           rent_this_month: number
+          share_token: string
           tenant_id: string
           water_bill: number
         }
@@ -85,6 +86,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           rent_this_month?: number
+          share_token?: string
           tenant_id: string
           water_bill?: number
         }
@@ -104,6 +106,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           rent_this_month?: number
+          share_token?: string
           tenant_id?: string
           water_bill?: number
         }
