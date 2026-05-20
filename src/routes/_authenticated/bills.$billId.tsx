@@ -106,13 +106,53 @@ function BillPage() {
           <Button variant="outline" size="sm" onClick={() => window.print()} title="Opens print dialog — choose 'Save as PDF'" className="text-xs sm:text-sm">
             <FileDown className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Download PDF</span><span className="sm:hidden">PDF</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={async () => {
-            const url = `${window.location.origin}/share/${bill.share_token}`;
-            try {
-              if (navigator.share) await navigator.share({ title: `Bill — ${bill.tenants?.name}`, url });
-              else { await navigator.clipboard.writeText(url); toast.success("Share link copied"); }
-            } catch { await navigator.clipboard.writeText(url); toast.success("Share link copied"); }
-          }} className="text-xs sm:text-sm">
+          <Button
+  variant="outline"
+  size="sm"
+  onClick={async () => {
+    const url = `${window.location.origin}/share/${bill.share_token}`;
+
+    try {
+      // Mobile share support
+      if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        await navigator.share({
+          title: `Bill — ${bill.tenants?.name}`,
+          url,
+        });
+
+        return;
+      }
+
+      // Modern clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // Windows / older browser fallback
+        const textArea = document.createElement("textarea");
+        textArea.value = url;
+
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+
+        document.body.appendChild(textArea);
+
+        textArea.focus();
+        textArea.select();
+
+        document.execCommand("copy");
+
+        textArea.remove();
+      }
+
+      toast.success("Share link copied");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to copy share link");
+    }
+  }}
+  className="text-xs sm:text-sm"
+>
             <Share2 className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Share link</span><span className="sm:hidden">Share</span>
           </Button>
           <HelpTip text={HELP.shareLink} label="Share" />
@@ -137,7 +177,21 @@ function BillPage() {
       </div>
 
       <Card className="p-3 sm:p-5">
-        <h2 className="text-base sm:text-lg font-semibold mb-3">Bill breakdown</h2>
+        <div className="mb-3">
+  <h2 className="text-base sm:text-lg font-semibold">
+    Bill breakdown
+  </h2>
+
+  <div className="mt-1 text-sm text-muted-foreground">
+    Tenant: <span className="font-medium text-foreground">{bill.tenants?.name}</span>
+  </div>
+
+  {bill.tenants?.room_number && (
+    <div className="text-sm text-muted-foreground">
+      Room: <span className="font-medium text-foreground">{bill.tenants.room_number}</span>
+    </div>
+  )}
+</div>
         <Row label={rentLabel} value={fmtNPR(bill.rent_this_month)} />
         <Row label={`Water — ${bsMonthName(bill.bs_month)}`} value={fmtNPR(bill.water_bill)} />
         <Row
