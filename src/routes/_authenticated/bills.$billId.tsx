@@ -430,7 +430,7 @@ function BillPage() {
               try {
                 const token = bill.share_token ?? bill.shareToken ?? bill.token;
                 if (!token) { toast.error("Share token not found"); return; }
-                const url = `${window.location.origin}/share/${token}`;
+                const url = new URL(`/share/${token}`, window.location.origin).toString();
                 if (navigator.share && isMobile) {
                   await navigator.share({ title: `Bill — ${bill.tenants?.name}`, url });
                   return;
