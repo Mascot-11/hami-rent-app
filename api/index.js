@@ -1,9 +1,6 @@
-const path = require('path');
-
-module.exports = async (req, res) => {
+export default async (req, res) => {
   try {
-    const handler = await import(path.join(process.cwd(), 'dist/server/index.js'));
-    const workerHandler = handler.default;
+    const { default: workerHandler } = await import('../dist/server/index.js');
 
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
     const fetchRequest = new Request(url.toString(), {
