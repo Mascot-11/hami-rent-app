@@ -10,6 +10,14 @@
       }
     },
     {
+      "src": "/favicon.ico",
+      "dest": "/dist/client/favicon.ico"
+    },
+    {
+      "src": "/favicon.png",
+      "dest": "/dist/client/favicon.png"
+    },
+    {
       "src": "/(.*)",
       "dest": "/api/index.js"
     }
