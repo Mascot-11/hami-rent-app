@@ -1,13 +1,17 @@
-import { default as workerHandler } from '../dist/server/index.js';
+const path = require('path');
 
-export default async (req, res) => {
+module.exports = async (req, res) => {
   try {
+    const handler = await import(path.join(process.cwd(), 'dist/server/index.js'));
+    const workerHandler = handler.default;
+
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
     const fetchRequest = new Request(url.toString(), {
       method: req.method,
       headers: req.headers,
       body: ['GET', 'HEAD'].includes(req.method) ? undefined : req,
     });
+
     const response = await workerHandler.fetch(fetchRequest, {}, {});
     res.statusCode = response.status;
     for (const [key, value] of response.headers.entries()) {
@@ -18,6 +22,6 @@ export default async (req, res) => {
   } catch (error) {
     console.error('Handler error:', error);
     res.statusCode = 500;
-    res.end(JSON.stringify({ error: 'Internal Server Error' }));
+    res.end(JSON.stringify({ error: error.message }));
   }
 };
