@@ -1,21 +1,14 @@
 {
   "buildCommand": "npm run build",
   "installCommand": "npm install",
+  "outputDirectory": "dist/client",
   "routes": [
     {
       "src": "/assets/(.*)",
-      "dest": "/dist/client/assets/$1",
+      "dest": "/assets/$1",
       "headers": {
         "cache-control": "public, immutable, max-age=31536000"
       }
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/dist/client/favicon.ico"
-    },
-    {
-      "src": "/favicon.png",
-      "dest": "/dist/client/favicon.png"
     },
     {
       "src": "/(.*)",
