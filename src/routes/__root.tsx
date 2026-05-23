@@ -115,6 +115,19 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://assistloop.ai/assistloop-widget.js";
+    script.async = true;
+    script.onload = () => {
+      window.AssistLoopWidget?.init({
+        agentId: import.meta.env.VITE_ASSISTLOOP_AGENT_ID,
+      });
+    };
+    document.body.appendChild(script);
+    return () => { document.body.removeChild(script); };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthSync router={router} />
