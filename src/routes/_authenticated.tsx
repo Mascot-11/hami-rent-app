@@ -102,27 +102,22 @@ function AuthLayout() {
           </div>
 
           {/* Footer */}
-          <footer className="border-t bg-card text-center py-4 px-4 text-sm text-muted-foreground no-print">
-            <p>
-              Made with care by{" "}
-              <a 
-                href="https://www.shreeyushdhungana.com.np/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="font-medium text-primary hover:underline transition-colors"
-              >
-                Shreeyush Dhungana
-              </a>
-              {" "}and{" "}
-              <a 
-                href="https://clickable.ai" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="font-medium text-primary hover:underline transition-colors"
-              >
-                Clickable
-              </a>
-            </p>
+          <footer className="border-t bg-card text-center py-6 px-4 text-sm text-muted-foreground no-print">
+            <div className="space-y-2">
+              <p className="font-medium">Hamro Rent — Rental Management, Reinvented.</p>
+              <p>
+                Developed by{" "}
+                <a 
+                  href="https://www.shreeyushdhungana.com.np/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary hover:underline transition-colors"
+                >
+                  Shreeyush Dhungana
+                </a>
+              </p>
+              <p className="text-xs">© 2026 Hamro Rent Technologies</p>
+            </div>
           </footer>
         </main>
       </div>
