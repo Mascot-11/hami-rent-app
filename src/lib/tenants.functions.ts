@@ -32,6 +32,8 @@ const TenantInput = z.object({
   move_in_date_bs: z.string().trim().max(20).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
   is_active: z.boolean().optional(),
+  photo_url: z.string().nullable().optional(),
+  documents: z.array(z.object({ name: z.string(), url: z.string() })).optional(),
 });
 
 export const upsertTenant = createServerFn({ method: "POST" })
@@ -45,6 +47,8 @@ export const upsertTenant = createServerFn({ method: "POST" })
       phone: data.phone || null,
       move_in_date_bs: data.move_in_date_bs || null,
       notes: data.notes || null,
+      photo_url: data.photo_url || null,
+      documents: data.documents ?? [],
     };
     if (data.id) {
       const { error } = await context.supabase
