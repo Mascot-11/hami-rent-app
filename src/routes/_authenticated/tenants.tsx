@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   listTenants,
   upsertTenant,
@@ -467,6 +467,10 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
     setNotes(t?.notes ?? "");
   };
 
+  useEffect(() => {
+    if (open) reset(initial);
+  }, [open, initial?.id]);
+
   const submit = (e: any) => {
     e.preventDefault();
     if (!name.trim()) return toast.error("Name is required");
@@ -485,7 +489,6 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
       open={open}
       onOpenChange={(o) => {
         onOpenChange(o);
-        if (o) reset(initial);
       }}
     >
       <DialogContent>
