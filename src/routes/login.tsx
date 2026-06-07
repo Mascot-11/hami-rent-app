@@ -3,11 +3,9 @@ import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FieldLabel, HelpTip } from "@/components/HelpTip";
-import { HELP } from "@/lib/help-copy";
 import { toast } from "sonner";
-import { ArrowLeft, Lock, Mail } from "lucide-react";
 import logo from "@/assets/hamro-rent-logo.jpeg";
+import { ArrowLeft, Lock, Mail, User, Phone, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -22,9 +20,22 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const nav = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+
+  // Sign in fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Sign up extra fields
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+
   const [loading, setLoading] = useState(false);
+
+  const switchMode = (next: "signin" | "signup") => {
+    setMode(next);
+    setEmail(""); setPassword(""); setFullName(""); setPhone(""); setAddress("");
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,15 +45,29 @@ function LoginPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back");
+        nav({ to: "/dashboard" });
       } else {
-        const { error } = await supabase.auth.signUp({
-          email, password,
+        if (!fullName.trim()) throw new Error("Full name is required");
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
           options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
+
+        // Save landlord profile right after signup using the new session
+        if (data.user) {
+          await supabase.from("landlord_profiles").upsert({
+            owner_id: data.user.id,
+            full_name: fullName.trim(),
+            phone: phone.trim() || null,
+            address: address.trim() || null,
+          }, { onConflict: "owner_id" });
+        }
+
         toast.success("Account created — check your email to confirm");
+        nav({ to: "/dashboard" });
       }
-      nav({ to: "/dashboard" });
     } catch (err: any) {
       toast.error(err.message ?? "Failed");
     } finally {
@@ -79,11 +104,11 @@ function LoginPage() {
             ))}
           </div>
         </div>
-        <p className="text-xs text-background/35">© 2026 Hamro Rent · Built by Shreeyush Dhungana</p>
+        <p className="text-xs text-background/35">© 2082 Hamro Rent · Built by Shreeyush Dhungana</p>
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 sm:px-8">
+      <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 sm:px-8 overflow-y-auto">
         <div className="w-full max-w-md">
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 lg:hidden">
             <ArrowLeft className="h-4 w-4" /> Back to home
@@ -109,10 +134,54 @@ function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={submit} className="space-y-5">
-            <div>
-              <FieldLabel help={HELP.authEmail} required>Email address</FieldLabel>
-              <div className="relative mt-1.5">
+          <form onSubmit={submit} className="space-y-4">
+            {/* Sign-up only fields */}
+            {mode === "signup" && (
+              <>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Full name <span className="text-destructive">*</span></label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      required
+                      placeholder="e.g. Ram Bahadur Shrestha"
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                      className="pl-9 h-11"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Phone number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="e.g. 9841000000"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      className="pl-9 h-11"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Address</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="e.g. Baneshwor, Kathmandu"
+                      value={address}
+                      onChange={e => setAddress(e.target.value)}
+                      className="pl-9 h-11"
+                    />
+                  </div>
+                </div>
+                <div className="border-t pt-1" />
+              </>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Email address <span className="text-destructive">*</span></label>
+              <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="email"
@@ -124,9 +193,10 @@ function LoginPage() {
                 />
               </div>
             </div>
-            <div>
-              <FieldLabel help={HELP.authPassword} required>Password</FieldLabel>
-              <div className="relative mt-1.5">
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Password <span className="text-destructive">*</span></label>
+              <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="password"
@@ -139,6 +209,7 @@ function LoginPage() {
                 />
               </div>
             </div>
+
             <Button type="submit" className="w-full h-11 text-sm font-medium rounded-full" disabled={loading}>
               {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
@@ -155,12 +226,11 @@ function LoginPage() {
               {mode === "signin" ? "Don't have an account?" : "Already have an account?"}
             </span>
             <button
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              onClick={() => switchMode(mode === "signin" ? "signup" : "signin")}
               className="font-medium text-primary hover:underline"
             >
               {mode === "signin" ? "Sign up" : "Sign in"}
             </button>
-            <HelpTip text={HELP.authSwitchMode} label="Switch mode" />
           </div>
 
           <p className="mt-8 text-xs text-center text-muted-foreground leading-relaxed">

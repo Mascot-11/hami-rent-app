@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Download, Settings, LogOut,
-  Plus, Menu, X, ChevronRight,
+  Plus, Menu, X, ChevronRight, UserCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/hamro-rent-logo.jpeg";
@@ -35,6 +35,7 @@ function AuthLayout() {
     { to: "/tenants", label: "Tenants", icon: Users },
     { to: "/bills/new", label: "New Bill", icon: Plus },
     { to: "/export", label: "Export", icon: Download },
+    { to: "/profile", label: "Profile", icon: UserCircle },
     { to: "/settings", label: "Settings", icon: Settings },
   ];
 
