@@ -128,6 +128,7 @@ async function renderBillToCanvas(bill: any, logoSrc: string): Promise<HTMLCanva
   // Logo
   try {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.src = logoSrc;
     await new Promise<void>((res) => { img.onload = () => res(); img.onerror = () => res(); });
     ctx.save();
@@ -379,9 +380,13 @@ function BillPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <Link to="/tenants/$tenantId" params={{ tenantId: bill.tenant_id }} className="text-sm text-primary underline">
-            ← {bill.tenants?.name}
-          </Link>
+          {bill.tenants?.name ? (
+            <Link to="/tenants/$tenantId" params={{ tenantId: bill.tenant_id }} className="text-sm text-primary underline">
+              ← {bill.tenants.name}
+            </Link>
+          ) : (
+            <p className="text-sm text-muted-foreground">← Tenant not found</p>
+          )}
           <h1 className="text-2xl sm:text-3xl font-display mt-1">{bsLabel(bill.bs_year, bill.bs_month)}</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Electricity &amp; utilities for {bsMonthName(bill.bs_month)} · Rent advance for {bsMonthName(rentForMonth.month)} {rentForMonth.year}
@@ -494,7 +499,7 @@ function BillPage() {
           </div>
           {bill.tenants?.room_number && (
             <div className="text-sm text-muted-foreground">
-              Room: <span className="font-medium text-foreground">{bill.tenants.room_number}</span>
+              Room: <span className="font-medium text-foreground">{bill.tenants?.room_number}</span>
             </div>
           )}
         </div>
