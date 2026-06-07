@@ -32,16 +32,21 @@ export interface PWAState {
 }
 
 export function usePWA(): PWAState {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  // Use safe SSR defaults — window/navigator are not available on the server
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator !== "undefined" ? navigator.onLine : true
+  );
   const [swReady, setSwReady] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
   const [pendingSync, setPendingSync] = useState(0);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
 
+  // Evaluate standalone mode only in the browser
   const isInstalled =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    typeof window !== "undefined" &&
+    (window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
 
   // ── Service Worker registration ────────────────────────────────────────────
   useEffect(() => {

@@ -23,11 +23,17 @@ export function usePWAContext() {
 export function PWAProvider({ children }: { children: ReactNode }) {
   const pwa = usePWA();
   const [installDismissed, setInstallDismissed] = useState(false);
+  // localStorage is not available during SSR — use a lazy initializer that
+  // checks for the browser environment first.
   const [iosDismissed, setIosDismissed] = useState(() =>
-    !!localStorage.getItem("pwa-ios-dismissed")
+    typeof window !== "undefined"
+      ? !!localStorage.getItem("pwa-ios-dismissed")
+      : false
   );
 
+  // navigator / window are not available on the server — guard every access.
   const isIOS =
+    typeof navigator !== "undefined" &&
     /iphone|ipad|ipod/i.test(navigator.userAgent) &&
     !(window.navigator as Navigator & { standalone?: boolean }).standalone;
 

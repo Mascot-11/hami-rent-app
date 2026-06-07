@@ -21,6 +21,11 @@ let _db: IDBDatabase | null = null;
 
 function openDB(): Promise<IDBDatabase> {
   if (_db) return Promise.resolve(_db);
+  if (typeof indexedDB === "undefined") {
+    return Promise.reject(
+      new Error("[offline-db] IndexedDB is not available in this environment (SSR?)")
+    );
+  }
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
 
