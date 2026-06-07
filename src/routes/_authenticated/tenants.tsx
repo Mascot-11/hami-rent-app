@@ -198,6 +198,7 @@ function TenantRow({
             Room {t.room_number ?? "—"}
             {t.phone ? ` · ${t.phone}` : ""}
             {t.move_in_date_bs ? ` · Moved in: ${t.move_in_date_bs}` : ""}
+            {t.base_rent != null ? ` · Rent: ${fmtNPR(t.base_rent)}` : ""}
           </div>
         </Link>
 
@@ -459,6 +460,8 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
   const [phone, setPhone] = useState(initial?.phone ?? "");
   const [moveIn, setMoveIn] = useState(initial?.move_in_date_bs ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [baseRent, setBaseRent] = useState(initial?.base_rent != null ? String(initial.base_rent) : "");
+  const [defaultWater, setDefaultWater] = useState(initial?.default_water_bill != null ? String(initial.default_water_bill) : "");
   const [photoUrl, setPhotoUrl] = useState<string | null>(initial?.photo_url ?? null);
   const [documents, setDocuments] = useState<{ name: string; url: string }[]>(initial?.documents ?? []);
   const [uploading, setUploading] = useState(false);
@@ -469,6 +472,8 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
     setPhone(t?.phone ?? "");
     setMoveIn(t?.move_in_date_bs ?? "");
     setNotes(t?.notes ?? "");
+    setBaseRent(t?.base_rent != null ? String(t.base_rent) : "");
+    setDefaultWater(t?.default_water_bill != null ? String(t.default_water_bill) : "");
     setPhotoUrl(t?.photo_url ?? null);
     setDocuments(t?.documents ?? []);
   };
@@ -532,6 +537,8 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
       notes: notes.trim() || null,
       photo_url: photoUrl,
       documents,
+      base_rent: baseRent !== "" ? Number(baseRent) : null,
+      default_water_bill: defaultWater !== "" ? Number(defaultWater) : null,
     });
   };
 
@@ -557,6 +564,34 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
           <div>
             <FieldLabel help={HELP.tenantMoveIn}>Move-in date (BS)</FieldLabel>
             <Input placeholder="2081-04-15" value={moveIn} onChange={(e) => setMoveIn(e.target.value)} />
+          </div>
+
+          {/* Base rent & default water */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel help="Default rent amount pre-filled on every new bill for this tenant.">
+                Base rent (NPR)
+              </FieldLabel>
+              <Input
+                type="number"
+                min="0"
+                placeholder="e.g. 8000"
+                value={baseRent}
+                onChange={(e) => setBaseRent(e.target.value)}
+              />
+            </div>
+            <div>
+              <FieldLabel help="Default water charge pre-filled on every new bill for this tenant.">
+                Default water (NPR)
+              </FieldLabel>
+              <Input
+                type="number"
+                min="0"
+                placeholder="e.g. 300"
+                value={defaultWater}
+                onChange={(e) => setDefaultWater(e.target.value)}
+              />
+            </div>
           </div>
           <div>
             <FieldLabel help={HELP.tenantNotes}>Notes</FieldLabel>

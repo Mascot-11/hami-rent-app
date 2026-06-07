@@ -53,6 +53,15 @@ function NewBillPage() {
     enabled: !!tenantId,
   });
 
+  // Auto-fill rent and water from tenant defaults when tenant is selected
+  useEffect(() => {
+    if (!tenantId) return;
+    const tenant = (tenants as any[]).find((t) => t.id === tenantId);
+    if (!tenant) return;
+    if (tenant.base_rent != null) setRent(String(tenant.base_rent));
+    if (tenant.default_water_bill != null) setWater(String(tenant.default_water_bill));
+  }, [tenantId]);
+
   const priorSummary = useMemo(() => {
     let debit = 0;
     let credit = 0;
@@ -165,10 +174,24 @@ function NewBillPage() {
           <BSMonthPicker year={year} month={month} onChange={(y, m) => { setYear(y); setMonth(m); }} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div><FieldLabel help={HELP.rent} required>Rent (NPR)</FieldLabel>
-            <Input type="number" min="0" value={rent} onChange={(e) => setRent(e.target.value)} /></div>
-          <div><FieldLabel help={HELP.water}>Water (NPR)</FieldLabel>
-            <Input type="number" min="0" value={water} onChange={(e) => setWater(e.target.value)} /></div>
+          <div>
+            <FieldLabel help={HELP.rent} required>Rent (NPR)</FieldLabel>
+            <Input type="number" min="0" value={rent} onChange={(e) => setRent(e.target.value)} />
+            {tenantId && (tenants as any[]).find((t: any) => t.id === tenantId)?.base_rent != null && (
+              <p className="text-xs text-primary mt-1">
+                ✓ Pre-filled from tenant's base rent
+              </p>
+            )}
+          </div>
+          <div>
+            <FieldLabel help={HELP.water}>Water (NPR)</FieldLabel>
+            <Input type="number" min="0" value={water} onChange={(e) => setWater(e.target.value)} />
+            {tenantId && (tenants as any[]).find((t: any) => t.id === tenantId)?.default_water_bill != null && (
+              <p className="text-xs text-primary mt-1">
+                ✓ Pre-filled from tenant's default water
+              </p>
+            )}
+          </div>
         </div>
       </Card>
 
