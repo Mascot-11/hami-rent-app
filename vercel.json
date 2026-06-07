@@ -2,20 +2,7 @@
   "buildCommand": "npm run build:vercel",
   "installCommand": "npm install",
   "outputDirectory": "dist/client",
-  "functions": {
-    "api/index.js": {
-      "runtime": "nodejs20.x",
-      "maxDuration": 30
-    }
-  },
   "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1",
-      "headers": {
-        "cache-control": "public, immutable, max-age=31536000"
-      }
-    },
     {
       "src": "/(.*)",
       "dest": "/api/index.js"
