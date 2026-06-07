@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useMemo } from "react";
@@ -56,6 +56,7 @@ function BillsPage() {
   const billsFn = useServerFn(listBills);
   const tenantsFn = useServerFn(listTenants);
   const cur = approxCurrentBS();
+  const navigate = useNavigate();
 
   // Filters
   const [filterYear, setFilterYear] = useState<number | "all">("all");
@@ -397,7 +398,7 @@ function BillsPage() {
                       <tr
                         key={bill.id}
                         className="border-b last:border-0 hover:bg-muted/30 transition-colors group cursor-pointer"
-                        onClick={() => window.location.href = `/bills/${bill.id}`}
+                        onClick={() => navigate({ to: "/bills/$billId", params: { billId: bill.id } })}
                       >
                         <td className="px-4 py-3">
                           <div className="font-medium text-foreground">{bill.tenants?.name ?? "—"}</div>
