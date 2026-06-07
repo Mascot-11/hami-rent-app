@@ -1,7 +1,6 @@
 export default async (req, res) => {
   try {
-    // TanStack Start with preset=node outputs to dist/server/index.mjs
-    const { default: workerHandler } = await import('../dist/server/index.mjs');
+    const { default: workerHandler } = await import('../dist/server/server.js');
 
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
 
