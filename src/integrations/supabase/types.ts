@@ -164,6 +164,7 @@ export type Database = {
       tenants: {
         Row: {
           created_at: string
+          documents: Json
           id: string
           is_active: boolean
           move_in_date_bs: string | null
@@ -171,10 +172,12 @@ export type Database = {
           notes: string | null
           owner_id: string
           phone: string | null
+          photo_url: string | null
           room_number: string | null
         }
         Insert: {
           created_at?: string
+          documents?: Json
           id?: string
           is_active?: boolean
           move_in_date_bs?: string | null
@@ -182,10 +185,12 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           phone?: string | null
+          photo_url?: string | null
           room_number?: string | null
         }
         Update: {
           created_at?: string
+          documents?: Json
           id?: string
           is_active?: boolean
           move_in_date_bs?: string | null
@@ -193,6 +198,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           phone?: string | null
+          photo_url?: string | null
           room_number?: string | null
         }
         Relationships: []
