@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import logo from "@/assets/hamro-rent-logo.jpeg";
 
-export const Route = createFileRoute("/")(({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Hamro Rent — Rent Management for Nepali Landlords" },
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")(({
     ],
   }),
   component: LandingPage,
-} as any));
+});
 
 // ─── Demo Data & Storage ──────────────────────────────────────────────────────
 
