@@ -45,7 +45,7 @@ import {
 } from "@/lib/calc";
 
 export const Route = createFileRoute("/_authenticated/tenants")({
-  head: () => ({ meta: [{ title: "Tenants — Rent Manager" }] }),
+  head: () => ({ meta: [{ title: "Tenants — Hamro Rent" }, { name: "robots", content: "noindex" }] }),
   component: TenantsPage,
 });
 

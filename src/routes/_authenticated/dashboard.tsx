@@ -14,7 +14,7 @@ import { useState } from "react";
 import { BSMonthPicker } from "@/components/BSMonthPicker";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Rent Manager" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Hamro Rent" }, { name: "robots", content: "noindex" }] }),
   component: Dashboard,
 });
 
@@ -35,7 +35,14 @@ function Dashboard() {
   const [filterTenant, setFilterTenant] = useState("");
   const [filterRoom, setFilterRoom] = useState("");
 
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
+  if (isLoading) return (
+    <div className="space-y-4">
+      <div className="h-9 w-48 bg-muted animate-pulse rounded-lg" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {[...Array(5)].map((_, i) => <div key={i} className="h-24 bg-muted animate-pulse rounded-xl" />)}
+      </div>
+    </div>
+  );
 
   const tenants = data?.tenants ?? [];
   const bills = data?.bills ?? [];
@@ -113,18 +120,18 @@ function Dashboard() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">Dashboard</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold">Dashboard</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
             {isCurrentMonth ? "Current month: " : "Viewing: "}
             {bsLabel(filterYear, filterMonth)}
             {" · "}Rent advance for {bsMonthName(rentForMonth.month)} {rentForMonth.year}
           </p>
         </div>
-        <Link to="/bills/new" className="self-start">
-          <Button className="w-full sm:w-auto">
-            <Plus className="h-4 w-4 mr-1.5" />
+        <Link to="/bills/new" className="self-start sm:self-auto flex-shrink-0">
+          <Button className="rounded-full px-5 h-9 text-sm gap-1.5 shadow-sm">
+            <Plus className="h-3.5 w-3.5" />
             New bill
           </Button>
         </Link>
@@ -634,18 +641,18 @@ function Stat({
   help: string;
 }) {
   return (
-    <Card className="p-2 sm:p-3 lg:p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-0.5 text-xs text-muted-foreground uppercase tracking-wide">
-          <span className="line-clamp-2">{label}</span>
+    <Card className="p-3 sm:p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-0.5">
+          <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide font-semibold line-clamp-1">{label}</span>
           <HelpTip text={help} label={label} />
         </div>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
+        {icon && <div className="text-muted-foreground opacity-60">{icon}</div>}
       </div>
-      <div className="text-lg sm:text-xl lg:text-2xl font-display mt-1.5 line-clamp-2">
+      <div className="text-lg sm:text-xl lg:text-2xl font-display mt-1 line-clamp-2 font-bold">
         {value}
       </div>
-      {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
+      {sub && <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">{sub}</div>}
     </Card>
   );
 }

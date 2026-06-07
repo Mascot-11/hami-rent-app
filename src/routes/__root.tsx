@@ -75,20 +75,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Hamro Rent — Landlord's Auto Calculator" },
-      { name: "description", content: "Track tenants, bills and payments in Bikram Sambat with automatic calculations." },
-      { name: "author", content: "Hamro Rent" },
-      { property: "og:title", content: "Hamro Rent — Landlord's Auto Calculator" },
-      { property: "og:description", content: "Track tenants, bills and payments in Bikram Sambat with automatic calculations." },
+      { title: "Hamro Rent — Rent Management for Nepali Landlords" },
+      { name: "description", content: "Track tenants, electricity, water, and monthly bills in Bikram Sambat. Automatic calculations, shareable receipts, and Excel exports — built for Nepal." },
+      { name: "keywords", content: "hamro rent, rent management nepal, bikram sambat, tenant tracking nepal, landlord software nepal, electricity bill calculator, water bill nepal" },
+      { name: "author", content: "Shreeyush Dhungana" },
+      { name: "robots", content: "index, follow" },
+      { name: "language", content: "en-NP" },
+      { name: "geo.region", content: "NP" },
+      { name: "geo.country", content: "Nepal" },
+      { property: "og:title", content: "Hamro Rent — Rent Management for Nepali Landlords" },
+      { property: "og:description", content: "Automatic monthly bills, BS calendar, tenant tracking, and shareable receipts. Free for Nepali landlords." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { property: "og:site_name", content: "Hamro Rent" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Hamro Rent — Rent Management for Nepali Landlords" },
+      { name: "twitter:description", content: "Automatic monthly bills, BS calendar, tenant tracking, and shareable receipts." },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" },
       { rel: "stylesheet", href: appCss },
+      { rel: "canonical", href: "https://hamrorent.app" },
     ],
   }),
   shellComponent: RootShell,
@@ -99,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en-NP">
       <head>
         <HeadContent />
       </head>

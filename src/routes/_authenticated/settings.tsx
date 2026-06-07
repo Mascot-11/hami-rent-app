@@ -10,7 +10,7 @@ import { Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings — Rent Manager" }] }),
+  head: () => ({ meta: [{ title: "Settings — Hamro Rent" }, { name: "robots", content: "noindex" }] }),
   component: SettingsPage,
 });
 
