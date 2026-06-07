@@ -428,7 +428,7 @@ function BillPage() {
             size="sm"
             onClick={async () => {
               try {
-                const token = bill.share_token;
+                const token = bill.share_token ?? bill.shareToken ?? bill.token;
                 if (!token) { toast.error("Share token not found"); return; }
                 const url = `${window.location.origin}/share/${token}`;
                 if (navigator.share && isMobile) {
@@ -458,7 +458,7 @@ function BillPage() {
             variant="outline"
             size="sm"
             onClick={() => {
-              const token = bill.share_token;
+              const token = bill.share_token ?? bill.shareToken ?? bill.token;
               if (!token) { toast.error("Share token not found"); return; }
               const url = `${window.location.origin}/share/${token}`;
               const phone = bill.tenants?.phone?.replace(/\D/g, "");

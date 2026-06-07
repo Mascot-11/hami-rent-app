@@ -15,13 +15,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedTenantsTenantIdRouteImport } from './routes/_authenticated/tenants.$tenantId'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills.$billId'
-import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated/bills'
 import { Route as ApiPublicBillTokenRouteImport } from './routes/api/public/bill.$token'
 
 const LoginRoute = LoginRouteImport.update({
@@ -53,11 +51,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedExportRoute = AuthenticatedExportRouteImport.update({
   id: '/export',
   path: '/export',
@@ -79,11 +72,6 @@ const AuthenticatedBillsNewRoute = AuthenticatedBillsNewRouteImport.update({
   path: '/bills/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedBillsRoute = AuthenticatedBillsRouteImport.update({
-  id: '/bills',
-  path: '/bills',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedBillsBillIdRoute =
   AuthenticatedBillsBillIdRouteImport.update({
     id: '/bills/$billId',
@@ -102,12 +90,10 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
   '/settings': typeof AuthenticatedSettingsRoute
-    '/profile': typeof AuthenticatedProfileRoute
   '/tenants': typeof AuthenticatedTenantsRouteWithChildren
   '/share/$token': typeof ShareTokenRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
-    '/bills': typeof AuthenticatedBillsRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
 }
@@ -117,12 +103,10 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
   '/settings': typeof AuthenticatedSettingsRoute
-    '/profile': typeof AuthenticatedProfileRoute
   '/tenants': typeof AuthenticatedTenantsRouteWithChildren
   '/share/$token': typeof ShareTokenRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
-    '/bills': typeof AuthenticatedBillsRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
 }
@@ -134,12 +118,10 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/export': typeof AuthenticatedExportRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-    '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRouteWithChildren
   '/share/$token': typeof ShareTokenRoute
   '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills/new': typeof AuthenticatedBillsNewRoute
-    '/_authenticated/bills': typeof AuthenticatedBillsRoute
   '/_authenticated/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
 }
@@ -298,22 +280,18 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExportRoute: typeof AuthenticatedExportRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRouteWithChildren
   AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
-  AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExportRoute: AuthenticatedExportRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRouteWithChildren,
   AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
-  AuthenticatedBillsRoute: AuthenticatedBillsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

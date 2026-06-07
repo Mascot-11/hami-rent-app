@@ -1,9 +1,7 @@
 {
-  
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/client",
   "installCommand": "npm install",
-
+  "outputDirectory": "dist/client",
   "routes": [
     {
       "src": "/assets/(.*)",

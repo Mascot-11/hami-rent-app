@@ -34,8 +34,6 @@ const TenantInput = z.object({
   is_active: z.boolean().optional(),
   photo_url: z.string().nullable().optional(),
   documents: z.array(z.object({ name: z.string(), url: z.string() })).optional(),
-  base_rent: z.number().min(0).nullable().optional(),
-  default_water_bill: z.number().min(0).nullable().optional(),
 });
 
 export const upsertTenant = createServerFn({ method: "POST" })
@@ -51,8 +49,6 @@ export const upsertTenant = createServerFn({ method: "POST" })
       notes: data.notes || null,
       photo_url: data.photo_url || null,
       documents: data.documents ?? [],
-      base_rent: data.base_rent ?? null,
-      default_water_bill: data.default_water_bill ?? null,
     };
     if (data.id) {
       const { error } = await context.supabase

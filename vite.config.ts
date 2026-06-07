@@ -6,17 +6,10 @@
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-// When SERVER_PRESET=node (set by build:vercel), target Node.js for Vercel deployment.
-// Otherwise default to Cloudflare Workers (used by Lovable's publish flow).
-const serverPreset = process.env.SERVER_PRESET ?? "cloudflare-workers";
-
 // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
 // @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
 export default defineConfig({
   tanstackStart: {
-    server: {
-      entry: "server",
-      preset: serverPreset,
-    },
+    server: { entry: "server" },
   },
 });
