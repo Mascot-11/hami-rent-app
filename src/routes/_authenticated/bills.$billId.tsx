@@ -292,10 +292,21 @@ function BillPage() {
   const payFn    = useServerFn(recordPayment);
   const delPayFn = useServerFn(deletePayment);
 
-  const { data: bill, isLoading } = useQuery({
+  const { data: bill, isLoading, error } = useQuery({
     queryKey: ["bill", billId],
     queryFn: () => fn({ data: { id: billId } }),
   });
+  
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 font-medium">Error loading bill</p>
+          <p className="text-sm text-muted-foreground mt-1">{error?.message || "Unknown error"}</p>
+        </div>
+      </div>
+    );
+  }
 
   const [date,   setDate]   = useState("");
   const [amount, setAmount] = useState("");
@@ -347,7 +358,7 @@ function BillPage() {
     }
   }, [bill]);
 
-  if (isLoading || !bill) return <p className="text-muted-foreground">Loading…</p>;
+  if (isLoading || !bill) return <div className="flex items-center justify-center min-h-screen"><p className="text-muted-foreground">Loading bill…</p></div>;
 
   const charges   = bill.additional_charges ?? [];
   const payments  = bill.payments ?? [];
