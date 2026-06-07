@@ -32,10 +32,10 @@ export interface PWAState {
 }
 
 export function usePWA(): PWAState {
-  // Use safe SSR defaults — window/navigator are not available on the server
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true
-  );
+  // Start with true (safe SSR default). A useEffect below immediately
+  // re-reads navigator.onLine on the client so the value is always correct
+  // after hydration — the online/offline events only fire on *changes*.
+  const [isOnline, setIsOnline] = useState(true);
   const [swReady, setSwReady] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
   const [pendingSync, setPendingSync] = useState(0);
@@ -66,6 +66,11 @@ export function usePWA(): PWAState {
         });
       })
       .catch((err) => console.error("[pwa] SW registration failed", err));
+  }, []);
+
+  // ── Sync actual online state on mount (events only fire on *changes*) ──────
+  useEffect(() => {
+    setIsOnline(navigator.onLine);
   }, []);
 
   // ── Online / offline events ────────────────────────────────────────────────
