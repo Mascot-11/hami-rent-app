@@ -4,7 +4,7 @@
  * Background Sync: replays offline mutations when connectivity returns.
  */
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `hamro-rent-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `hamro-rent-runtime-${CACHE_VERSION}`;
 
@@ -52,18 +52,21 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   if (url.origin !== self.location.origin) return;
 
-  // HTML navigation → Network-First, fallback to /offline.html
+  // HTML navigation → Network-First, fallback to cached page, then /offline.html
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((res) => {
+          if (!res.ok) return res;
           const clone = res.clone();
           caches.open(RUNTIME_CACHE).then((c) => c.put(request, clone));
           return res;
         })
         .catch(async () => {
           const cached = await caches.match(request);
-          return cached ?? (await caches.match("/offline.html"));
+          if (cached) return cached;
+          const offline = await caches.match("/offline.html");
+          return offline ?? new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } });
         })
     );
     return;
@@ -83,6 +86,7 @@ self.addEventListener("fetch", (event) => {
         (cached) =>
           cached ??
           fetch(request).then((res) => {
+            if (!res.ok) return res;
             const clone = res.clone();
             caches.open(STATIC_CACHE).then((c) => c.put(request, clone));
             return res;
@@ -92,15 +96,23 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else → Network-First with runtime cache fallback
+  // Everything else (server functions, API calls) → Network-First with runtime cache fallback
+  // IMPORTANT: must always resolve to a valid Response, never undefined
   event.respondWith(
     fetch(request)
       .then((res) => {
+        if (!res.ok) return res;
         const clone = res.clone();
         caches.open(RUNTIME_CACHE).then((c) => c.put(request, clone));
         return res;
       })
-      .catch(() => caches.match(request))
+      .catch(async () => {
+        const cached = await caches.match(request);
+        return cached ?? new Response(JSON.stringify({ error: "Network unavailable" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        });
+      })
   );
 });
 
