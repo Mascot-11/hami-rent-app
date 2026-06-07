@@ -4,7 +4,7 @@
  * Background Sync: replays offline mutations when connectivity returns.
  */
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const STATIC_CACHE = `hamro-rent-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `hamro-rent-runtime-${CACHE_VERSION}`;
 
@@ -48,9 +48,15 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET, chrome-extension, supabase API calls (they need network)
+  // Skip non-GET
   if (request.method !== "GET") return;
+  // Skip cross-origin requests
   if (url.origin !== self.location.origin) return;
+  // Skip TanStack server function RPC calls — these must always hit the network
+  // They POST/GET to /_serverFn/<functionId> and must never be cached or intercepted
+  if (url.pathname.startsWith("/_serverFn/")) return;
+  // Skip Supabase and other external API calls
+  if (url.hostname.includes("supabase.co")) return;
 
   // HTML navigation → Network-First, fallback to cached page, then /offline.html
   if (request.mode === "navigate") {
@@ -96,8 +102,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else (server functions, API calls) → Network-First with runtime cache fallback
-  // IMPORTANT: must always resolve to a valid Response, never undefined
+  // Everything else → Network-First with runtime cache fallback
+  // Must always resolve to a valid Response, never undefined
   event.respondWith(
     fetch(request)
       .then((res) => {
