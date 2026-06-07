@@ -396,7 +396,8 @@ function BillsPage() {
                     return (
                       <tr
                         key={bill.id}
-                        className="border-b last:border-0 hover:bg-muted/30 transition-colors group"
+                        className="border-b last:border-0 hover:bg-muted/30 transition-colors group cursor-pointer"
+                        onClick={() => window.location.href = `/bills/${bill.id}`}
                       >
                         <td className="px-4 py-3">
                           <div className="font-medium text-foreground">{bill.tenants?.name ?? "—"}</div>
@@ -440,7 +441,8 @@ function BillsPage() {
                           <Link
                             to="/bills/$billId"
                             params={{ billId: bill.id }}
-                            className="inline-flex items-center gap-1 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity font-medium"
+                            className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             View <ChevronRight className="h-3.5 w-3.5" />
                           </Link>

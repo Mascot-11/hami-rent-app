@@ -17,6 +17,7 @@ import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedExportRouteImport } from './routes/_authenticated/export'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated/bills'
 import { Route as AuthenticatedTenantsTenantIdRouteImport } from './routes/_authenticated/tenants.$tenantId'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills.$billId'
@@ -61,6 +62,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBillsRoute = AuthenticatedBillsRouteImport.update({
+  id: '/bills',
+  path: '/bills',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedTenantsTenantIdRoute =
   AuthenticatedTenantsTenantIdRouteImport.update({
     id: '/$tenantId',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/bills': typeof AuthenticatedBillsRoute
   '/export': typeof AuthenticatedExportRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tenants': typeof AuthenticatedTenantsRouteWithChildren
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/bills': typeof AuthenticatedBillsRoute
   '/export': typeof AuthenticatedExportRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tenants': typeof AuthenticatedTenantsRouteWithChildren
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/bills': typeof AuthenticatedBillsRoute
   '/_authenticated/export': typeof AuthenticatedExportRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRouteWithChildren
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/bills'
     | '/export'
     | '/settings'
     | '/tenants'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/bills'
     | '/export'
     | '/settings'
     | '/tenants'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/dashboard'
+    | '/_authenticated/bills'
     | '/_authenticated/export'
     | '/_authenticated/settings'
     | '/_authenticated/tenants'
@@ -234,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/bills': {
+      id: '/_authenticated/bills'
+      path: '/bills'
+      fullPath: '/bills'
+      preLoaderRoute: typeof AuthenticatedBillsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/tenants/$tenantId': {
       id: '/_authenticated/tenants/$tenantId'
       path: '/$tenantId'
@@ -278,6 +297,7 @@ const AuthenticatedTenantsRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
   AuthenticatedExportRoute: typeof AuthenticatedExportRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRouteWithChildren
@@ -287,6 +307,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedBillsRoute: AuthenticatedBillsRoute,
   AuthenticatedExportRoute: AuthenticatedExportRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRouteWithChildren,

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Download, Settings, LogOut,
-  Plus, Menu, X, Home,
+  Plus, Menu, X, Home, Receipt,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/hamro-rent-logo.jpeg";
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/_authenticated")({
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/tenants", label: "Tenants", icon: Users },
+  { to: "/bills", label: "Bills", icon: Receipt },
   { to: "/bills/new", label: "New Bill", icon: Plus },
   { to: "/export", label: "Export", icon: Download },
   { to: "/settings", label: "Settings", icon: Settings },
