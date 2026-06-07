@@ -5,8 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Rent Management — warm landlord-friendly palette.
- * Sand/cream base, deep terracotta accent, slate ink.
+ * Hamro Rent — Market-ready palette.
+ * Pure white surfaces, deep ink black, signal orange accent.
+ * Typography: Libre Baskerville (display) + IBM Plex Sans (body).
  */
 
 @theme inline {
@@ -58,106 +59,105 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Libre Baskerville", ui-serif, Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.625rem;
 
-  /* Warm sand background, deep slate ink */
-  --background: oklch(0.985 0.012 75);
-  --foreground: oklch(0.22 0.025 50);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.16 0 0);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.025 50);
+  --card-foreground: oklch(0.16 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.025 50);
+  --popover-foreground: oklch(0.16 0 0);
 
-  /* Deep terracotta */
-  --primary: oklch(0.52 0.15 35);
-  --primary-foreground: oklch(0.985 0.012 75);
+  /* Signal orange */
+  --primary: oklch(0.68 0.19 45);
+  --primary-foreground: oklch(1 0 0);
 
-  --secondary: oklch(0.94 0.022 70);
-  --secondary-foreground: oklch(0.28 0.025 50);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.16 0 0);
 
-  --muted: oklch(0.95 0.015 70);
-  --muted-foreground: oklch(0.5 0.02 55);
+  --muted: oklch(0.965 0 0);
+  --muted-foreground: oklch(0.45 0 0);
 
-  --accent: oklch(0.92 0.04 60);
-  --accent-foreground: oklch(0.28 0.025 50);
+  --accent: oklch(0.96 0.03 55);
+  --accent-foreground: oklch(0.16 0 0);
 
-  --destructive: oklch(0.55 0.22 27);
-  --destructive-foreground: oklch(0.985 0.012 75);
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
 
-  --success: oklch(0.55 0.13 145);
-  --success-foreground: oklch(0.985 0.012 75);
+  --success: oklch(0.58 0.13 145);
+  --success-foreground: oklch(1 0 0);
 
-  --warning: oklch(0.72 0.16 75);
-  --warning-foreground: oklch(0.22 0.025 50);
+  --warning: oklch(0.78 0.16 75);
+  --warning-foreground: oklch(0.16 0 0);
 
   --info: oklch(0.55 0.12 235);
-  --info-foreground: oklch(0.985 0.012 75);
+  --info-foreground: oklch(1 0 0);
 
-  --border: oklch(0.9 0.015 70);
-  --input: oklch(0.9 0.015 70);
-  --ring: oklch(0.52 0.15 35);
+  --border: oklch(0.91 0 0);
+  --input: oklch(0.91 0 0);
+  --ring: oklch(0.68 0.19 45);
 
-  --chart-1: oklch(0.52 0.15 35);
-  --chart-2: oklch(0.55 0.13 145);
-  --chart-3: oklch(0.72 0.16 75);
+  --chart-1: oklch(0.68 0.19 45);
+  --chart-2: oklch(0.58 0.13 145);
+  --chart-3: oklch(0.16 0 0);
   --chart-4: oklch(0.55 0.12 235);
-  --chart-5: oklch(0.5 0.02 55);
+  --chart-5: oklch(0.5 0 0);
 
-  --sidebar: oklch(0.97 0.015 70);
-  --sidebar-foreground: oklch(0.28 0.025 50);
-  --sidebar-primary: oklch(0.52 0.15 35);
-  --sidebar-primary-foreground: oklch(0.985 0.012 75);
-  --sidebar-accent: oklch(0.92 0.04 60);
-  --sidebar-accent-foreground: oklch(0.28 0.025 50);
-  --sidebar-border: oklch(0.9 0.015 70);
-  --sidebar-ring: oklch(0.52 0.15 35);
+  --sidebar: oklch(0.99 0 0);
+  --sidebar-foreground: oklch(0.16 0 0);
+  --sidebar-primary: oklch(0.16 0 0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0.03 55);
+  --sidebar-accent-foreground: oklch(0.16 0 0);
+  --sidebar-border: oklch(0.91 0 0);
+  --sidebar-ring: oklch(0.68 0.19 45);
 }
 
 .dark {
-  --background: oklch(0.18 0.02 50);
-  --foreground: oklch(0.95 0.01 70);
-  --card: oklch(0.22 0.025 50);
-  --card-foreground: oklch(0.95 0.01 70);
-  --popover: oklch(0.22 0.025 50);
-  --popover-foreground: oklch(0.95 0.01 70);
-  --primary: oklch(0.65 0.16 35);
-  --primary-foreground: oklch(0.18 0.02 50);
-  --secondary: oklch(0.28 0.025 50);
-  --secondary-foreground: oklch(0.95 0.01 70);
-  --muted: oklch(0.28 0.025 50);
-  --muted-foreground: oklch(0.7 0.02 65);
-  --accent: oklch(0.32 0.04 50);
-  --accent-foreground: oklch(0.95 0.01 70);
+  --background: oklch(0.13 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.17 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.17 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.72 0.19 45);
+  --primary-foreground: oklch(0.13 0 0);
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.28 0.04 55);
+  --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.65 0.2 27);
-  --destructive-foreground: oklch(0.95 0.01 70);
+  --destructive-foreground: oklch(0.98 0 0);
   --success: oklch(0.65 0.14 145);
-  --success-foreground: oklch(0.18 0.02 50);
+  --success-foreground: oklch(0.13 0 0);
   --warning: oklch(0.78 0.16 75);
-  --warning-foreground: oklch(0.18 0.02 50);
+  --warning-foreground: oklch(0.13 0 0);
   --info: oklch(0.65 0.14 235);
-  --info-foreground: oklch(0.18 0.02 50);
+  --info-foreground: oklch(0.13 0 0);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.16 35);
-  --chart-1: oklch(0.65 0.16 35);
+  --ring: oklch(0.72 0.19 45);
+  --chart-1: oklch(0.72 0.19 45);
   --chart-2: oklch(0.65 0.14 145);
-  --chart-3: oklch(0.78 0.16 75);
+  --chart-3: oklch(0.98 0 0);
   --chart-4: oklch(0.65 0.14 235);
-  --chart-5: oklch(0.7 0.02 65);
-  --sidebar: oklch(0.2 0.02 50);
-  --sidebar-foreground: oklch(0.95 0.01 70);
-  --sidebar-primary: oklch(0.65 0.16 35);
-  --sidebar-primary-foreground: oklch(0.18 0.02 50);
-  --sidebar-accent: oklch(0.28 0.025 50);
-  --sidebar-accent-foreground: oklch(0.95 0.01 70);
+  --chart-5: oklch(0.7 0 0);
+  --sidebar: oklch(0.16 0 0);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.72 0.19 45);
+  --sidebar-primary-foreground: oklch(0.13 0 0);
+  --sidebar-accent: oklch(0.28 0.04 55);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.65 0.16 35);
+  --sidebar-ring: oklch(0.72 0.19 45);
 }
 
 @layer base {
@@ -174,7 +174,7 @@
 
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 
   /* Print styles for bill PDF */
