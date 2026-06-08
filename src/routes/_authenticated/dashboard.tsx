@@ -12,6 +12,7 @@ import { computeBillTotal, computePaid, computeStatus, fmtNPR, type BillStatus }
 import { Plus, TrendingUp, TrendingDown, Minus, Users, CheckCircle2, Clock, AlertCircle, FileText } from "lucide-react";
 import { useState } from "react";
 import { BSMonthPicker } from "@/components/BSMonthPicker";
+import { WalkthroughTutorial } from "@/components/WalkthroughTutorial";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Hamro Rent" }, { name: "robots", content: "noindex" }] }),
@@ -119,6 +120,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      <WalkthroughTutorial />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
