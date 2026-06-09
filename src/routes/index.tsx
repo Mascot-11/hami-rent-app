@@ -729,23 +729,92 @@ function LandingPage() {
 
       {/* ── Footer ── */}
       <footer className="border-t bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2.5">
-              <img src={logo} alt="" className="h-7 w-7 rounded-full object-cover" />
-              <div>
-                <div className="font-display text-base font-semibold">Hamro Rent</div>
-                <div className="text-xs text-muted-foreground">Rental Management, Reinvented.</div>
+        {/* Main footer grid */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            {/* Brand */}
+            <div className="lg:col-span-1">
+              <div className="flex items-center gap-2.5 mb-4">
+                <img src={logo} alt="Hamro Rent" className="h-8 w-8 rounded-xl object-cover ring-1 ring-border" />
+                <span className="font-display text-base font-semibold">Hamro Rent</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                Nepal's rental management app — bills in Bikram Sambat, automatic calculations, and shareable receipts.
+              </p>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                All systems operational
               </div>
             </div>
-            <div className="flex flex-col items-center sm:items-end gap-1 text-sm text-muted-foreground">
-              <div>
-                Built by{" "}
-                <a href="https://www.shreeyushdhungana.com.np/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                  Shreeyush Dhungana
-                </a>
-              </div>
-              <div className="text-xs">© 2026 Hamro Rent · All rights reserved</div>
+
+            {/* Product */}
+            <div>
+              <p className="text-xs font-semibold text-foreground uppercase tracking-widest mb-4">Product</p>
+              <ul className="space-y-2.5">
+                {[
+                  { label: "Dashboard", to: "/dashboard" },
+                  { label: "Tenants", to: "/tenants" },
+                  { label: "New Bill", to: "/bills/new" },
+                  { label: "Export Data", to: "/export" },
+                  { label: "Settings", to: "/settings" },
+                ].map(({ label, to }) => (
+                  <li key={label}>
+                    <Link to={to} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Resources */}
+            <div>
+              <p className="text-xs font-semibold text-foreground uppercase tracking-widest mb-4">Resources</p>
+              <ul className="space-y-2.5">
+                {[
+                  { label: "Sign up free", to: "/login" },
+                  { label: "Sign in", to: "/login" },
+                  { label: "Live demo", action: "demo" },
+                  { label: "How it works", href: "#how" },
+                  { label: "FAQ", href: "#faq" },
+                ].map(({ label, to, action, href }) => (
+                  <li key={label}>
+                    {to ? (
+                      <Link to={to} className="text-sm text-muted-foreground hover:text-primary transition-colors">{label}</Link>
+                    ) : action ? (
+                      <button onClick={openDemo} className="text-sm text-muted-foreground hover:text-primary transition-colors">{label}</button>
+                    ) : (
+                      <a href={href} className="text-sm text-muted-foreground hover:text-primary transition-colors">{label}</a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Nepal info */}
+            <div>
+              <p className="text-xs font-semibold text-foreground uppercase tracking-widest mb-4">Made for Nepal</p>
+              <ul className="space-y-2.5 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2"><span className="text-primary mt-0.5">✓</span>Bikram Sambat calendar</li>
+                <li className="flex items-start gap-2"><span className="text-primary mt-0.5">✓</span>Electricity unit calculator</li>
+                <li className="flex items-start gap-2"><span className="text-primary mt-0.5">✓</span>eSewa &amp; Khalti tracking</li>
+                <li className="flex items-start gap-2"><span className="text-primary mt-0.5">✓</span>Nepali Rupee (रू)</li>
+                <li className="flex items-start gap-2"><span className="text-primary mt-0.5">✓</span>Works on any device</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              © {new Date().getFullYear()} Hamro Rent. All rights reserved. 🇳🇵
+            </p>
+            <div className="flex items-center gap-5 text-xs text-muted-foreground">
+              <Link to="/login" className="hover:text-primary transition-colors">Privacy</Link>
+              <Link to="/login" className="hover:text-primary transition-colors">Terms</Link>
+              <Link to="/login" className="hover:text-primary transition-colors">Contact</Link>
             </div>
           </div>
         </div>

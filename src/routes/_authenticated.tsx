@@ -138,12 +138,17 @@ function AuthLayout() {
               <Outlet />
             </div>
           </div>
-          <footer className="border-t bg-card text-center py-4 px-4 text-xs text-muted-foreground no-print">
-            Hamro Rent · Built by{" "}
-            <a href="https://www.shreeyushdhungana.com.np/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-              Shreeyush Dhungana
-            </a>
-            {" "}· © 2026
+          <footer className="border-t bg-card no-print">
+            <div className="max-w-6xl mx-auto px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Hamro Rent 🇳🇵</p>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <Link to="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
+                <Link to="/tenants" className="hover:text-primary transition-colors">Tenants</Link>
+                <Link to="/bills/new" className="hover:text-primary transition-colors">New Bill</Link>
+                <Link to="/export" className="hover:text-primary transition-colors">Export</Link>
+                <Link to="/settings" className="hover:text-primary transition-colors">Settings</Link>
+              </div>
+            </div>
           </footer>
         </main>
       </div>
