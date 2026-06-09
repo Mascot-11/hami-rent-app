@@ -3,11 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Download, Settings, LogOut,
-  Plus, Menu, X, ChevronRight, UserCircle,
+  Plus, Menu, X, ChevronRight, UserCircle, ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/hamro-rent-logo.jpeg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { checkIsAdmin } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
@@ -22,6 +25,14 @@ function AuthLayout() {
   const nav = useNavigate();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const adminFn = useServerFn(checkIsAdmin);
+  const { data: adminData } = useQuery({
+    queryKey: ["admin-check"],
+    queryFn: () => adminFn().catch(() => null),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+  const isAdmin = !!adminData?.isAdmin;
 
   const signOut = async () => {
     await supabase.auth.signOut();

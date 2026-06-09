@@ -10,9 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminTenantsRouteImport } from './routes/admin/tenants'
+import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AdminBillsRouteImport } from './routes/admin/bills'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -28,6 +34,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -41,6 +52,31 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTenantsRoute = AdminTenantsRouteImport.update({
+  id: '/tenants',
+  path: '/tenants',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBillsRoute = AdminBillsRouteImport.update({
+  id: '/bills',
+  path: '/bills',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AuthenticatedTenantsRoute = AuthenticatedTenantsRouteImport.update({
   id: '/tenants',
@@ -92,12 +128,18 @@ const ApiPublicBillTokenRoute = ApiPublicBillTokenRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
-    '/profile': typeof AuthenticatedProfileRoute
   '/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/admin/bills': typeof AdminBillsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/tenants': typeof AdminTenantsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/share/$token': typeof ShareTokenRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
@@ -106,12 +148,18 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
-    '/profile': typeof AuthenticatedProfileRoute
   '/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/admin/bills': typeof AdminBillsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/tenants': typeof AdminTenantsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/share/$token': typeof ShareTokenRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
@@ -122,12 +170,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/export': typeof AuthenticatedExportRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-    '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRouteWithChildren
+  '/admin/bills': typeof AdminBillsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/tenants': typeof AdminTenantsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/share/$token': typeof ShareTokenRoute
   '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills/new': typeof AuthenticatedBillsNewRoute
@@ -138,11 +192,18 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/login'
     | '/dashboard'
     | '/export'
+    | '/profile'
     | '/settings'
     | '/tenants'
+    | '/admin/bills'
+    | '/admin/dashboard'
+    | '/admin/payments'
+    | '/admin/tenants'
+    | '/admin/users'
     | '/share/$token'
     | '/bills/$billId'
     | '/bills/new'
@@ -151,11 +212,18 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/login'
     | '/dashboard'
     | '/export'
+    | '/profile'
     | '/settings'
     | '/tenants'
+    | '/admin/bills'
+    | '/admin/dashboard'
+    | '/admin/payments'
+    | '/admin/tenants'
+    | '/admin/users'
     | '/share/$token'
     | '/bills/$billId'
     | '/bills/new'
@@ -165,11 +233,18 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin'
     | '/login'
     | '/_authenticated/dashboard'
     | '/_authenticated/export'
+    | '/_authenticated/profile'
     | '/_authenticated/settings'
     | '/_authenticated/tenants'
+    | '/admin/bills'
+    | '/admin/dashboard'
+    | '/admin/payments'
+    | '/admin/tenants'
+    | '/admin/users'
     | '/share/$token'
     | '/_authenticated/bills/$billId'
     | '/_authenticated/bills/new'
@@ -180,6 +255,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicBillTokenRoute: typeof ApiPublicBillTokenRoute
@@ -192,6 +268,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -215,6 +298,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tenants': {
+      id: '/admin/tenants'
+      path: '/tenants'
+      fullPath: '/admin/tenants'
+      preLoaderRoute: typeof AdminTenantsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bills': {
+      id: '/admin/bills'
+      path: '/bills'
+      fullPath: '/admin/bills'
+      preLoaderRoute: typeof AdminBillsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_authenticated/tenants': {
       id: '/_authenticated/tenants'
       path: '/tenants'
@@ -227,6 +345,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/export': {
@@ -288,8 +413,8 @@ const AuthenticatedTenantsRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExportRoute: typeof AuthenticatedExportRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRouteWithChildren
   AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
@@ -298,8 +423,8 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExportRoute: AuthenticatedExportRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRouteWithChildren,
   AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
@@ -309,9 +434,28 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface AdminRouteChildren {
+  AdminBillsRoute: typeof AdminBillsRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminTenantsRoute: typeof AdminTenantsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminBillsRoute: AdminBillsRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminTenantsRoute: AdminTenantsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicBillTokenRoute: ApiPublicBillTokenRoute,

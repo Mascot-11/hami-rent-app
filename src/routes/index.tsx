@@ -7,8 +7,293 @@ import {
   Calculator, Users, FileText, Share2, Download, Shield,
   ArrowRight, Check, Calendar, Zap, Receipt, BarChart3, Menu, X,
   PlayCircle, ChevronDown, Star, Building2, TrendingUp, Clock,
+  Wifi, Home, CreditCard, Droplets, BellRing, RefreshCw,
 } from "lucide-react";
 import logo from "@/assets/hamro-rent-logo.jpeg";
+
+
+// ─── Hero Diagram Component ───────────────────────────────────────────────────
+
+function HeroDiagram() {
+  const [activeFlow, setActiveFlow] = useState<"bill" | "payment" | null>(null);
+
+  return (
+    <div className="mt-16 sm:mt-20 relative select-none" aria-hidden="true">
+      {/* Ambient glow */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-orange-300/15 rounded-full blur-3xl" />
+      </div>
+
+      {/* ── Desktop layout ── */}
+      <div className="hidden md:grid grid-cols-[1fr_auto_1fr] gap-0 items-center max-w-5xl mx-auto px-4">
+
+        {/* Left column — Tenants */}
+        <div className="space-y-3 pr-8">
+          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Users className="h-3.5 w-3.5" />
+            Tenants
+          </div>
+
+          {/* Tenant card 1 */}
+          <div
+            onMouseEnter={() => setActiveFlow("bill")}
+            onMouseLeave={() => setActiveFlow(null)}
+            className="group relative bg-white rounded-2xl border border-orange-100 shadow-lg shadow-orange-100/40 p-4 cursor-default transition-all duration-200 hover:shadow-xl hover:shadow-orange-200/50 hover:-translate-y-0.5"
+          >
+            <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-orange-400 to-amber-400" />
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                  R
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 leading-tight">Ram B. Thapa</p>
+                  <p className="text-xs text-gray-400">Room 2B</p>
+                </div>
+              </div>
+              <span className="text-[10px] bg-green-50 text-green-600 border border-green-200 rounded-full px-2 py-0.5 font-medium">Active</span>
+            </div>
+            <div className="bg-orange-50/60 rounded-xl p-2.5 text-xs text-gray-500">
+              <div className="flex justify-between mb-1">
+                <span>Base rent</span><span className="font-semibold text-gray-700">रू 10,000</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Move-in</span><span className="font-semibold text-gray-700">2081-01-15</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tenant card 2 */}
+          <div className="bg-white rounded-2xl border border-orange-100 shadow-lg shadow-orange-100/40 p-4 cursor-default transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+            <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl" />
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                S
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 leading-tight">Sita K. Shrestha</p>
+                <p className="text-xs text-gray-400">Room 3A</p>
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-2.5 text-xs text-gray-500">
+              <div className="flex justify-between mb-1">
+                <span>Base rent</span><span className="font-semibold text-gray-700">रू 8,500</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Move-in</span><span className="font-semibold text-gray-700">2081-03-01</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tenant card 3 */}
+          <div className="bg-white rounded-2xl border border-orange-100 shadow-lg shadow-orange-100/40 p-4 cursor-default transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                B
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 leading-tight">Bikash Maharjan</p>
+                <p className="text-xs text-gray-400">Room 1C</p>
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-2.5 text-xs text-gray-500">
+              <div className="flex justify-between mb-1">
+                <span>Base rent</span><span className="font-semibold text-gray-700">रू 12,000</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Move-in</span><span className="font-semibold text-gray-700">2080-09-10</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Center — Bill Sync hub */}
+        <div className="flex flex-col items-center gap-0 relative">
+          {/* Connector lines */}
+          <div className="flex items-center w-full mb-0">
+            {/* left line */}
+            <div className={`flex-1 h-px transition-all duration-300 ${activeFlow === "bill" ? "bg-orange-400" : "bg-orange-200"}`} />
+            {/* center box */}
+            <div className={`relative mx-0 rounded-2xl border-2 shadow-xl transition-all duration-300 w-52 ${activeFlow === "bill" ? "border-orange-400 shadow-orange-200/60 scale-105" : "border-orange-200 shadow-orange-100/40"} bg-white`}>
+              <div className="p-4">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-sm">
+                    <RefreshCw className={`h-4 w-4 text-white ${activeFlow === "bill" ? "animate-spin" : ""}`} style={{ animationDuration: "2s" }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">Bill Sync</p>
+                    <p className="text-[10px] text-gray-400">Auto-calculate</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-center justify-between bg-orange-50 rounded-lg px-2.5 py-1.5">
+                    <div className="flex items-center gap-1.5 text-gray-500"><Home className="h-3 w-3" /><span>Rent</span></div>
+                    <span className="font-semibold text-gray-800">रू 10,000</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-blue-50 rounded-lg px-2.5 py-1.5">
+                    <div className="flex items-center gap-1.5 text-gray-500"><Zap className="h-3 w-3" /><span>Electricity</span></div>
+                    <span className="font-semibold text-gray-800">140 × 12</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-cyan-50 rounded-lg px-2.5 py-1.5">
+                    <div className="flex items-center gap-1.5 text-gray-500"><Droplets className="h-3 w-3" /><span>Water</span></div>
+                    <span className="font-semibold text-gray-800">रू 300</span>
+                  </div>
+                  <div className="border-t pt-2 flex items-center justify-between">
+                    <span className="text-gray-500 font-medium">Total</span>
+                    <span className="font-bold text-orange-600 text-sm">रू 12,980</span>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span className="text-[10px] text-green-600 font-medium">Real-time calculation</span>
+                </div>
+              </div>
+            </div>
+            {/* right line */}
+            <div className={`flex-1 h-px transition-all duration-300 ${activeFlow === "payment" ? "bg-orange-400" : "bg-orange-200"}`} />
+          </div>
+        </div>
+
+        {/* Right column — Bills & Payments */}
+        <div className="space-y-3 pl-8">
+          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Receipt className="h-3.5 w-3.5" />
+            Bills &amp; Payments
+          </div>
+
+          {/* Monthly summary card */}
+          <div
+            onMouseEnter={() => setActiveFlow("payment")}
+            onMouseLeave={() => setActiveFlow(null)}
+            className="bg-white rounded-2xl border border-orange-100 shadow-lg shadow-orange-100/40 p-4 cursor-default transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Jestha 2082</p>
+              <span className="text-xs bg-orange-50 text-orange-600 border border-orange-200 rounded-full px-2 py-0.5 font-medium">3 billed</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="bg-green-50 rounded-xl p-2.5 text-center">
+                <p className="text-lg font-bold text-green-600">रू 82,150</p>
+                <p className="text-[10px] text-green-500 font-medium">Collected</p>
+              </div>
+              <div className="bg-red-50 rounded-xl p-2.5 text-center">
+                <p className="text-lg font-bold text-red-500">रू 16,250</p>
+                <p className="text-[10px] text-red-400 font-medium">Outstanding</p>
+              </div>
+            </div>
+            <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+              <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-amber-400" style={{ width: "83%" }} />
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1 text-right">83% collected</p>
+          </div>
+
+          {/* Payment notification card */}
+          <div className="bg-white rounded-2xl border border-orange-100 shadow-lg shadow-orange-100/40 p-3.5 cursor-default transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <CreditCard className="h-4 w-4 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-gray-900">Payment received</p>
+                <p className="text-xs text-gray-400 truncate">Sita K. Shrestha · eSewa</p>
+              </div>
+              <p className="text-sm font-bold text-green-600 flex-shrink-0">+रू 8,500</p>
+            </div>
+          </div>
+
+          {/* Share bill card */}
+          <div className="bg-white rounded-2xl border border-orange-100 shadow-lg shadow-orange-100/40 p-3.5 cursor-default transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Share2 className="h-4 w-4 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-gray-900">Bill link sent</p>
+                <p className="text-xs text-gray-400">hamrorent.app/bill/a3f…</p>
+              </div>
+              <BellRing className="h-4 w-4 text-violet-400 flex-shrink-0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Mobile layout — simplified single column ── */}
+      <div className="md:hidden max-w-sm mx-auto px-4 space-y-3">
+        {/* Hub card */}
+        <div className="bg-white rounded-2xl border-2 border-orange-300 shadow-xl shadow-orange-100/60 p-4">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-sm">
+              <RefreshCw className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-900">Auto Bill Calculation</p>
+              <p className="text-[10px] text-gray-400">Rent + electricity + water</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-xs text-center">
+            <div className="bg-orange-50 rounded-lg p-2">
+              <Home className="h-4 w-4 text-orange-500 mx-auto mb-1" />
+              <p className="font-semibold text-gray-700">Rent</p>
+            </div>
+            <div className="bg-blue-50 rounded-lg p-2">
+              <Zap className="h-4 w-4 text-blue-500 mx-auto mb-1" />
+              <p className="font-semibold text-gray-700">Electricity</p>
+            </div>
+            <div className="bg-cyan-50 rounded-lg p-2">
+              <Droplets className="h-4 w-4 text-cyan-500 mx-auto mb-1" />
+              <p className="font-semibold text-gray-700">Water</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary card */}
+        <div className="bg-white rounded-2xl border border-orange-100 shadow-lg shadow-orange-100/40 p-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Monthly Summary — Jestha 2082</p>
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="bg-green-50 rounded-xl p-2.5 text-center">
+              <p className="text-base font-bold text-green-600">रू 82,150</p>
+              <p className="text-[10px] text-green-500">Collected</p>
+            </div>
+            <div className="bg-red-50 rounded-xl p-2.5 text-center">
+              <p className="text-base font-bold text-red-500">रू 16,250</p>
+              <p className="text-[10px] text-red-400">Outstanding</p>
+            </div>
+          </div>
+          <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-amber-400 transition-all" style={{ width: "83%" }} />
+          </div>
+          <p className="text-[10px] text-gray-400 mt-1 text-right">83% collected</p>
+        </div>
+
+        <div className="flex gap-3">
+          <div className="flex-1 bg-white rounded-2xl border border-orange-100 shadow-lg p-3">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                <CreditCard className="h-3.5 w-3.5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-900">Paid</p>
+                <p className="text-xs text-green-600 font-bold">+रू 8,500</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 bg-white rounded-2xl border border-orange-100 shadow-lg p-3">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center flex-shrink-0">
+                <Share2 className="h-3.5 w-3.5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-900">Shared</p>
+                <p className="text-xs text-violet-500">Bill link</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -255,67 +540,8 @@ function LandingPage() {
             </div>
           </div>
 
-          {/* Dashboard Preview */}
-          <div className="mt-20 relative">
-            <div className="absolute -inset-8 bg-gradient-to-b from-primary/8 via-transparent to-transparent rounded-3xl blur-3xl" />
-            <div className="relative bg-card border-2 border-border rounded-2xl overflow-hidden shadow-2xl shadow-black/10 max-w-4xl mx-auto">
-              {/* Mock App Bar */}
-              <div className="bg-card border-b px-4 sm:px-6 h-12 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-red-400" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                  <div className="h-3 w-3 rounded-full bg-green-400" />
-                </div>
-                <span className="text-xs text-muted-foreground font-mono">hamrorent.app/dashboard</span>
-                <div />
-              </div>
-              {/* Mock Stats */}
-              <div className="p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="font-display text-lg">Dashboard</div>
-                    <div className="text-xs text-muted-foreground">Jestha 2082 · Rent advance for Ashadh</div>
-                  </div>
-                  <Button size="sm" className="rounded-full text-xs h-8 px-4">+ New bill</Button>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 mb-4">
-                  {[
-                    { l: "Active tenants", v: "8", s: "2 inactive" },
-                    { l: "Paid this month", v: "5", s: "of 8 billed" },
-                    { l: "Pending / Partial", v: "2 / 1", s: "" },
-                    { l: "Collected", v: "रू 82,150", s: "83% of expected" },
-                    { l: "Outstanding", v: "रू 16,250", s: "Expected: रू 98,400" },
-                  ].map(({ l, v, s }) => (
-                    <div key={l} className="bg-muted/40 rounded-lg p-2.5 sm:p-3 border">
-                      <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide mb-1">{l}</div>
-                      <div className="font-display text-sm sm:text-base font-semibold">{v}</div>
-                      {s && <div className="text-[10px] text-muted-foreground mt-0.5">{s}</div>}
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { n: "Ram Bahadur Thapa", r: "2B", paid: "रू 0", total: "रू 14,250", status: "pending", pct: 0 },
-                    { n: "Sita Shrestha", r: "3A", paid: "रू 10,200", total: "रू 10,200", status: "paid", pct: 100 },
-                    { n: "Bikash Maharjan", r: "1C", paid: "रू 7,000", total: "रू 14,600", status: "partial", pct: 48 },
-                  ].map(({ n, r, paid, total, status, pct }) => (
-                    <div key={n} className="flex items-center justify-between p-2.5 rounded-lg border hover:bg-accent/50 transition-colors gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium truncate">{n} <span className="text-muted-foreground font-normal">· Room {r}</span></div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{paid} paid of {total}</div>
-                        <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden w-28">
-                          <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${status === "paid" ? "bg-green-100 text-green-700" : status === "partial" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
-                        {status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* ── Hero Diagram ── */}
+          <HeroDiagram />
         </div>
       </section>
 
