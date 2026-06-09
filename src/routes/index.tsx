@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { getPublicStats } from "@/lib/public-stats.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -352,6 +355,44 @@ function initDemoData() {
   return data;
 }
 
+// ─── Live Stats Band ─────────────────────────────────────────────────────────
+
+function fmtPayments(n: number) {
+  if (n >= 10_000_000) return `रू ${(n / 10_000_000).toFixed(1)} Cr`;
+  if (n >= 100_000)    return `रू ${(n / 100_000).toFixed(1)} L`;
+  if (n >= 1_000)      return `रू ${(n / 1_000).toFixed(0)}K+`;
+  return `रू ${n.toLocaleString()}`;
+}
+
+function LiveStatsBand() {
+  const fn = useServerFn(getPublicStats);
+  const { data, isLoading } = useQuery({
+    queryKey: ["public-stats"],
+    queryFn: () => fn(),
+    staleTime: 5 * 60_000,
+  });
+
+  const stats = [
+    { value: isLoading ? "…" : data && data.landlords > 0 ? `${data.landlords}+` : "Growing", label: "Landlords on Hamro Rent" },
+    { value: isLoading ? "…" : data && data.tenants > 0 ? `${data.tenants}+` : "Growing", label: "Active tenants tracked" },
+    { value: isLoading ? "…" : data && data.paymentsNPR > 0 ? fmtPayments(data.paymentsNPR) : "Growing", label: "Rent collected via platform" },
+    { value: "100%", label: "Bikram Sambat native" },
+  ];
+
+  return (
+    <section className="border-y bg-muted/30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        {stats.map(({ value, label }) => (
+          <div key={label}>
+            <div className={`font-display text-2xl sm:text-3xl text-foreground transition-all ${isLoading ? "opacity-40" : ""}`}>{value}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground mt-1">{label}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // ─── Landing Page ─────────────────────────────────────────────────────────────
 
 function LandingPage() {
@@ -464,6 +505,8 @@ function LandingPage() {
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-foreground transition-colors">How it works</a>
+            <Link to="/features" className="hover:text-foreground transition-colors">All features</Link>
+            <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
             <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
             <button onClick={openDemo} className="flex items-center gap-1.5 text-primary font-medium hover:text-primary/80 transition-colors">
               <PlayCircle className="h-4 w-4" /> Try demo
@@ -487,6 +530,8 @@ function LandingPage() {
           <div className="md:hidden border-t bg-background/95 backdrop-blur px-4 py-4 flex flex-col gap-4 text-sm">
             <a href="#features" onClick={() => setMenuOpen(false)} className="text-muted-foreground hover:text-foreground">Features</a>
             <a href="#how-it-works" onClick={() => setMenuOpen(false)} className="text-muted-foreground hover:text-foreground">How it works</a>
+            <Link to="/features" onClick={() => setMenuOpen(false)} className="text-muted-foreground hover:text-foreground">All features</Link>
+            <Link to="/about" onClick={() => setMenuOpen(false)} className="text-muted-foreground hover:text-foreground">About</Link>
             <a href="#faq" onClick={() => setMenuOpen(false)} className="text-muted-foreground hover:text-foreground">FAQ</a>
             <button onClick={() => { setMenuOpen(false); openDemo(); }} className="flex items-center gap-1.5 text-primary font-medium text-left">
               <PlayCircle className="h-4 w-4" /> Try interactive demo
@@ -545,22 +590,8 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* ── Trust band ── */}
-      <section className="border-y bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { n: "BS 2080–2090", l: "Calendar coverage" },
-            { n: "3-sheet", l: "Excel export" },
-            { n: "1-click", l: "WhatsApp sharing" },
-            { n: "100%", l: "Auto-calculated bills" },
-          ].map(({ n, l }) => (
-            <div key={l}>
-              <div className="font-display text-2xl sm:text-3xl text-foreground">{n}</div>
-              <div className="text-xs sm:text-sm text-muted-foreground mt-1">{l}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ── Trust band — live stats ── */}
+      <LiveStatsBand />
 
       {/* ── Features ── */}
       <section id="features" className="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-28">

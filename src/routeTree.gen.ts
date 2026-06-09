@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -32,6 +34,16 @@ import { Route as ApiPublicBillTokenRouteImport } from './routes/api/public/bill
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -130,6 +142,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/about': typeof AboutRoute
+  '/features': typeof FeaturesRoute
+  '/about': typeof AboutRoute
+  '/features': typeof FeaturesRoute
+  '/about': typeof AboutRoute
+  '/features': typeof FeaturesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -194,6 +212,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
+    | '/about'
+    | '/features'
     | '/dashboard'
     | '/export'
     | '/profile'
@@ -214,6 +234,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
+    | '/about'
+    | '/features'
     | '/dashboard'
     | '/export'
     | '/profile'
@@ -235,6 +257,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/admin'
     | '/login'
+    | '/about'
+    | '/features'
     | '/_authenticated/dashboard'
     | '/_authenticated/export'
     | '/_authenticated/profile'
@@ -257,6 +281,8 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
+  AboutRoute: typeof AboutRoute
+  FeaturesRoute: typeof FeaturesRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicBillTokenRoute: typeof ApiPublicBillTokenRoute
 }
@@ -268,6 +294,20 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -457,6 +497,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
+  AboutRoute: AboutRoute,
+  FeaturesRoute: FeaturesRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicBillTokenRoute: ApiPublicBillTokenRoute,
 }
