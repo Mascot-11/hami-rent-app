@@ -23,6 +23,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTenantsRouteImport } from './routes/admin/tenants'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin/subscriptions'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminRevealKeyRouteImport } from './routes/admin/reveal-key'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminBillsRouteImport } from './routes/admin/bills'
@@ -105,6 +106,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminRevealKeyRoute = AdminRevealKeyRouteImport.update({
+  id: '/reveal-key',
+  path: '/reveal-key',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/admin/bills': typeof AdminBillsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reveal-key': typeof AdminRevealKeyRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tenants': typeof AdminTenantsRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/admin/bills': typeof AdminBillsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reveal-key': typeof AdminRevealKeyRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tenants': typeof AdminTenantsRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/admin/bills': typeof AdminBillsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reveal-key': typeof AdminRevealKeyRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tenants': typeof AdminTenantsRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/admin/bills'
     | '/admin/dashboard'
     | '/admin/payments'
+    | '/admin/reveal-key'
     | '/admin/settings'
     | '/admin/subscriptions'
     | '/admin/tenants'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/admin/bills'
     | '/admin/dashboard'
     | '/admin/payments'
+    | '/admin/reveal-key'
     | '/admin/settings'
     | '/admin/subscriptions'
     | '/admin/tenants'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '/admin/bills'
     | '/admin/dashboard'
     | '/admin/payments'
+    | '/admin/reveal-key'
     | '/admin/settings'
     | '/admin/subscriptions'
     | '/admin/tenants'
@@ -448,6 +460,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reveal-key': {
+      id: '/admin/reveal-key'
+      path: '/reveal-key'
+      fullPath: '/admin/reveal-key'
+      preLoaderRoute: typeof AdminRevealKeyRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/payments': {
@@ -576,6 +595,7 @@ interface AdminRouteChildren {
   AdminBillsRoute: typeof AdminBillsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminRevealKeyRoute: typeof AdminRevealKeyRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminTenantsRoute: typeof AdminTenantsRoute
@@ -586,6 +606,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBillsRoute: AdminBillsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminRevealKeyRoute: AdminRevealKeyRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminTenantsRoute: AdminTenantsRoute,
