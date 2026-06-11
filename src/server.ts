@@ -53,15 +53,23 @@ const SECURITY_HEADERS: Record<string, string> = {
   // - frame-ancestors: none (belt + x-frame-options)
   "content-security-policy": [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'",          // unsafe-inline needed for Vite hydration script
+    // Scripts: own bundles + Google AdSense (loaded only when admin enables ads)
+    // + AssistLoop widget. 'unsafe-inline' is required for the framework's
+    // hydration bootstrap; we constrain everything else tightly below.
+    "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.googleadservices.com https://assistloop.ai",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob:",
-    `connect-src 'self' https://*.supabase.co wss://*.supabase.co`,
+    // Images: own + data/blob avatars + signed Supabase storage + ad creatives
+    "img-src 'self' data: blob: https://*.supabase.co https://*.googlesyndication.com https://*.google.com https://*.gstatic.com",
+    // Network: own API + Supabase (REST/storage/realtime) + AssistLoop + ad calls
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://assistloop.ai https://pagead2.googlesyndication.com https://*.google.com",
+    // Ad iframes need a frame allowance; we still forbid being framed ourselves
+    "frame-src https://googleads.g.doubleclick.net https://*.google.com https://*.googlesyndication.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "object-src 'none'",
+    "upgrade-insecure-requests",
   ].join("; "),
 };
 

@@ -54,9 +54,12 @@ export const Route = createFileRoute("/api/public/bill/$token")({
     handlers: {
       GET: async ({ request, params }) => {
         // ── Rate limit by IP ────────────────────────────────────────────
+        // On Vercel, x-real-ip is set by the platform and cannot be spoofed by
+        // the client; x-forwarded-for's left-most entry is client-controlled,
+        // so only use it as a last resort.
         const ip =
-          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-          request.headers.get("x-real-ip") ??
+          request.headers.get("x-real-ip")?.trim() ??
+          request.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ??
           "unknown";
 
         if (isRateLimited(ip)) {

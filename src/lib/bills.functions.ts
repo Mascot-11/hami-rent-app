@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { dbError } from "@/lib/db-error";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -92,7 +93,7 @@ export const listBills = createServerFn({ method: "GET" })
     const { data: rows, error } = await q
       .order("bs_year", { ascending: false })
       .order("bs_month", { ascending: false });
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return rows ?? [];
   });
 
@@ -123,8 +124,8 @@ export const getDashboard = createServerFn({ method: "GET" })
         .select("*, additional_charges(*), payments(*), tenants(name, room_number)")
         .eq("owner_id", context.userId),
     ]);
-    if (tRes.error) throw new Error(tRes.error.message);
-    if (bRes.error) throw new Error(bRes.error.message);
+    if (tRes.error) throw dbError(tRes.error);
+    if (bRes.error) throw dbError(bRes.error);
     return { tenants: tRes.data ?? [], bills: bRes.data ?? [] };
   });
 
@@ -174,20 +175,20 @@ export const saveBill = createServerFn({ method: "POST" })
         .update(payload)
         .eq("id", id)
         .eq("owner_id", context.userId);
-      if (error) throw new Error(error.message);
+      if (error) throw dbError(error);
       const { error: delErr } = await context.supabase
         .from("additional_charges")
         .delete()
         .eq("bill_id", id)
         .eq("owner_id", context.userId);
-      if (delErr) throw new Error(delErr.message);
+      if (delErr) throw dbError(delErr);
     } else {
       const { data: row, error } = await context.supabase
         .from("bills")
         .insert(payload)
         .select("id")
         .single();
-      if (error) throw new Error(error.message);
+      if (error) throw dbError(error);
       billId = row.id;
     }
 
@@ -201,7 +202,7 @@ export const saveBill = createServerFn({ method: "POST" })
       const { error: insErr } = await context.supabase
         .from("additional_charges")
         .insert(rows);
-      if (insErr) throw new Error(insErr.message);
+      if (insErr) throw dbError(insErr);
     }
 
     return { id: billId! };
@@ -221,7 +222,7 @@ export const deleteBill = createServerFn({ method: "POST" })
       .delete()
       .eq("id", data.id)
       .eq("owner_id", context.userId);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -236,7 +237,7 @@ export const recordPayment = createServerFn({ method: "POST" })
       owner_id: context.userId,
       note: data.note || null,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -254,7 +255,7 @@ export const deletePayment = createServerFn({ method: "POST" })
       .delete()
       .eq("id", data.id)
       .eq("owner_id", context.userId);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 

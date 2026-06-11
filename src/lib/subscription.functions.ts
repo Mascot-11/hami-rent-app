@@ -10,6 +10,7 @@
  * - No write paths here. All writes are super-admin server functions.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { dbError } from "@/lib/db-error";
 import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -59,7 +60,7 @@ export const getMySubscriptionPayments = createServerFn({ method: "GET" })
       .eq("user_id", context.userId)
       .order("paid_at", { ascending: false })
       .limit(50);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return data ?? [];
   });
 

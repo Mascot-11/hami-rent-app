@@ -4,6 +4,7 @@
  * They use the service-role Supabase client so RLS is bypassed.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { dbError } from "@/lib/db-error";
 import { z } from "zod";
 import { requireAdmin } from "@/integrations/supabase/admin-middleware";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -17,7 +18,7 @@ export const adminListUsers = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase.auth.admin.listUsers({
       perPage: 1000,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
 
     // Fetch admin_roles to mark which users are admins
     const { data: roles } = await context.supabase
@@ -43,7 +44,7 @@ export const adminGrantAdmin = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("admin_roles")
       .insert({ user_id: data.user_id, granted_by: context.userId });
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -60,7 +61,7 @@ export const adminRevokeAdmin = createServerFn({ method: "POST" })
       .from("admin_roles")
       .delete()
       .eq("user_id", data.user_id);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -75,7 +76,7 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
     const { error } = await context.supabase.auth.admin.deleteUser(
       data.user_id,
     );
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -94,7 +95,7 @@ export const adminListTenants = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false }),
       context.supabase.auth.admin.listUsers({ perPage: 1000 }),
     ]);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
 
     const emailById = new Map(
       (usersRes.data?.users ?? []).map((u) => [u.id, u.email ?? ""]),
@@ -115,7 +116,7 @@ export const adminDeleteTenant = createServerFn({ method: "POST" })
       .from("tenants")
       .delete()
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -138,7 +139,7 @@ export const adminUpdateTenant = createServerFn({ method: "POST" })
       .from("tenants")
       .update(rest)
       .eq("id", id);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -154,7 +155,7 @@ export const adminListBills = createServerFn({ method: "GET" })
       )
       .order("bs_year", { ascending: false })
       .order("bs_month", { ascending: false });
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return data ?? [];
   });
 
@@ -176,7 +177,7 @@ export const adminDeleteBill = createServerFn({ method: "POST" })
       .from("bills")
       .delete()
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -190,7 +191,7 @@ export const adminListPayments = createServerFn({ method: "GET" })
       .select("*, bills(bs_year, bs_month, tenants(name, room_number))")
       .order("created_at", { ascending: false })
       .limit(500);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return data ?? [];
   });
 
@@ -204,7 +205,7 @@ export const adminDeletePayment = createServerFn({ method: "POST" })
       .from("payments")
       .delete()
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -263,7 +264,7 @@ export const adminListSubscriptions = createServerFn({ method: "GET" })
         context.supabase.from("subscriptions").select("*"),
         context.supabase.from("tenants").select("owner_id, is_active"),
       ]);
-    if (uErr) throw new Error(uErr.message);
+    if (uErr) throw dbError(uErr);
 
     const subByUser = new Map((subs ?? []).map((s: any) => [s.user_id, s]));
     const usage = new Map<string, number>();
@@ -314,7 +315,7 @@ export const adminSetSubscription = createServerFn({ method: "POST" })
       },
       { onConflict: "user_id" },
     );
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -343,7 +344,7 @@ export const adminRecordSubscriptionPayment = createServerFn({ method: "POST" })
       period_to: data.period_to || null,
       recorded_by: context.userId,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -355,7 +356,7 @@ export const adminListSubscriptionPayments = createServerFn({ method: "GET" })
       .select("*")
       .order("paid_at", { ascending: false })
       .limit(200);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return data ?? [];
   });
 
@@ -369,7 +370,7 @@ export const adminGetAdsSettings = createServerFn({ method: "GET" })
       .select("value, updated_at")
       .eq("key", "ads")
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return {
       value: (data?.value as any) ?? {
         enabled: false, provider: "adsense", client_id: "", slot_dashboard: "", slot_landing: "",
@@ -398,6 +399,6 @@ export const adminUpdateAdsSettings = createServerFn({ method: "POST" })
       },
       { onConflict: "key" },
     );
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });

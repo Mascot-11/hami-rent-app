@@ -13,6 +13,7 @@ import { listBills } from "@/lib/bills.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { v, firstError } from "@/lib/validators";
+import { getSignedUrls } from "@/lib/storage.functions";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -483,12 +484,27 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
     if (open) reset(initial);
   }, [open, initial?.id]);
 
+  // Allowlist + size cap — uploads are an injection/abuse vector.
+  const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB
+  const ALLOWED_TYPES = new Set([
+    "image/jpeg", "image/png", "image/webp", "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ]);
+  const validateFile = (file: File) => {
+    if (file.size > MAX_UPLOAD_BYTES) throw new Error("File too large (max 5 MB)");
+    if (!ALLOWED_TYPES.has(file.type)) throw new Error("Unsupported file type");
+  };
+  // Private bucket: return the storage PATH; signed URLs are minted on view.
   const uploadFile = async (file: File, path: string) => {
+    validateFile(file);
     const { data, error } = await supabase.storage.from("tenant-docs").upload(path, file, { upsert: true });
     if (error) throw new Error(error.message);
-    const { data: { publicUrl } } = supabase.storage.from("tenant-docs").getPublicUrl(data.path);
-    return publicUrl;
+    return data.path;
   };
+  // Sanitize filename to avoid path traversal / odd characters in object keys.
+  const safeName = (name: string) =>
+    name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
 
   const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -496,7 +512,7 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
     setUploading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const path = `${user!.id}/${initial?.id ?? "new"}/photo_${Date.now()}_${file.name}`;
+      const path = `${user!.id}/${initial?.id ?? "new"}/photo_${Date.now()}_${safeName(file.name)}`;
       const url = await uploadFile(file, path);
       setPhotoUrl(url);
       toast.success("Photo uploaded");
@@ -513,7 +529,7 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
     setUploading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const path = `${user!.id}/${initial?.id ?? "new"}/doc_${Date.now()}_${file.name}`;
+      const path = `${user!.id}/${initial?.id ?? "new"}/doc_${Date.now()}_${safeName(file.name)}`;
       const url = await uploadFile(file, path);
       setDocuments(prev => [...prev, { name: file.name, url }]);
       toast.success("Document uploaded");
@@ -614,7 +630,7 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
             <div className="flex items-center gap-3 mt-1">
               {photoUrl ? (
                 <div className="relative">
-                  <img src={photoUrl} alt="Tenant photo" className="h-16 w-16 rounded-full object-cover border" />
+                  <SignedImg path={photoUrl} alt="Tenant photo" className="h-16 w-16 rounded-full object-cover border" />
                   <button type="button" onClick={() => setPhotoUrl(null)}
                     className="absolute -top-1 -right-1 bg-destructive text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">×</button>
                 </div>
@@ -634,7 +650,7 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
             <div className="space-y-1 mt-1">
               {documents.map((doc, i) => (
                 <div key={i} className="flex items-center justify-between bg-muted rounded px-2 py-1 text-xs">
-                  <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-primary underline truncate max-w-[200px]">{doc.name}</a>
+                  <SignedLink path={doc.url} name={doc.name} />
                   <button type="button" onClick={() => removeDocument(i)} className="text-destructive ml-2 font-bold">×</button>
                 </div>
               ))}
@@ -651,5 +667,45 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ── Signed-URL resolvers for the private tenant-docs bucket ──────────────────
+// Accepts either a storage path (new) or a full URL (legacy public-bucket data).
+function useSignedUrl(pathOrUrl: string | null | undefined) {
+  const signFn = useServerFn(getSignedUrls);
+  const isUrl = !!pathOrUrl && /^https?:\/\//.test(pathOrUrl);
+  const { data } = useQuery({
+    queryKey: ["signed-url", pathOrUrl],
+    queryFn: async () => {
+      if (!pathOrUrl) return null;
+      const res = await signFn({ data: { paths: [pathOrUrl] } });
+      return res[pathOrUrl] ?? null;
+    },
+    enabled: !!pathOrUrl && !isUrl,
+    staleTime: 8 * 60 * 1000,
+    retry: false,
+  });
+  return isUrl ? pathOrUrl! : data ?? null;
+}
+
+function SignedImg({ path, alt, className }: { path: string | null; alt: string; className?: string }) {
+  const url = useSignedUrl(path);
+  if (!url) return <div className={className} style={{ background: "var(--muted)" }} />;
+  return <img src={url} alt={alt} className={className} />;
+}
+
+function SignedLink({ path, name }: { path: string; name: string }) {
+  const url = useSignedUrl(path);
+  return (
+    <a
+      href={url ?? undefined}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary underline truncate max-w-[200px]"
+      onClick={(e) => { if (!url) e.preventDefault(); }}
+    >
+      {name}
+    </a>
   );
 }

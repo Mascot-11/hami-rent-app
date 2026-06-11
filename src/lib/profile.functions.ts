@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { dbError } from "@/lib/db-error";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const ProfileInput = z.object({
@@ -16,7 +17,7 @@ export const getProfile = createServerFn({ method: "GET" })
       .select("*")
       .eq("owner_id", context.userId)
       .single();
-    if (error && error.code !== "PGRST116") throw new Error(error.message); // PGRST116 = no rows
+    if (error && error.code !== "PGRST116") throw dbError(error); // PGRST116 = no rows
     return data ?? null;
   });
 
@@ -33,6 +34,6 @@ export const upsertProfile = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("landlord_profiles")
       .upsert(payload, { onConflict: "owner_id" });
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });

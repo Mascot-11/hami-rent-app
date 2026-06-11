@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { dbError } from "@/lib/db-error";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -47,7 +48,7 @@ export const listTenants = createServerFn({ method: "GET" })
       .eq("owner_id", context.userId)
       .order("is_active", { ascending: false })
       .order("name");
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return data ?? [];
   });
 
@@ -109,7 +110,7 @@ export const upsertTenant = createServerFn({ method: "POST" })
         .update(payload)
         .eq("id", data.id)
         .eq("owner_id", context.userId); // double-lock: explicit + RLS
-      if (error) throw new Error(error.message);
+      if (error) throw dbError(error);
       return { id: data.id };
     } else {
       if (data.is_active !== false) {
@@ -120,7 +121,7 @@ export const upsertTenant = createServerFn({ method: "POST" })
         .insert(payload)
         .select("id")
         .single();
-      if (error) throw new Error(error.message);
+      if (error) throw dbError(error);
       return { id: row.id };
     }
   });
@@ -138,7 +139,7 @@ export const setTenantActive = createServerFn({ method: "POST" })
       .update({ is_active: data.is_active })
       .eq("id", data.id)
       .eq("owner_id", context.userId);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
 
@@ -153,6 +154,6 @@ export const deleteTenant = createServerFn({ method: "POST" })
       .delete()
       .eq("id", data.id)
       .eq("owner_id", context.userId);
-    if (error) throw new Error(error.message);
+    if (error) throw dbError(error);
     return { ok: true };
   });
