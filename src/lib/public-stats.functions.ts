@@ -2,24 +2,26 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * SECURITY: This function has NO auth middleware — it is called from the
- * public landing page. It must NEVER query private tables (tenants, bills,
- * payments, landlord_profiles). It only reads from a dedicated
- * `public_platform_stats` table that is updated by a Supabase scheduled
- * function or trigger — a table that contains only aggregate counts with
- * NO personal data.
+ * SECURITY: No auth middleware — called from the public landing page.
  *
- * If that table doesn't exist yet, we return safe zeros.
+ * Reads ONLY from public_platform_stats — a dedicated aggregate table
+ * containing only counts. No personal data, no direct queries to
+ * tenants / bills / payments.
+ *
+ * Uses the SERVICE ROLE key so it can read the stats table regardless
+ * of RLS config, but is strictly limited to that one table.
  */
 export const getPublicStats = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-    if (!url || !key) return { landlords: 0, tenants: 0, paymentsNPR: 0 };
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    const supabase = createClient(url, key);
+    if (!url || !serviceKey) return { landlords: 0, tenants: 0, paymentsNPR: 0 };
 
-    // ONLY read from a safe aggregate table — never from private data tables.
+    const supabase = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
     const { data, error } = await supabase
       .from("public_platform_stats")
       .select("landlord_count, tenant_count, total_payments_npr")
@@ -31,11 +33,10 @@ export const getPublicStats = createServerFn({ method: "GET" }).handler(async ()
 
     return {
       landlords: Number(data.landlord_count) || 0,
-      tenants: Number(data.tenant_count) || 0,
+      tenants:   Number(data.tenant_count)   || 0,
       paymentsNPR: Number(data.total_payments_npr) || 0,
     };
   } catch {
-    // Never surface internal errors to the public
     return { landlords: 0, tenants: 0, paymentsNPR: 0 };
   }
 });

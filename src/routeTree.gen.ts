@@ -30,6 +30,7 @@ import { Route as AuthenticatedTenantsTenantIdRouteImport } from './routes/_auth
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills.$billId'
 import { Route as ApiPublicBillTokenRouteImport } from './routes/api/public/bill.$token'
+import { Route as ApiEnforceRlsRouteImport } from './routes/api/enforce-rls'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -137,6 +138,11 @@ const ApiPublicBillTokenRoute = ApiPublicBillTokenRouteImport.update({
   path: '/api/public/bill/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEnforceRlsRoute = ApiEnforceRlsRouteImport.update({
+  id: '/api/enforce-rls',
+  path: '/api/enforce-rls',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
+  '/api/enforce-rls': typeof ApiEnforceRlsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
+  '/api/enforce-rls': typeof ApiEnforceRlsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/bills/new': typeof AuthenticatedBillsNewRoute
   '/_authenticated/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
+  '/api/enforce-rls': typeof ApiEnforceRlsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/bills/new'
     | '/tenants/$tenantId'
     | '/api/public/bill/$token'
+    | '/api/enforce-rls'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/bills/new'
     | '/tenants/$tenantId'
     | '/api/public/bill/$token'
+    | '/api/enforce-rls'
   id:
     | '__root__'
     | '/'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bills/new'
     | '/_authenticated/tenants/$tenantId'
     | '/api/public/bill/$token'
+    | '/api/enforce-rls'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -285,6 +297,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicBillTokenRoute: typeof ApiPublicBillTokenRoute
+  ApiEnforceRlsRoute: typeof ApiEnforceRlsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -436,6 +449,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBillTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/enforce-rls': {
+      id: '/api/enforce-rls'
+      path: '/api/enforce-rls'
+      fullPath: '/api/enforce-rls'
+      preLoaderRoute: typeof ApiEnforceRlsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -501,6 +521,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicBillTokenRoute: ApiPublicBillTokenRoute,
+  ApiEnforceRlsRoute: ApiEnforceRlsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
