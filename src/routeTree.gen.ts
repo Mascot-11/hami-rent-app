@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -16,6 +18,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as ApiEnforceRlsRouteImport } from './routes/api/enforce-rls'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTenantsRouteImport } from './routes/admin/tenants'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
@@ -30,8 +33,17 @@ import { Route as AuthenticatedTenantsTenantIdRouteImport } from './routes/_auth
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills.$billId'
 import { Route as ApiPublicBillTokenRouteImport } from './routes/api/public/bill.$token'
-import { Route as ApiEnforceRlsRouteImport } from './routes/api/enforce-rls'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -64,6 +76,11 @@ const IndexRoute = IndexRouteImport.update({
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEnforceRlsRoute = ApiEnforceRlsRouteImport.update({
+  id: '/api/enforce-rls',
+  path: '/api/enforce-rls',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -138,11 +155,6 @@ const ApiPublicBillTokenRoute = ApiPublicBillTokenRouteImport.update({
   path: '/api/public/bill/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiEnforceRlsRoute = ApiEnforceRlsRouteImport.update({
-  id: '/api/enforce-rls',
-  path: '/api/enforce-rls',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -150,6 +162,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -160,12 +174,12 @@ export interface FileRoutesByFullPath {
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/enforce-rls': typeof ApiEnforceRlsRoute
   '/share/$token': typeof ShareTokenRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
-  '/api/enforce-rls': typeof ApiEnforceRlsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -173,6 +187,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/export': typeof AuthenticatedExportRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -183,12 +199,12 @@ export interface FileRoutesByTo {
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/enforce-rls': typeof ApiEnforceRlsRoute
   '/share/$token': typeof ShareTokenRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
-  '/api/enforce-rls': typeof ApiEnforceRlsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -198,6 +214,8 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/export': typeof AuthenticatedExportRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -208,12 +226,12 @@ export interface FileRoutesById {
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/enforce-rls': typeof ApiEnforceRlsRoute
   '/share/$token': typeof ShareTokenRoute
   '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills/new': typeof AuthenticatedBillsNewRoute
   '/_authenticated/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRoute
   '/api/public/bill/$token': typeof ApiPublicBillTokenRoute
-  '/api/enforce-rls': typeof ApiEnforceRlsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -223,6 +241,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/features'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/dashboard'
     | '/export'
     | '/profile'
@@ -233,12 +253,12 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/tenants'
     | '/admin/users'
+    | '/api/enforce-rls'
     | '/share/$token'
     | '/bills/$billId'
     | '/bills/new'
     | '/tenants/$tenantId'
     | '/api/public/bill/$token'
-    | '/api/enforce-rls'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -246,6 +266,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/features'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/dashboard'
     | '/export'
     | '/profile'
@@ -256,12 +278,12 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/tenants'
     | '/admin/users'
+    | '/api/enforce-rls'
     | '/share/$token'
     | '/bills/$billId'
     | '/bills/new'
     | '/tenants/$tenantId'
     | '/api/public/bill/$token'
-    | '/api/enforce-rls'
   id:
     | '__root__'
     | '/'
@@ -270,6 +292,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/features'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/_authenticated/dashboard'
     | '/_authenticated/export'
     | '/_authenticated/profile'
@@ -280,12 +304,12 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/tenants'
     | '/admin/users'
+    | '/api/enforce-rls'
     | '/share/$token'
     | '/_authenticated/bills/$billId'
     | '/_authenticated/bills/new'
     | '/_authenticated/tenants/$tenantId'
     | '/api/public/bill/$token'
-    | '/api/enforce-rls'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -295,13 +319,29 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   FeaturesRoute: typeof FeaturesRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
+  ApiEnforceRlsRoute: typeof ApiEnforceRlsRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicBillTokenRoute: typeof ApiPublicBillTokenRoute
-  ApiEnforceRlsRoute: typeof ApiEnforceRlsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -349,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/share/$token'
       fullPath: '/share/$token'
       preLoaderRoute: typeof ShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/enforce-rls': {
+      id: '/api/enforce-rls'
+      path: '/api/enforce-rls'
+      fullPath: '/api/enforce-rls'
+      preLoaderRoute: typeof ApiEnforceRlsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -449,13 +496,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBillTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/enforce-rls': {
-      id: '/api/enforce-rls'
-      path: '/api/enforce-rls'
-      fullPath: '/api/enforce-rls'
-      preLoaderRoute: typeof ApiEnforceRlsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -519,9 +559,11 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   FeaturesRoute: FeaturesRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
+  ApiEnforceRlsRoute: ApiEnforceRlsRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicBillTokenRoute: ApiPublicBillTokenRoute,
-  ApiEnforceRlsRoute: ApiEnforceRlsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
