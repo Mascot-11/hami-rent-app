@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { v, firstError } from "@/lib/validators";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,11 @@ function LoginPage() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    // ── Field validation ──
+    const err = mode === "signin"
+      ? firstError(v.email(email), v.password(password))
+      : firstError(v.email(email), v.password(password, { signup: true }), v.name(fullName), v.phone(phone), v.maxLen(address, "Address", 300));
+    if (err) return toast.error(err);
     setLoading(true);
     try {
       if (mode === "signin") {
@@ -55,7 +61,6 @@ function LoginPage() {
         } catch { /* fall through to dashboard */ }
         nav({ to: isAdmin ? "/admin/dashboard" : "/dashboard" });
       } else {
-        if (!fullName.trim()) throw new Error("Full name is required");
         const { data, error } = await supabase.auth.signUp({
           email,
           password,

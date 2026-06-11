@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetAdsSettings, adminUpdateAdsSettings } from "@/lib/admin.functions";
+import { v, firstError } from "@/lib/validators";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -34,7 +35,15 @@ function AdminSettings() {
     }
   }, [data]);
 
+  const clientErr = v.adsenseClient(form.client_id);
+  const dashErr = v.adSlot(form.slot_dashboard, "Dashboard slot ID");
+  const landErr = v.adSlot(form.slot_landing, "Landing slot ID");
+  const enabledErr = form.enabled && (!form.client_id.trim() || (!form.slot_dashboard.trim() && !form.slot_landing.trim()))
+    ? "To enable ads, set a client ID and at least one slot ID" : null;
+
   const save = async () => {
+    const err = firstError(clientErr, dashErr, landErr, enabledErr);
+    if (err) return toast.error(err);
     setBusy(true);
     try {
       await saveFn({ data: form });
@@ -73,6 +82,7 @@ function AdminSettings() {
               onChange={(e) => setForm((f) => ({ ...f, client_id: e.target.value.trim() }))}
               className="w-full border rounded-lg px-3 py-2 bg-background text-sm font-mono"
             />
+            {clientErr && <p className="text-xs text-destructive">{clientErr}</p>}
           </label>
           <label className="text-sm space-y-1">
             <span className="text-xs font-medium text-muted-foreground">Dashboard slot ID</span>
@@ -81,6 +91,7 @@ function AdminSettings() {
               onChange={(e) => setForm((f) => ({ ...f, slot_dashboard: e.target.value.trim() }))}
               className="w-full border rounded-lg px-3 py-2 bg-background text-sm font-mono"
             />
+            {dashErr && <p className="text-xs text-destructive">{dashErr}</p>}
           </label>
           <label className="text-sm space-y-1">
             <span className="text-xs font-medium text-muted-foreground">Landing page slot ID</span>
@@ -89,6 +100,7 @@ function AdminSettings() {
               onChange={(e) => setForm((f) => ({ ...f, slot_landing: e.target.value.trim() }))}
               className="w-full border rounded-lg px-3 py-2 bg-background text-sm font-mono"
             />
+            {landErr && <p className="text-xs text-destructive">{landErr}</p>}
           </label>
         </div>
 
@@ -96,7 +108,7 @@ function AdminSettings() {
           Ads only render when enabled <b>and</b> a client ID + slot ID are set. Bill share pages and printouts never show ads.
         </p>
 
-        <Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save settings"}</Button>
+        <Button onClick={save} disabled={busy || !!firstError(clientErr, dashErr, landErr)}>{busy ? "Saving…" : "Save settings"}</Button>
       </Card>
     </div>
   );

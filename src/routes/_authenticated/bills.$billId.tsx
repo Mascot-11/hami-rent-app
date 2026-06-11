@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import { getBill, deleteBill, recordPayment, deletePayment } from "@/lib/bills.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { v, firstError } from "@/lib/validators";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -361,9 +362,13 @@ function BillPage() {
 
   const submitPay = (e: any) => {
     e.preventDefault();
-    if (!date.trim()) return toast.error("Payment date is required");
+    const err = firstError(
+      v.bsDate(date, { optional: false }),
+      v.amount(amount, "Amount"),
+      v.maxLen(note, "Note", 500),
+    );
+    if (err) return toast.error(err);
     const amt = Number(amount);
-    if (!amt || amt <= 0) return toast.error("Amount must be > 0");
     if (amt > remaining && remaining > 0) {
       if (!confirm(`Amount exceeds remaining ${fmtNPR(remaining)}. Continue? Surplus becomes overpayment.`)) return;
     }

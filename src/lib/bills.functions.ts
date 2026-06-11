@@ -65,7 +65,7 @@ const BillInput = z.object({
 
 const PaymentInput = z.object({
   bill_id: z.string().uuid(),
-  payment_date_bs: z.string().trim().min(1).max(20),
+  payment_date_bs: z.string().trim().regex(/^(20[7-9]\\d|2110)-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\\d|3[0-2])$/, "BS date must be YYYY-MM-DD"),
   amount_paid: z.number().positive().max(10_000_000),
   payment_method: z.enum(["cash", "bank", "esewa", "khalti", "other"]),
   note: z.string().max(500).nullable().optional(),

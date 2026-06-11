@@ -7,6 +7,7 @@ import {
   adminRecordSubscriptionPayment,
   adminListSubscriptionPayments,
 } from "@/lib/admin.functions";
+import { v, firstError } from "@/lib/validators";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,6 +62,10 @@ function AdminSubscriptions() {
   const saveSub = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
+    const slotsErr = v.intRange(String(f.get("tenant_slots")), "Tenant slots", 0, 10000);
+    const notesErr = v.maxLen(String(f.get("notes") || ""), "Notes", 1000);
+    const vErr = firstError(slotsErr, notesErr);
+    if (vErr) return toast.error(vErr);
     setBusy(true);
     try {
       const expRaw = String(f.get("expires_at") || "");
@@ -84,6 +89,15 @@ function AdminSubscriptions() {
   const savePayment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
+    const pf = String(f.get("period_from") || "");
+    const pt = String(f.get("period_to") || "");
+    const vErr = firstError(
+      v.amount(String(f.get("amount_npr")), "Amount", { max: 100_000_000 }),
+      v.dateOrder(pf, pt),
+      v.maxLen(String(f.get("reference") || ""), "Reference", 200),
+      v.maxLen(String(f.get("note") || ""), "Note", 1000),
+    );
+    if (vErr) return toast.error(vErr);
     setBusy(true);
     try {
       await payFn({

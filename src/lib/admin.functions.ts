@@ -126,8 +126,8 @@ export const adminUpdateTenant = createServerFn({ method: "POST" })
       id: z.string().uuid(),
       name: z.string().trim().min(1).max(120),
       room_number: z.string().max(40).nullable().optional(),
-      phone: z.string().max(30).nullable().optional(),
-      move_in_date_bs: z.string().max(20).nullable().optional(),
+      phone: z.string().trim().regex(/^(\\+?977[- ]?)?(9[5-8]\\d{8}|0\\d{1,2}[- ]?\\d{6,7})$/, "Invalid Nepali phone number").nullable().optional().or(z.literal("").transform(() => null)),
+      move_in_date_bs: z.string().trim().regex(/^(20[7-9]\\d|2110)-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\\d|3[0-2])$/, "BS date must be YYYY-MM-DD").nullable().optional().or(z.literal("").transform(() => null)),
       notes: z.string().max(2000).nullable().optional(),
       is_active: z.boolean().optional(),
     }).parse(d),
@@ -329,7 +329,10 @@ export const adminRecordSubscriptionPayment = createServerFn({ method: "POST" })
       note: z.string().max(1000).nullable().optional(),
       period_from: z.string().max(20).nullable().optional(),
       period_to: z.string().max(20).nullable().optional(),
-    }).parse(d),
+    }).refine(
+      (x) => !x.period_from || !x.period_to || new Date(x.period_from) <= new Date(x.period_to),
+      { message: "period_from must be on or before period_to" },
+    ).parse(d),
   )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("subscription_payments").insert({

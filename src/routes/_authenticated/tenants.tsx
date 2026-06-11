@@ -12,6 +12,7 @@ import {
 import { listBills } from "@/lib/bills.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { v, firstError } from "@/lib/validators";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -527,7 +528,16 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
 
   const submit = (e: any) => {
     e.preventDefault();
-    if (!name.trim()) return toast.error("Name is required");
+    const err = firstError(
+      v.name(name),
+      v.maxLen(room, "Room number", 40),
+      v.phone(phone),
+      v.bsDate(moveIn),
+      v.maxLen(notes, "Notes", 2000),
+      baseRent !== "" ? v.amount(baseRent, "Base rent", { allowZero: true }) : null,
+      defaultWater !== "" ? v.amount(defaultWater, "Default water bill", { allowZero: true, max: 1_000_000 }) : null,
+    );
+    if (err) return toast.error(err);
     onSave({
       id: initial?.id,
       name: name.trim(),

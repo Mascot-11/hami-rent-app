@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
+import { v, firstError } from "@/lib/validators";
 import { getProfile, upsertProfile } from "@/lib/profile.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -81,7 +82,8 @@ function ProfilePage() {
 
   const save = useMutation({
     mutationFn: () => {
-      if (!fullName.trim()) throw new Error("Full name is required");
+      const err = firstError(v.name(fullName), v.phone(phone), v.maxLen(address, "Address", 300));
+      if (err) throw new Error(err);
       return upsertFn({
         data: {
           full_name: fullName.trim(),

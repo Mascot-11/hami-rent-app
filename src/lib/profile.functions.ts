@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const ProfileInput = z.object({
   full_name: z.string().trim().min(1).max(120),
-  phone: z.string().trim().max(30).nullable().optional(),
+  phone: z.string().trim().regex(/^(\\+?977[- ]?)?(9[5-8]\\d{8}|0\\d{1,2}[- ]?\\d{6,7})$/, "Invalid Nepali phone number").nullable().optional().or(z.literal("").transform(() => null)),
   address: z.string().trim().max(300).nullable().optional(),
 });
 
