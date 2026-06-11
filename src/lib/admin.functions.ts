@@ -84,12 +84,25 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
 export const adminListTenants = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("tenants")
-      .select("*, owner:owner_id(id)")
-      .order("created_at", { ascending: false });
+    // NOTE: owner_id references auth.users, which PostgREST cannot embed
+    // ("no relationship in schema cache"). Fetch tenants flat and merge
+    // owner emails from the auth admin API instead.
+    const [{ data, error }, usersRes] = await Promise.all([
+      context.supabase
+        .from("tenants")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      context.supabase.auth.admin.listUsers({ perPage: 1000 }),
+    ]);
     if (error) throw new Error(error.message);
-    return data ?? [];
+
+    const emailById = new Map(
+      (usersRes.data?.users ?? []).map((u) => [u.id, u.email ?? ""]),
+    );
+    return (data ?? []).map((t: any) => ({
+      ...t,
+      owner_email: emailById.get(t.owner_id) ?? null,
+    }));
   });
 
 export const adminDeleteTenant = createServerFn({ method: "POST" })

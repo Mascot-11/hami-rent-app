@@ -94,7 +94,7 @@ function AdminTenants() {
             <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="border-b bg-muted/40">
-                  {["Name", "Room", "Phone", "Move-in (BS)", "Status", ""].map((h) => (
+                  {["Name", "Landlord", "Room", "Phone", "Move-in (BS)", "Status", ""].map((h) => (
                     <th key={h} className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
@@ -103,6 +103,7 @@ function AdminTenants() {
                 {filtered.map((t: any) => (
                   <tr key={t.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3 font-medium">{t.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs truncate max-w-[180px]">{t.owner_email ?? "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{t.room_number ?? "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{t.phone ?? "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{t.move_in_date_bs ?? "—"}</td>
