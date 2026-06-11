@@ -45,7 +45,15 @@ function LoginPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back");
-        nav({ to: "/dashboard" });
+        // Super admins land on the admin panel; landlords on their dashboard.
+        // SECURITY DEFINER RPC checks auth.uid() server-side — fails safe to
+        // the normal dashboard if the check errors for any reason.
+        let isAdmin = false;
+        try {
+          const { data } = await supabase.rpc("is_current_user_super_admin");
+          isAdmin = data === true;
+        } catch { /* fall through to dashboard */ }
+        nav({ to: isAdmin ? "/admin/dashboard" : "/dashboard" });
       } else {
         if (!fullName.trim()) throw new Error("Full name is required");
         const { data, error } = await supabase.auth.signUp({

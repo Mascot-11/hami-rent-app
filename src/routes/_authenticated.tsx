@@ -113,6 +113,7 @@ function AuthLayout() {
               </Link>
             ))}
           </nav>
+          <AdminPanelLink onNavigate={() => setSidebarOpen(false)} />
           <div className="p-3 border-t">
             <button
               onClick={() => { setSidebarOpen(false); signOut(); }}
@@ -154,6 +155,33 @@ function AuthLayout() {
           </footer>
         </main>
       </div>
+    </div>
+  );
+}
+
+
+/** Shows a Super Admin shortcut in the sidebar only for admins. */
+function AdminPanelLink({ onNavigate }: { onNavigate: () => void }) {
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin-sidebar"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_current_user_super_admin");
+      return data === true;
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+  if (!isAdmin) return null;
+  return (
+    <div className="p-3 border-t">
+      <Link
+        to="/admin/dashboard"
+        onClick={onNavigate}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+      >
+        <ShieldAlert className="h-4 w-4 flex-shrink-0" />
+        Super Admin
+      </Link>
     </div>
   );
 }
