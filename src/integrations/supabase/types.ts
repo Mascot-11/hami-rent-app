@@ -120,6 +120,36 @@ export type Database = {
           },
         ]
       }
+      landlord_profiles: {
+        Row: {
+          address: string | null
+          created_at: string
+          full_name: string
+          id: string
+          owner_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          owner_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          owner_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount_paid: number
@@ -161,9 +191,29 @@ export type Database = {
           },
         ]
       }
-      tenants: {
+      super_admins: {
         Row: {
           created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tenants: {
+        Row: {
+          base_rent: number | null
+          created_at: string
+          default_water_bill: number | null
           documents: Json
           id: string
           is_active: boolean
@@ -176,7 +226,9 @@ export type Database = {
           room_number: string | null
         }
         Insert: {
+          base_rent?: number | null
           created_at?: string
+          default_water_bill?: number | null
           documents?: Json
           id?: string
           is_active?: boolean
@@ -189,7 +241,9 @@ export type Database = {
           room_number?: string | null
         }
         Update: {
+          base_rent?: number | null
           created_at?: string
+          default_water_bill?: number | null
           documents?: Json
           id?: string
           is_active?: boolean
@@ -208,7 +262,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_all_user_emails: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          last_sign_in_at: string
+        }[]
+      }
     }
     Enums: {
       electricity_mode: "per_unit" | "direct"
