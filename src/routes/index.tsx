@@ -79,6 +79,7 @@ function Nav({ authed, onDemo }: { authed: boolean; onDemo: () => void }) {
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
+          <a href="/#pricing" className="hover:text-foreground transition-colors">Pricing</a>
           <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
           <button onClick={onDemo} className="hover:text-foreground transition-colors">Demo</button>
           {!authed
@@ -97,6 +98,7 @@ function Nav({ authed, onDemo }: { authed: boolean; onDemo: () => void }) {
       {open && (
         <div className="md:hidden border-t bg-background px-5 py-4 flex flex-col gap-3 text-sm">
           <Link to="/features" onClick={() => setOpen(false)} className="text-muted-foreground py-1">Features</Link>
+          <a href="/#pricing" onClick={() => setOpen(false)} className="text-muted-foreground py-1">Pricing</a>
           <Link to="/about" onClick={() => setOpen(false)} className="text-muted-foreground py-1">About</Link>
           <button onClick={() => { setOpen(false); onDemo(); }} className="text-left text-muted-foreground py-1">Try demo</button>
         </div>
@@ -106,6 +108,50 @@ function Nav({ authed, onDemo }: { authed: boolean; onDemo: () => void }) {
 }
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
+
+// ─── Pricing plans (slots are allocated manually by the admin after payment) ──
+// NOTE: keep these in sync with what the super admin actually grants.
+const plans = [
+  {
+    name: "Free",
+    price: "रू 0",
+    priceNote: "forever",
+    featured: false,
+    cta: "Start free",
+    points: [
+      "3 active tenant slots",
+      "Automatic monthly bills in BS calendar",
+      "Shareable bill receipts",
+      "Excel export of all your data",
+    ],
+  },
+  {
+    name: "Basic",
+    price: "रू 1,000",
+    priceNote: "per year · manual payment",
+    featured: true,
+    cta: "Sign up & request",
+    points: [
+      "10 active tenant slots",
+      "Everything in Free",
+      "Pay via eSewa, Khalti, bank, or cash",
+      "Slots activated by admin on confirmation",
+    ],
+  },
+  {
+    name: "Pro",
+    price: "रू 2,500",
+    priceNote: "per year · manual payment",
+    featured: false,
+    cta: "Sign up & request",
+    points: [
+      "30 active tenant slots",
+      "Everything in Basic",
+      "Best for multi-floor buildings",
+      "Need more? Custom plans available",
+    ],
+  },
+];
 
 function Footer() {
   return (
@@ -119,6 +165,7 @@ function Footer() {
         </div>
         <div className="flex gap-6 text-sm text-muted-foreground">
           <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
+          <a href="/#pricing" className="hover:text-foreground transition-colors">Pricing</a>
           <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
           <Link to="/login" className="hover:text-foreground transition-colors">Sign in</Link>
         </div>
@@ -295,6 +342,51 @@ function LandingPage() {
               <PlayCircle className="h-4 w-4 text-primary" /> Try the demo
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* ── Pricing ── */}
+      <section id="pricing" className="border-t border-border bg-muted/30">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-3">Pricing</p>
+          <h2 className="font-display text-2xl sm:text-3xl max-w-md leading-tight mb-3">
+            Start free. Upgrade when your building grows.
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-md mb-10 leading-relaxed">
+            Plans are based on tenant slots — the number of active tenants you can manage.
+            Payments are handled personally via eSewa, Khalti, bank transfer, or cash. No card required.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {plans.map((pl) => (
+              <div key={pl.name} className={`rounded-2xl border p-5 sm:p-6 flex flex-col bg-background ${pl.featured ? "border-primary shadow-sm ring-1 ring-primary/20" : "border-border"}`}>
+                <div className="flex items-center justify-between">
+                  <p className="font-display font-semibold">{pl.name}</p>
+                  {pl.featured && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wide bg-primary/10 text-primary rounded-full px-2 py-0.5">Popular</span>
+                  )}
+                </div>
+                <p className="mt-2 text-2xl font-display">{pl.price}</p>
+                <p className="text-xs text-muted-foreground">{pl.priceNote}</p>
+                <ul className="mt-5 space-y-2 text-sm text-muted-foreground flex-1">
+                  {pl.points.map((pt) => (
+                    <li key={pt} className="flex gap-2 items-start">
+                      <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to={pl.name === "Free" ? cta : "/login"}
+                  className={`mt-6 inline-flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg transition-colors ${pl.featured ? "bg-foreground text-background hover:bg-foreground/85" : "border border-border hover:bg-muted"}`}
+                >
+                  {pl.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground">
+            After signing up, request an upgrade and the admin will allocate your tenant slots once payment is confirmed.
+          </p>
         </div>
       </section>
 

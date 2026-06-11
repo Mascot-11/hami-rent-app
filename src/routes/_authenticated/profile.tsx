@@ -9,12 +9,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { User, Phone, MapPin, Mail, CheckCircle2, AlertCircle } from "lucide-react";
+import { User, Phone, MapPin, Mail, CheckCircle2, AlertCircle, Crown } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { getMySubscription } from "@/lib/subscription.functions";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "My Profile — Hamro Rent" }, { name: "robots", content: "noindex" }] }),
   component: ProfilePage,
 });
+
+function SlotCard() {
+  const subFn = useServerFn(getMySubscription);
+  const { data: sub } = useQuery({ queryKey: ["my-subscription"], queryFn: () => subFn() });
+  if (!sub) return null;
+  const pct = sub.tenant_slots > 0 ? Math.min(100, (sub.tenants_used / sub.tenant_slots) * 100) : 100;
+  const atLimit = sub.tenants_used >= sub.tenant_slots;
+  return (
+    <Card className="p-4 sm:p-5">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide mb-3">
+        <Crown className="h-3.5 w-3.5" /> Tenant slots
+      </div>
+      <div className="flex items-end justify-between mb-2">
+        <p className="text-2xl font-display tabular-nums">
+          {sub.tenants_used}<span className="text-muted-foreground text-base"> / {sub.tenant_slots}</span>
+        </p>
+        <span className="text-xs font-semibold rounded-full px-2 py-0.5 capitalize bg-primary/10 text-primary">
+          {sub.plan} plan{sub.expired ? " (lapsed)" : sub.status !== "active" ? ` (${sub.status})` : ""}
+        </span>
+      </div>
+      <Progress value={pct} className="h-2" />
+      <p className="text-xs text-muted-foreground mt-3">
+        {atLimit
+          ? "You've used all your slots. Contact the administrator to upgrade — payments are handled manually."
+          : `${sub.tenant_slots - sub.tenants_used} slot${sub.tenant_slots - sub.tenants_used !== 1 ? "s" : ""} remaining for new active tenants.`}
+        {sub.expires_at && ` Plan valid until ${new Date(sub.expires_at).toLocaleDateString("en-NP")}.`}
+      </p>
+    </Card>
+  );
+}
 
 function ProfilePage() {
   const qc = useQueryClient();
@@ -97,6 +129,9 @@ function ProfilePage() {
           <p className="font-medium text-success">Profile complete</p>
         </div>
       )}
+
+      {/* Tenant slots / subscription */}
+      <SlotCard />
 
       {/* Email (read-only) */}
       <Card className="p-4 sm:p-5 space-y-1">
