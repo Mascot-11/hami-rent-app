@@ -15,6 +15,26 @@ async function assertTenantOwner(supabase: any, tenantId: string, userId: string
   if (data.owner_id !== userId) throw new Error("Forbidden");
 }
 
+/**
+ * Throws if adding/activating one more tenant would exceed the user's
+ * allocated slots. DB trigger enforces this too (defense in depth) —
+ * this gives a friendlier error before hitting the DB.
+ */
+async function assertSlotAvailable(supabase: any, userId: string) {
+  const { data: slots } = await supabase.rpc("get_tenant_slots", { uid: userId });
+  const allowed = typeof slots === "number" ? slots : 3;
+  const { count } = await supabase
+    .from("tenants")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", userId)
+    .eq("is_active", true);
+  if ((count ?? 0) >= allowed) {
+    throw new Error(
+      `Tenant slot limit reached (${count}/${allowed}). Contact the administrator to upgrade your plan.`,
+    );
+  }
+}
+
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
 export const listTenants = createServerFn({ method: "GET" })
@@ -92,6 +112,9 @@ export const upsertTenant = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return { id: data.id };
     } else {
+      if (data.is_active !== false) {
+        await assertSlotAvailable(context.supabase, context.userId);
+      }
       const { data: row, error } = await context.supabase
         .from("tenants")
         .insert(payload)
@@ -107,6 +130,9 @@ export const setTenantActive = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string; is_active: boolean }) =>
     z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
+    if (data.is_active) {
+      await assertSlotAvailable(context.supabase, context.userId);
+    }
     const { error } = await context.supabase
       .from("tenants")
       .update({ is_active: data.is_active })

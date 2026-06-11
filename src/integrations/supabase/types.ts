@@ -14,6 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_roles: {
+        Row: { user_id: string; granted_at: string; granted_by: string | null }
+        Insert: { user_id: string; granted_at?: string; granted_by?: string | null }
+        Update: { user_id?: string; granted_at?: string; granted_by?: string | null }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          user_id: string; plan: string; status: string; tenant_slots: number
+          expires_at: string | null; notes: string | null; updated_by: string | null
+          created_at: string; updated_at: string
+        }
+        Insert: {
+          user_id: string; plan?: string; status?: string; tenant_slots?: number
+          expires_at?: string | null; notes?: string | null; updated_by?: string | null
+          created_at?: string; updated_at?: string
+        }
+        Update: {
+          user_id?: string; plan?: string; status?: string; tenant_slots?: number
+          expires_at?: string | null; notes?: string | null; updated_by?: string | null
+          created_at?: string; updated_at?: string
+        }
+        Relationships: []
+      }
+      subscription_payments: {
+        Row: {
+          id: string; user_id: string; amount_npr: number; method: string
+          reference: string | null; note: string | null
+          period_from: string | null; period_to: string | null
+          recorded_by: string | null; paid_at: string; created_at: string
+        }
+        Insert: {
+          id?: string; user_id: string; amount_npr: number; method?: string
+          reference?: string | null; note?: string | null
+          period_from?: string | null; period_to?: string | null
+          recorded_by?: string | null; paid_at?: string; created_at?: string
+        }
+        Update: {
+          id?: string; user_id?: string; amount_npr?: number; method?: string
+          reference?: string | null; note?: string | null
+          period_from?: string | null; period_to?: string | null
+          recorded_by?: string | null; paid_at?: string; created_at?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: { key: string; value: Json; updated_by: string | null; updated_at: string }
+        Insert: { key: string; value?: Json; updated_by?: string | null; updated_at?: string }
+        Update: { key?: string; value?: Json; updated_by?: string | null; updated_at?: string }
+        Relationships: []
+      }
+
       additional_charges: {
         Row: {
           amount: number
@@ -262,6 +314,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_tenant_slots: {
+        Args: { uid: string }
+        Returns: number
+      }
+      is_super_admin: {
+        Args: { uid: string }
+        Returns: boolean
+      }
       get_all_user_emails: {
         Args: never
         Returns: {

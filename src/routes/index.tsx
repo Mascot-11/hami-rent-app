@@ -1,3 +1,4 @@
+import { AdSlot } from "@/components/AdSlot";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -108,6 +109,8 @@ function Nav({ authed, onDemo }: { authed: boolean; onDemo: () => void }) {
 
 function Footer() {
   return (
+    <>
+    <div className="max-w-6xl mx-auto px-4"><AdSlot placement="landing" className="my-8" /></div>
     <footer className="border-t border-border">
       <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
@@ -122,6 +125,7 @@ function Footer() {
         <p className="text-xs text-muted-foreground">© 2082 Hamro Rent</p>
       </div>
     </footer>
+    </>
   );
 }
 

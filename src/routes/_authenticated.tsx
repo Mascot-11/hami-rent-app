@@ -1,4 +1,5 @@
 import { createFileRoute, redirect, Link, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
+import { AdSlot } from "@/components/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -136,6 +137,7 @@ function AuthLayout() {
           <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-4 sm:py-6">
             <div className="max-w-6xl mx-auto">
               <Outlet />
+              <AdSlot placement="dashboard" className="mt-8" />
             </div>
           </div>
           <footer className="border-t bg-card no-print">

@@ -15,7 +15,7 @@ import { checkIsAdmin } from "@/lib/admin.functions";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  LayoutDashboard, Users, FileText, CreditCard,
+  LayoutDashboard, Users, FileText, CreditCard, Crown, Settings,
   LogOut, ShieldAlert, Menu, X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -37,6 +37,8 @@ const NAV = [
   { to: "/admin/tenants",   label: "Tenants",  icon: Users },
   { to: "/admin/bills",     label: "Bills",    icon: FileText },
   { to: "/admin/payments",  label: "Payments", icon: CreditCard },
+  { to: "/admin/subscriptions", label: "Subscriptions", icon: Crown },
+  { to: "/admin/settings",  label: "Settings", icon: Settings },
 ];
 
 function AdminLayout() {

@@ -212,7 +212,7 @@ export const adminGetStats = createServerFn({ method: "GET" })
     );
 
     return {
-      userCount: users.data?.total ?? 0,
+      userCount: (users.data as any)?.total ?? users.data?.users?.length ?? 0,
       tenantCount: tenants.count ?? 0,
       billCount: bills.count ?? 0,
       totalRevenue,
@@ -224,3 +224,150 @@ export const adminGetStats = createServerFn({ method: "GET" })
 export const checkIsAdmin = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => ({ isAdmin: true, userId: context.userId }));
+
+// ── Subscriptions & slot allocation (super admin) ─────────────────────────────
+
+export const adminListSubscriptions = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async ({ context }) => {
+    const [{ data: usersData, error: uErr }, { data: subs }, { data: tenants }] =
+      await Promise.all([
+        context.supabase.auth.admin.listUsers({ perPage: 1000 }),
+        context.supabase.from("subscriptions").select("*"),
+        context.supabase.from("tenants").select("owner_id, is_active"),
+      ]);
+    if (uErr) throw new Error(uErr.message);
+
+    const subByUser = new Map((subs ?? []).map((s: any) => [s.user_id, s]));
+    const usage = new Map<string, number>();
+    for (const t of tenants ?? []) {
+      if (t.is_active) usage.set(t.owner_id, (usage.get(t.owner_id) ?? 0) + 1);
+    }
+
+    return (usersData.users ?? []).map((u) => {
+      const s: any = subByUser.get(u.id);
+      const expired = !!s?.expires_at && new Date(s.expires_at).getTime() < Date.now();
+      return {
+        user_id: u.id,
+        email: u.email ?? "",
+        plan: s?.plan ?? "free",
+        status: s?.status ?? "active",
+        tenant_slots: s ? (s.status !== "active" ? 0 : expired ? 3 : s.tenant_slots) : 3,
+        raw_slots: s?.tenant_slots ?? 3,
+        expires_at: s?.expires_at ?? null,
+        expired,
+        tenants_used: usage.get(u.id) ?? 0,
+        notes: s?.notes ?? null,
+      };
+    });
+  });
+
+export const adminSetSubscription = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({
+      user_id: z.string().uuid(),
+      plan: z.enum(["free", "basic", "pro", "custom"]),
+      status: z.enum(["active", "expired", "suspended"]),
+      tenant_slots: z.number().int().min(0).max(10000),
+      expires_at: z.string().datetime({ offset: true }).nullable().optional(),
+      notes: z.string().max(1000).nullable().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("subscriptions").upsert(
+      {
+        user_id: data.user_id,
+        plan: data.plan,
+        status: data.status,
+        tenant_slots: data.tenant_slots,
+        expires_at: data.expires_at ?? null,
+        notes: data.notes ?? null,
+        updated_by: context.userId,
+      },
+      { onConflict: "user_id" },
+    );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminRecordSubscriptionPayment = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({
+      user_id: z.string().uuid(),
+      amount_npr: z.number().min(0).max(100_000_000),
+      method: z.enum(["manual", "cash", "bank_transfer", "esewa", "khalti", "other"]).default("manual"),
+      reference: z.string().max(200).nullable().optional(),
+      note: z.string().max(1000).nullable().optional(),
+      period_from: z.string().max(20).nullable().optional(),
+      period_to: z.string().max(20).nullable().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("subscription_payments").insert({
+      ...data,
+      reference: data.reference || null,
+      note: data.note || null,
+      period_from: data.period_from || null,
+      period_to: data.period_to || null,
+      recorded_by: context.userId,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminListSubscriptionPayments = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("subscription_payments")
+      .select("*")
+      .order("paid_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+// ── App settings: ads (super admin) ───────────────────────────────────────────
+
+export const adminGetAdsSettings = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("app_settings")
+      .select("value, updated_at")
+      .eq("key", "ads")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return {
+      value: (data?.value as any) ?? {
+        enabled: false, provider: "adsense", client_id: "", slot_dashboard: "", slot_landing: "",
+      },
+      updated_at: data?.updated_at ?? null,
+    };
+  });
+
+export const adminUpdateAdsSettings = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({
+      enabled: z.boolean(),
+      client_id: z.string().max(60).regex(/^(ca-pub-\d{10,20})?$/, "Must look like ca-pub-XXXXXXXXXXXXXXXX or be empty"),
+      slot_dashboard: z.string().max(30).regex(/^\d*$/, "Slot IDs are numeric"),
+      slot_landing: z.string().max(30).regex(/^\d*$/, "Slot IDs are numeric"),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("app_settings").upsert(
+      {
+        key: "ads",
+        value: { provider: "adsense", ...data },
+        updated_by: context.userId,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" },
+    );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

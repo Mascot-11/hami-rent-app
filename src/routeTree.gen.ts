@@ -21,6 +21,8 @@ import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as ApiEnforceRlsRouteImport } from './routes/api/enforce-rls'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTenantsRouteImport } from './routes/admin/tenants'
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin/subscriptions'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminBillsRouteImport } from './routes/admin/bills'
@@ -91,6 +93,16 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
 const AdminTenantsRoute = AdminTenantsRouteImport.update({
   id: '/tenants',
   path: '/tenants',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
@@ -172,6 +184,8 @@ export interface FileRoutesByFullPath {
   '/admin/bills': typeof AdminBillsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/enforce-rls': typeof ApiEnforceRlsRoute
@@ -197,6 +211,8 @@ export interface FileRoutesByTo {
   '/admin/bills': typeof AdminBillsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/enforce-rls': typeof ApiEnforceRlsRoute
@@ -224,6 +240,8 @@ export interface FileRoutesById {
   '/admin/bills': typeof AdminBillsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/enforce-rls': typeof ApiEnforceRlsRoute
@@ -251,6 +269,8 @@ export interface FileRouteTypes {
     | '/admin/bills'
     | '/admin/dashboard'
     | '/admin/payments'
+    | '/admin/settings'
+    | '/admin/subscriptions'
     | '/admin/tenants'
     | '/admin/users'
     | '/api/enforce-rls'
@@ -276,6 +296,8 @@ export interface FileRouteTypes {
     | '/admin/bills'
     | '/admin/dashboard'
     | '/admin/payments'
+    | '/admin/settings'
+    | '/admin/subscriptions'
     | '/admin/tenants'
     | '/admin/users'
     | '/api/enforce-rls'
@@ -302,6 +324,8 @@ export interface FileRouteTypes {
     | '/admin/bills'
     | '/admin/dashboard'
     | '/admin/payments'
+    | '/admin/settings'
+    | '/admin/subscriptions'
     | '/admin/tenants'
     | '/admin/users'
     | '/api/enforce-rls'
@@ -410,6 +434,20 @@ declare module '@tanstack/react-router' {
       path: '/tenants'
       fullPath: '/admin/tenants'
       preLoaderRoute: typeof AdminTenantsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/subscriptions': {
+      id: '/admin/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/payments': {
@@ -538,6 +576,8 @@ interface AdminRouteChildren {
   AdminBillsRoute: typeof AdminBillsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminTenantsRoute: typeof AdminTenantsRoute
   AdminUsersRoute: typeof AdminUsersRoute
 }
@@ -546,6 +586,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBillsRoute: AdminBillsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminTenantsRoute: AdminTenantsRoute,
   AdminUsersRoute: AdminUsersRoute,
 }
