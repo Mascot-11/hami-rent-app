@@ -27,10 +27,6 @@ export const requireAdmin = createMiddleware({ type: 'function' }).server(
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
       throw new Error('Server misconfigured: missing Supabase environment variables');
     }
-    if (!SUPABASE_SERVICE_ROLE_KEY) {
-      // Hard fail — admin panel requires service role key
-      throw new Error('Server misconfigured: SUPABASE_SERVICE_ROLE_KEY is required for admin access');
-    }
 
     // ── Step 1: Validate JWT ──────────────────────────────────────────────
     const request = getRequest();
@@ -63,25 +59,34 @@ export const requireAdmin = createMiddleware({ type: 'function' }).server(
       throw new Error('Unauthorized: token expired');
     }
 
-    // ── Step 2: Check admin_roles via service-role client ─────────────────
-    // admin_roles has DENY ALL for JWT roles — must use service role key.
-    const adminClient = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    });
-
-    const { data: roleRow, error: roleError } = await adminClient
-      .from('admin_roles')
-      .select('user_id')
-      .eq('user_id', userId)
-      .maybeSingle();
+    // ── Step 2: Check super-admin via SECURITY DEFINER RPC ────────────────
+    // is_current_user_super_admin() runs as definer and checks auth.uid(),
+    // so it works with the user's own JWT — no service-role key needed.
+    const { data: isAdmin, error: roleError } = await userClient.rpc(
+      'is_current_user_super_admin',
+    );
 
     if (roleError) {
       console.error('[admin-middleware] role check error:', roleError.message);
       throw new Error('Forbidden: admin role check failed');
     }
-    if (!roleRow) {
+    if (isAdmin !== true) {
       throw new Error('Forbidden: super admin access required');
     }
+
+    // ── Step 3: Service-role client for admin data operations ─────────────
+    // Required for cross-user reads and auth.admin APIs. If missing in this
+    // deployment, fail with an actionable message (the user IS an admin).
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error(
+        'ADMIN_CONFIG: SUPABASE_SERVICE_ROLE_KEY is not set in this deployment. ' +
+        'Get it from Supabase Dashboard → Project Settings → API → service_role, ' +
+        'and add it as a server environment variable in your hosting provider.',
+      );
+    }
+    const adminClient = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    });
 
     return next({
       context: {

@@ -318,6 +318,10 @@ export type Database = {
         Args: { uid: string }
         Returns: number
       }
+      is_current_user_super_admin: {
+        Args: never
+        Returns: boolean
+      }
       is_super_admin: {
         Args: { uid: string }
         Returns: boolean

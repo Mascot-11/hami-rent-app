@@ -6,6 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "@/integrations/supabase/admin-middleware";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
@@ -221,9 +222,22 @@ export const adminGetStats = createServerFn({ method: "GET" })
 
 // ── Check if current user is admin (used client-side) ─────────────────────────
 
+// Uses the lighter auth middleware + SECURITY DEFINER RPC so the admin gate
+// works even when SUPABASE_SERVICE_ROLE_KEY is missing from the deployment.
+// Reports whether the service key is configured so the UI can explain itself.
 export const checkIsAdmin = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
-  .handler(async ({ context }) => ({ isAdmin: true, userId: context.userId }));
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin, error } = await context.supabase.rpc(
+      "is_current_user_super_admin",
+    );
+    if (error) throw new Error("Admin role check failed");
+    return {
+      isAdmin: isAdmin === true,
+      userId: context.userId,
+      serviceKeyConfigured: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    };
+  });
 
 // ── Subscriptions & slot allocation (super admin) ─────────────────────────────
 

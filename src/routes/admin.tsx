@@ -87,6 +87,30 @@ function AdminLayout() {
       </div>
     );
 
+  if (!adminCheck.serviceKeyConfigured)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="max-w-md text-center">
+          <ShieldAlert className="h-12 w-12 text-warning mx-auto mb-4" />
+          <h1 className="text-xl font-semibold mb-2">Admin panel not configured</h1>
+          <p className="text-sm text-muted-foreground mb-3">
+            You <b>are</b> a super admin, but this deployment is missing the{" "}
+            <code className="text-xs bg-muted px-1.5 py-0.5 rounded">SUPABASE_SERVICE_ROLE_KEY</code>{" "}
+            environment variable, which admin operations require.
+          </p>
+          <p className="text-xs text-muted-foreground mb-6">
+            Get it from Supabase Dashboard → Project Settings → API → <b>service_role</b>,
+            add it as a server-side environment variable in your hosting provider
+            (e.g. Vercel → Settings → Environment Variables), then redeploy.
+            Never expose it with a <code className="bg-muted px-1 rounded">VITE_</code> prefix.
+          </p>
+          <Button onClick={() => nav({ to: "/dashboard" })}>
+            Back to dashboard
+          </Button>
+        </div>
+      </div>
+    );
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Admin Header ─────────────────────────────────────────────── */}
