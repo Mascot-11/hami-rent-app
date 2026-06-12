@@ -107,7 +107,7 @@ export const getBill = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .eq("owner_id", context.userId) // explicit ownership
       .single();
-    if (error) throw new Error("Bill not found");
+    if (error) throw new Error(`Bill not found: ${error.message} (code: ${error.code})`);
     return bill;
   });
 
