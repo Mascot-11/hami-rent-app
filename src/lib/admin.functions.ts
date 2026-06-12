@@ -402,3 +402,20 @@ export const adminUpdateAdsSettings = createServerFn({ method: "POST" })
     if (error) throw dbError(error);
     return { ok: true };
   });
+
+// ── Admin: view any bill regardless of owner ──────────────────────────────────
+// Uses the service-role client so owner_id filter is not needed.
+export const adminGetBill = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: bill, error } = await context.supabase
+      .from("bills")
+      .select("*, additional_charges(*), payments(*), tenants(*)")
+      .eq("id", data.id)
+      .single();
+    if (error) throw new Error(`Bill not found: ${error.message}`);
+    return bill;
+  });

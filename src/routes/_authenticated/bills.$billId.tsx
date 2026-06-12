@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useCallback } from "react";
 import { getBill, deleteBill, recordPayment, deletePayment } from "@/lib/bills.functions";
+import { adminGetBill, checkIsAdmin } from "@/lib/admin.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { v, firstError } from "@/lib/validators";
@@ -287,14 +288,26 @@ function BillPage() {
   const { billId } = Route.useParams();
   const qc = useQueryClient();
   const nav = useNavigate();
-  const fn       = useServerFn(getBill);
-  const delFn    = useServerFn(deleteBill);
-  const payFn    = useServerFn(recordPayment);
-  const delPayFn = useServerFn(deletePayment);
+  const fn        = useServerFn(getBill);
+  const adminFn   = useServerFn(adminGetBill);
+  const adminChk  = useServerFn(checkIsAdmin);
+  const delFn     = useServerFn(deleteBill);
+  const payFn     = useServerFn(recordPayment);
+  const delPayFn  = useServerFn(deletePayment);
+
+  const { data: adminData } = useQuery({
+    queryKey: ["checkIsAdmin"],
+    queryFn:  () => adminChk(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const isAdmin = !!adminData?.isAdmin;
 
   const { data: bill, isLoading } = useQuery({
     queryKey: ["bill", billId],
-    queryFn: () => fn({ data: { id: billId } }),
+    queryFn:  () => isAdmin
+      ? adminFn({ data: { id: billId } })
+      : fn({ data: { id: billId } }),
+    enabled: adminData !== undefined, // wait for admin check before firing
   });
 
   const [date,   setDate]   = useState("");
