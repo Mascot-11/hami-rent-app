@@ -497,6 +497,14 @@ function BillPage() {
 
           <HelpTip text={HELP.shareLink} label="Share" />
 
+          {!isAdmin && (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/bills/new" search={{ edit: billId }}>
+                Edit
+              </Link>
+            </Button>
+          )}
+
           <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete this bill and all its payments?")) removeBill.mutate(); }}>
             <Trash2 className="h-4 w-4" />
           </Button>

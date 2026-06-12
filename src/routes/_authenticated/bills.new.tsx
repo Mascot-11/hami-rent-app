@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { listTenants } from "@/lib/tenants.functions";
-import { listBills, saveBill } from "@/lib/bills.functions";
+import { listBills, saveBill, getBill } from "@/lib/bills.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,19 +20,34 @@ import { Plus, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/bills/new")({
+  validateSearch: (search: Record<string, unknown>): { edit?: string; tenantId?: string } => ({
+    edit: typeof search.edit === "string" ? search.edit : undefined,
+    tenantId: typeof search.tenantId === "string" ? search.tenantId : undefined,
+  }),
   head: () => ({ meta: [{ title: "New bill — Hamro Rent" }] }),
   component: NewBillPage,
 });
 
 function NewBillPage() {
   const nav = useNavigate();
+  const { edit: editId, tenantId: presetTenantId } = Route.useSearch();
+  const isEdit = !!editId;
   const tenantsFn = useServerFn(listTenants);
   const billsFn = useServerFn(listBills);
   const saveFn = useServerFn(saveBill);
+  const getBillFn = useServerFn(getBill);
   const { data: tenants = [] } = useQuery({ queryKey: ["tenants"], queryFn: () => tenantsFn() });
 
+  // When editing, load the existing bill to prefill the form.
+  const { data: editBill } = useQuery({
+    queryKey: ["bill", editId],
+    queryFn: () => getBillFn({ data: { id: editId! } }),
+    enabled: isEdit,
+  });
+  const [prefilled, setPrefilled] = useState(false);
+
   const cur = approxCurrentBS();
-  const [tenantId, setTenantId] = useState("");
+  const [tenantId, setTenantId] = useState(presetTenantId ?? "");
   const [year, setYear] = useState(cur.year);
   const [month, setMonth] = useState(cur.month);
   const [rent, setRent] = useState("");
@@ -53,8 +68,10 @@ function NewBillPage() {
     enabled: !!tenantId,
   });
 
-  // Auto-fill rent and water from tenant defaults when tenant is selected
+  // Auto-fill rent and water from tenant defaults when tenant is selected.
+  // Skipped in edit mode — an existing bill keeps its own stored values.
   useEffect(() => {
+    if (isEdit) return;
     if (!tenantId) return;
     const tenant = (tenants as any[]).find((t) => t.id === tenantId);
     if (!tenant) return;
@@ -79,6 +96,7 @@ function NewBillPage() {
   }, [priorBills, year, month]);
 
   useEffect(() => {
+    if (isEdit) return; // don't auto-derive carry/charges when correcting an existing bill
     if (!tenantId) return;
     setCharges((prev) => {
       const cleaned = prev.filter((c) => !c.auto);
@@ -94,6 +112,33 @@ function NewBillPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId, year, month, priorSummary.net]);
+
+  // Prefill the form from the loaded bill exactly once (edit mode).
+  useEffect(() => {
+    if (!isEdit || !editBill || prefilled) return;
+    const b = editBill as any;
+    setTenantId(b.tenant_id);
+    setYear(b.bs_year);
+    setMonth(b.bs_month);
+    setRent(b.rent_this_month != null ? String(b.rent_this_month) : "");
+    setWater(b.water_bill != null ? String(b.water_bill) : "0");
+    setMode(b.electricity_mode);
+    setPrev(b.electricity_prev_reading != null ? String(b.electricity_prev_reading) : "");
+    setCurr(b.electricity_curr_reading != null ? String(b.electricity_curr_reading) : "");
+    setRate(b.electricity_rate_snapshot != null ? String(b.electricity_rate_snapshot) : "");
+    setSvc(b.electricity_service_charge != null ? String(b.electricity_service_charge) : "0");
+    setDirect(b.electricity_direct_amount != null ? String(b.electricity_direct_amount) : "");
+    setCarry(b.carry_forward_credit != null ? String(b.carry_forward_credit) : "0");
+    setNotes(b.notes ?? "");
+    setCharges(
+      (b.additional_charges ?? []).map((c: any) => ({
+        label: c.label,
+        amount: String(c.amount),
+      })),
+    );
+    setPrefilled(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, editBill, prefilled]);
 
   const billObj = {
     rent_this_month: Number(rent) || 0,
@@ -123,7 +168,7 @@ function NewBillPage() {
         if (c.label.trim() && Number(c.amount) <= 0) throw new Error(`Charge "${c.label}" must have an amount > 0`);
         if (!c.label.trim() && c.amount) throw new Error("Additional charge label cannot be blank");
       }
-      if ((priorBills as any[]).some((b) => b.bs_year === year && b.bs_month === month)) {
+      if ((priorBills as any[]).some((b) => b.bs_year === year && b.bs_month === month && b.id !== editId)) {
         throw new Error(`A bill already exists for ${bsLabel(year, month)}`);
       }
       if (!rent || Number(rent) === 0) {
@@ -131,6 +176,7 @@ function NewBillPage() {
       }
       return saveFn({
         data: {
+          id: editId,
           tenant_id: tenantId, bs_year: year, bs_month: month,
           rent_this_month: Number(rent) || 0,
           water_bill: Number(water) || 0,
@@ -147,7 +193,7 @@ function NewBillPage() {
       });
     },
     onSuccess: (res) => {
-      toast.success("Bill created");
+      toast.success(isEdit ? "Bill updated" : "Bill created");
       nav({ to: "/bills/$billId", params: { billId: res.id } });
     },
     onError: (e: any) => toast.error(e.message),
@@ -155,7 +201,7 @@ function NewBillPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full">
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">New bill</h1>
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">{isEdit ? "Edit bill" : "New bill"}</h1>
 
       <Card className="p-3 sm:p-5 space-y-4">
         <div>
@@ -272,7 +318,7 @@ function NewBillPage() {
 
       <div className="flex flex-col sm:flex-row gap-2">
         <Button onClick={() => submit.mutate()} disabled={submit.isPending} className="w-full sm:w-auto">
-          {submit.isPending ? "Saving…" : "Create bill"}
+          {submit.isPending ? "Saving…" : isEdit ? "Save changes" : "Create bill"}
         </Button>
         <Link to="/dashboard" className="w-full sm:w-auto">
           <Button variant="outline" className="w-full sm:w-auto">Cancel</Button>

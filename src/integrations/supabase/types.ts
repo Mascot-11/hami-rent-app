@@ -326,6 +326,30 @@ export type Database = {
         }
         Relationships: []
       }
+      properties: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          owner_id?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
       tenants: {
         Row: {
           base_rent: number | null
@@ -340,6 +364,7 @@ export type Database = {
           owner_id: string
           phone: string | null
           photo_url: string | null
+          property_id: string | null
           room_number: string | null
         }
         Insert: {
@@ -355,6 +380,7 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           photo_url?: string | null
+          property_id?: string | null
           room_number?: string | null
         }
         Update: {
@@ -370,9 +396,18 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           photo_url?: string | null
+          property_id?: string | null
           room_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tenants_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -79,7 +79,7 @@ function Nav({ authed, onDemo }: { authed: boolean; onDemo: () => void }) {
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
-          <a href="/#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+          <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
           <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
           <button onClick={onDemo} className="hover:text-foreground transition-colors">Demo</button>
           {!authed
@@ -98,7 +98,7 @@ function Nav({ authed, onDemo }: { authed: boolean; onDemo: () => void }) {
       {open && (
         <div className="md:hidden border-t bg-background px-5 py-4 flex flex-col gap-3 text-sm">
           <Link to="/features" onClick={() => setOpen(false)} className="text-muted-foreground py-1">Features</Link>
-          <a href="/#pricing" onClick={() => setOpen(false)} className="text-muted-foreground py-1">Pricing</a>
+          <Link to="/pricing" onClick={() => setOpen(false)} className="text-muted-foreground py-1">Pricing</Link>
           <Link to="/about" onClick={() => setOpen(false)} className="text-muted-foreground py-1">About</Link>
           <button onClick={() => { setOpen(false); onDemo(); }} className="text-left text-muted-foreground py-1">Try demo</button>
         </div>
@@ -127,23 +127,23 @@ const plans = [
   },
   {
     name: "Basic",
-    price: "रू 1,000",
-    priceNote: "per year · manual payment",
+    price: "रू 150",
+    priceNote: "per month · manual payment",
     featured: true,
-    cta: "Sign up & request",
+    cta: "Choose Basic",
     points: [
       "10 active tenant slots",
       "Everything in Free",
+      "Multi-property grouping",
       "Pay via eSewa, Khalti, bank, or cash",
-      "Slots activated by admin on confirmation",
     ],
   },
   {
     name: "Pro",
-    price: "रू 2,500",
-    priceNote: "per year · manual payment",
+    price: "रू 300",
+    priceNote: "per month · manual payment",
     featured: false,
-    cta: "Sign up & request",
+    cta: "Choose Pro",
     points: [
       "30 active tenant slots",
       "Everything in Basic",
@@ -165,7 +165,7 @@ function Footer() {
         </div>
         <div className="flex gap-6 text-sm text-muted-foreground">
           <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
-          <a href="/#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+          <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
           <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
           <Link to="/login" className="hover:text-foreground transition-colors">Sign in</Link>
         </div>
@@ -268,16 +268,16 @@ function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28 pb-20 sm:pb-28">
-        <p className="text-xs uppercase tracking-widest text-primary font-medium mb-6">
+        <p className="hr-reveal text-xs uppercase tracking-widest text-primary font-medium mb-6">
           Bikram Sambat · Nepal
         </p>
-        <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] max-w-2xl">
+        <h1 className="hr-reveal font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] max-w-2xl" style={{ animationDelay: "70ms" }}>
           Rent billing,<br />done in seconds.
         </h1>
-        <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-lg leading-relaxed">
+        <p className="hr-reveal mt-6 text-base sm:text-lg text-muted-foreground max-w-lg leading-relaxed" style={{ animationDelay: "140ms" }}>
           Track tenants, generate BS bills, calculate electricity, record payments, share receipts on WhatsApp. Everything a Nepali landlord needs.
         </p>
-        <div className="mt-10 flex flex-wrap gap-3 items-center">
+        <div className="hr-reveal mt-10 flex flex-wrap gap-3 items-center" style={{ animationDelay: "210ms" }}>
           <Link to={cta} className="inline-flex items-center gap-2 bg-foreground text-background text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-foreground/85 transition-colors">
             {ctaLabel} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -353,12 +353,12 @@ function LandingPage() {
             Start free. Upgrade when your building grows.
           </h2>
           <p className="text-sm text-muted-foreground max-w-md mb-10 leading-relaxed">
-            Plans are based on tenant slots — the number of active tenants you can manage.
-            Payments are handled personally via eSewa, Khalti, bank transfer, or cash. No card required.
+            Simple monthly plans based on tenant slots — the number of active tenants you can manage.
+            Pay via eSewa, Khalti, bank transfer, or cash. No card required.
           </p>
           <div className="grid sm:grid-cols-3 gap-4">
-            {plans.map((pl) => (
-              <div key={pl.name} className={`rounded-2xl border p-5 sm:p-6 flex flex-col bg-background ${pl.featured ? "border-primary shadow-sm ring-1 ring-primary/20" : "border-border"}`}>
+            {plans.map((pl, i) => (
+              <div key={pl.name} style={{ animationDelay: `${i * 90}ms` }} className={`hr-pop rounded-2xl border p-5 sm:p-6 flex flex-col bg-background transition-transform duration-200 hover:-translate-y-1 ${pl.featured ? "border-primary shadow-sm ring-1 ring-primary/20" : "border-border"}`}>
                 <div className="flex items-center justify-between">
                   <p className="font-display font-semibold">{pl.name}</p>
                   {pl.featured && (
@@ -376,7 +376,7 @@ function LandingPage() {
                   ))}
                 </ul>
                 <Link
-                  to={pl.name === "Free" ? cta : "/login"}
+                  to={pl.name === "Free" ? cta : "/pricing"}
                   className={`mt-6 inline-flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg transition-colors ${pl.featured ? "bg-foreground text-background hover:bg-foreground/85" : "border border-border hover:bg-muted"}`}
                 >
                   {pl.cta}
@@ -385,6 +385,10 @@ function LandingPage() {
             ))}
           </div>
           <p className="mt-6 text-xs text-muted-foreground">
+            See{" "}
+            <Link to="/pricing" className="text-primary underline">
+              full pricing, yearly discounts & FAQs →
+            </Link>{" "}
             After signing up, request an upgrade and the admin will allocate your tenant slots once payment is confirmed.
           </p>
         </div>
