@@ -73,7 +73,20 @@ function TermsPage() {
             <p>You retain full ownership of all data you enter into Hamro Rent, including tenant information, bill records, and payment histories. We do not claim any rights over your data. You may export your data at any time using the Export feature.</p>
           </Section>
 
-          <Section title="5. Acceptable Use">
+          <Section title="5. Subscription Plans and Billing">
+            <p>Hamro Rent offers a Free plan and paid plans (Basic and Pro). Each plan grants a number of active tenant slots — the maximum number of active tenants you may manage at one time. Current plans and prices are listed on our <Link to="/pricing" className="text-primary underline">Pricing page</Link>.</p>
+            <ul>
+              <li>The Free plan includes 3 active tenant slots at no cost.</li>
+              <li>Paid plans are billed on a monthly basis (with an optional discounted yearly term) and are prepaid for the chosen period.</li>
+              <li>Payments are made manually via eSewa, Khalti, bank transfer, or cash. We do not store card details or process automatic recurring charges.</li>
+              <li>Tenant slots are activated by an administrator after payment is confirmed, and remain active for the period you have paid for.</li>
+              <li>You may upgrade, downgrade, or stop a plan at any time. If you downgrade below your current active tenant count, you must archive tenants to fit within the new limit. Archived tenants do not consume a slot.</li>
+              <li>Prepaid amounts are non-refundable except where required by law; you retain access until the end of the paid period.</li>
+              <li>Prices may change with reasonable notice. Any price change applies only to renewals or new purchases, never retroactively to a period already paid.</li>
+            </ul>
+          </Section>
+
+          <Section title="6. Acceptable Use">
             <p>You agree not to use the Service to:</p>
             <ul>
               <li>Violate any applicable laws or regulations</li>
@@ -84,28 +97,28 @@ function TermsPage() {
             </ul>
           </Section>
 
-          <Section title="6. Privacy and Data Security">
+          <Section title="7. Privacy and Data Security">
             <p>Your privacy is important to us. Please review our <Link to="/privacy" className="text-primary underline">Privacy Policy</Link>, which describes how we collect, use, and protect your information. We use industry-standard encryption and security practices to protect your data.</p>
           </Section>
 
-          <Section title="7. Service Availability">
+          <Section title="8. Service Availability">
             <p>We aim to provide reliable access to the Service. However, we do not guarantee uninterrupted, error-free access. The Service may be temporarily unavailable for maintenance, updates, or due to circumstances beyond our control. We are not liable for any losses arising from service interruptions.</p>
           </Section>
 
-          <Section title="8. Limitation of Liability">
+          <Section title="9. Limitation of Liability">
             <p>To the maximum extent permitted by law, Hamro Rent and its operators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service. This includes loss of data, loss of revenue, or business interruption.</p>
             <p>The Service is provided "as is" without warranties of any kind, either express or implied.</p>
           </Section>
 
-          <Section title="9. Changes to Terms">
+          <Section title="10. Changes to Terms">
             <p>We may update these Terms of Service from time to time. We will notify registered users of significant changes by email or by displaying a prominent notice in the application. Continued use of the Service after changes constitutes acceptance of the new terms.</p>
           </Section>
 
-          <Section title="10. Governing Law">
+          <Section title="11. Governing Law">
             <p>These Terms of Service are governed by the laws of Nepal. Any disputes arising from these terms or your use of the Service shall be subject to the exclusive jurisdiction of the courts of Nepal.</p>
           </Section>
 
-          <Section title="11. Contact">
+          <Section title="12. Contact">
             <p>If you have any questions about these Terms of Service, please contact us through the application or at the email address associated with your account.</p>
           </Section>
         </div>

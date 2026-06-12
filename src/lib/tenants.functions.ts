@@ -16,6 +16,17 @@ async function assertTenantOwner(supabase: any, tenantId: string, userId: string
   if (data.owner_id !== userId) throw new Error("Forbidden");
 }
 
+/** Throws if the property doesn't belong to the authenticated user. */
+async function assertPropertyOwner(supabase: any, propertyId: string, userId: string) {
+  const { data, error } = await supabase
+    .from("properties")
+    .select("owner_id")
+    .eq("id", propertyId)
+    .single();
+  if (error || !data) throw new Error("Property not found");
+  if (data.owner_id !== userId) throw new Error("Forbidden");
+}
+
 /**
  * Throws if adding/activating one more tenant would exceed the user's
  * allocated slots. DB trigger enforces this too (defense in depth) —
@@ -80,6 +91,7 @@ const TenantInput = z.object({
   documents: z.array(z.object({ name: z.string().max(200), url: z.string().max(2000) })).optional(),
   base_rent: z.number().min(0).max(10_000_000).nullable().optional(),
   default_water_bill: z.number().min(0).max(1_000_000).nullable().optional(),
+  property_id: z.string().uuid().nullable().optional().or(z.literal("").transform(() => null)),
 });
 
 export const upsertTenant = createServerFn({ method: "POST" })
@@ -89,6 +101,10 @@ export const upsertTenant = createServerFn({ method: "POST" })
     // For updates, verify ownership before writing
     if (data.id) {
       await assertTenantOwner(context.supabase, data.id, context.userId);
+    }
+    // If assigning to a property, verify the landlord owns that property.
+    if (data.property_id) {
+      await assertPropertyOwner(context.supabase, data.property_id, context.userId);
     }
 
     const payload = {
@@ -102,6 +118,7 @@ export const upsertTenant = createServerFn({ method: "POST" })
       documents: data.documents ?? [],
       base_rent: data.base_rent ?? null,
       default_water_bill: data.default_water_bill ?? null,
+      property_id: data.property_id || null,
     };
 
     if (data.id) {

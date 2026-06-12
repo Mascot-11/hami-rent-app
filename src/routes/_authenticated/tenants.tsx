@@ -10,6 +10,12 @@ import {
   deleteTenant,
 } from "@/lib/tenants.functions";
 import { listBills } from "@/lib/bills.functions";
+import { getMySubscription } from "@/lib/subscription.functions";
+import {
+  listProperties,
+  upsertProperty,
+  deleteProperty,
+} from "@/lib/properties.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { v, firstError } from "@/lib/validators";
@@ -34,6 +40,8 @@ import {
   ChevronDown,
   ChevronUp,
   Receipt,
+  Sparkles,
+  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { bsLabel } from "@/lib/bs-calendar";
@@ -65,10 +73,35 @@ function TenantsPage() {
     queryFn: () => listFn(),
   });
 
+  const subFn = useServerFn(getMySubscription);
+  const { data: sub } = useQuery({
+    queryKey: ["my-subscription"],
+    queryFn: () => subFn(),
+    staleTime: 60_000,
+  });
+
+  const propsFn = useServerFn(listProperties);
+  const { data: properties = [] } = useQuery({
+    queryKey: ["properties"],
+    queryFn: () => propsFn(),
+    staleTime: 60_000,
+  });
+
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [showProps, setShowProps] = useState(false);
+
+  // Pre-emptive client gate: block the form when no slot is free.
+  // The server still enforces this (assertSlotAvailable) as the real boundary.
+  const slotsFull =
+    !!sub && sub.tenant_slots > 0 && sub.tenants_used >= sub.tenant_slots;
 
   const openNew = () => {
+    if (slotsFull) {
+      setShowUpgrade(true);
+      return;
+    }
     setEditing(null);
     setShowForm(true);
   };
@@ -102,21 +135,71 @@ function TenantsPage() {
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-3">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">Tenants</h1>
-        <Button onClick={openNew} className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-1.5" />
-          Add tenant
-        </Button>
+        {sub && sub.tenant_slots > 0 && (
+          <p className="text-xs text-muted-foreground -mt-1">
+            {sub.tenants_used} of {sub.tenant_slots} tenant slots used
+            {slotsFull && (
+              <>
+                {" · "}
+                <button
+                  onClick={() => setShowUpgrade(true)}
+                  className="text-primary underline font-medium"
+                >
+                  upgrade for more
+                </button>
+              </>
+            )}
+          </p>
+        )}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button onClick={openNew} className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-1.5" />
+            Add tenant
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowProps(true)}
+            className="w-full sm:w-auto"
+          >
+            <Building2 className="h-4 w-4 mr-1.5" />
+            Manage properties
+          </Button>
+        </div>
       </div>
 
       {isLoading && <p className="text-muted-foreground text-sm">Loading…</p>}
 
-      <TenantList
-        title="Active"
-        tenants={active}
-        onEdit={openEdit}
-        onArchive={(id: string) => archive.mutate({ id, is_active: false })}
-        onDelete={(id: string) => del.mutate(id)}
-      />
+      {properties.length === 0 ? (
+        <TenantList
+          title="Active"
+          tenants={active}
+          onEdit={openEdit}
+          onArchive={(id: string) => archive.mutate({ id, is_active: false })}
+          onDelete={(id: string) => del.mutate(id)}
+        />
+      ) : (
+        <>
+          {properties.map((p: any) => (
+            <TenantList
+              key={p.id}
+              title={p.name}
+              tenants={active.filter((t: any) => t.property_id === p.id)}
+              onEdit={openEdit}
+              onArchive={(id: string) => archive.mutate({ id, is_active: false })}
+              onDelete={(id: string) => del.mutate(id)}
+            />
+          ))}
+          <TenantList
+            title="Ungrouped"
+            tenants={active.filter(
+              (t: any) => !t.property_id || !properties.some((p: any) => p.id === t.property_id),
+            )}
+            onEdit={openEdit}
+            onArchive={(id: string) => archive.mutate({ id, is_active: false })}
+            onDelete={(id: string) => del.mutate(id)}
+          />
+        </>
+      )}
 
       {archived.length > 0 && (
         <TenantList
@@ -132,14 +215,221 @@ function TenantsPage() {
         open={showForm}
         onOpenChange={setShowForm}
         initial={editing}
+        properties={properties}
         onSave={async (v: any) => {
-          await upsertFn({ data: v });
-          qc.invalidateQueries({ queryKey: ["tenants"] });
-          setShowForm(false);
-          toast.success("Saved");
+          try {
+            await upsertFn({ data: v });
+            qc.invalidateQueries({ queryKey: ["tenants"] });
+            qc.invalidateQueries({ queryKey: ["my-subscription"] });
+            setShowForm(false);
+            toast.success("Saved");
+          } catch (e: any) {
+            // Server is the real boundary — if slots filled meanwhile, upsell.
+            if (/slot/i.test(e?.message ?? "")) {
+              setShowForm(false);
+              setShowUpgrade(true);
+            } else {
+              toast.error(e?.message ?? "Could not save tenant");
+            }
+          }
         }}
       />
+
+      <UpgradeDialog
+        open={showUpgrade}
+        onOpenChange={setShowUpgrade}
+        used={sub?.tenants_used ?? 0}
+        limit={sub?.tenant_slots ?? 0}
+        plan={sub?.plan ?? "free"}
+      />
+
+      <PropertyManagerDialog
+        open={showProps}
+        onOpenChange={setShowProps}
+        properties={properties}
+      />
     </div>
+  );
+}
+
+// ─── Property Manager Dialog ──────────────────────────────────────────────────
+// Create / rename / delete properties. Deleting a property does NOT delete its
+// tenants — they fall back to "Ungrouped" (FK is ON DELETE SET NULL).
+
+function PropertyManagerDialog({
+  open,
+  onOpenChange,
+  properties,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  properties: any[];
+}) {
+  const qc = useQueryClient();
+  const upsertFn = useServerFn(upsertProperty);
+  const deleteFn = useServerFn(deleteProperty);
+
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["properties"] });
+    qc.invalidateQueries({ queryKey: ["tenants"] });
+  };
+
+  const add = useMutation({
+    mutationFn: () => upsertFn({ data: { name: name.trim(), address: address.trim() || null } }),
+    onSuccess: () => {
+      setName("");
+      setAddress("");
+      invalidate();
+      toast.success("Property added");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not add property"),
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => deleteFn({ data: { id } }),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Property deleted");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not delete property"),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Properties</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Group tenants by building. Tenants keep their property when you edit them.
+            Deleting a property keeps its tenants — they just become ungrouped.
+          </p>
+
+          {/* Existing properties */}
+          <div className="space-y-2">
+            {properties.length === 0 && (
+              <p className="text-sm text-muted-foreground italic">No properties yet.</p>
+            )}
+            {properties.map((p: any) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between rounded-md border px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{p.name}</p>
+                  {p.address && (
+                    <p className="text-xs text-muted-foreground truncate">{p.address}</p>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 flex-shrink-0"
+                  onClick={() => {
+                    if (confirm(`Delete property "${p.name}"? Its tenants become ungrouped.`))
+                      remove.mutate(p.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {/* Add new */}
+          <div className="border-t pt-4 space-y-2">
+            <FieldLabel required>Property name</FieldLabel>
+            <Input
+              value={name}
+              placeholder="e.g. Baluwatar Building"
+              onChange={(e) => setName(e.target.value)}
+            />
+            <FieldLabel>Address (optional)</FieldLabel>
+            <Input
+              value={address}
+              placeholder="e.g. Ward 4, Baluwatar"
+              onChange={(e) => setAddress(e.target.value)}
+            />
+            <Button
+              className="w-full mt-1"
+              disabled={!name.trim() || add.isPending}
+              onClick={() => add.mutate()}
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add property
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Upgrade Dialog ───────────────────────────────────────────────────────────
+// Shown when a landlord hits their active-tenant slot limit.
+
+function UpgradeDialog({
+  open,
+  onOpenChange,
+  used,
+  limit,
+  plan,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  used: number;
+  limit: number;
+  plan: string;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
+          <DialogTitle className="text-center text-xl">
+            You've reached your tenant limit
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="text-center text-sm text-muted-foreground space-y-3">
+          <p>
+            Your <span className="font-medium capitalize">{plan}</span> plan covers{" "}
+            <span className="font-medium text-foreground">{limit}</span> active tenants
+            {limit > 0 && (
+              <>
+                {" "}
+                and you're using all{" "}
+                <span className="font-medium text-foreground">{used}</span>
+              </>
+            )}
+            . Upgrade to add more, or archive a tenant to free up a slot.
+          </p>
+          <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs">
+            Basic gives you 10 slots at रू 150/mo · Pro gives you 30 at रू 300/mo.
+          </div>
+        </div>
+
+        <DialogFooter className="flex-col gap-2 sm:flex-col">
+          <Button asChild className="w-full">
+            <Link to="/pricing">View plans &amp; upgrade</Link>
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => onOpenChange(false)}
+          >
+            Not now
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -456,10 +746,11 @@ function TenantBillHistory({
 
 // ─── Form Dialog ──────────────────────────────────────────────────────────────
 
-function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
+function TenantFormDialog({ open, onOpenChange, initial, onSave, properties = [] }: any) {
   const [name, setName] = useState(initial?.name ?? "");
   const [room, setRoom] = useState(initial?.room_number ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
+  const [propertyId, setPropertyId] = useState(initial?.property_id ?? "");
   const [moveIn, setMoveIn] = useState(initial?.move_in_date_bs ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [baseRent, setBaseRent] = useState(initial?.base_rent != null ? String(initial.base_rent) : "");
@@ -472,6 +763,7 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
     setName(t?.name ?? "");
     setRoom(t?.room_number ?? "");
     setPhone(t?.phone ?? "");
+    setPropertyId(t?.property_id ?? "");
     setMoveIn(t?.move_in_date_bs ?? "");
     setNotes(t?.notes ?? "");
     setBaseRent(t?.base_rent != null ? String(t.base_rent) : "");
@@ -559,6 +851,7 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
       name: name.trim(),
       room_number: room.trim() || null,
       phone: phone.trim() || null,
+      property_id: propertyId || null,
       move_in_date_bs: moveIn.trim() || null,
       notes: notes.trim() || null,
       photo_url: photoUrl,
@@ -583,6 +876,25 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave }: any) {
             <FieldLabel help={HELP.tenantRoom}>Room</FieldLabel>
             <Input value={room} onChange={(e) => setRoom(e.target.value)} />
           </div>
+          {properties.length > 0 && (
+            <div>
+              <FieldLabel help="Group this tenant under one of your buildings. Manage the list from the Properties button.">
+                Property
+              </FieldLabel>
+              <select
+                value={propertyId}
+                onChange={(e) => setPropertyId(e.target.value)}
+                className="w-full text-sm border border-input rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-ring h-9"
+              >
+                <option value="">Ungrouped</option>
+                {properties.map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <FieldLabel help={HELP.tenantPhone}>Phone</FieldLabel>
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
