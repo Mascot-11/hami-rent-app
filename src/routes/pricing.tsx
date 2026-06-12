@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SiteHeader } from "@/components/SiteHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
@@ -121,21 +122,7 @@ function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
-      {/* Nav */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src={logo} alt="Hamro Rent" className="h-7 w-7 rounded-full object-cover" />
-            <span className="font-display text-base font-semibold tracking-tight">Hamro Rent</span>
-          </Link>
-          <Link
-            to="/"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to home
-          </Link>
-        </div>
-      </header>
+      <SiteHeader active="pricing" />
 
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-8 text-center">

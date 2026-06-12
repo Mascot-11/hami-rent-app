@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getPublicStats } from "@/lib/public-stats.functions";
 import { PublicFooter } from "./about";
 import logo from "@/assets/hamro-rent-logo.jpeg";
+import { SiteHeader } from "@/components/SiteHeader";
 import {
   ArrowRight, Calculator, Users, Calendar, Zap, Receipt, Share2,
   Download, BarChart3, Shield, Clock, CheckCircle2, Menu, X,
@@ -25,38 +26,8 @@ export const Route = createFileRoute("/features")({
   component: FeaturesPage,
 });
 
-function PublicNav({ active }: { active: "about" | "features" | "home" }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5">
-          <img src={logo} alt="Hamro Rent" className="h-8 w-8 rounded-full object-cover ring-2 ring-primary/20" />
-          <span className="font-display text-lg font-bold tracking-tight">Hamro Rent</span>
-        </Link>
-        <nav className="hidden md:flex items-center gap-7 text-sm">
-          <Link to="/" className={active === "home" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground transition-colors"}>Home</Link>
-          <Link to="/features" className={active === "features" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground transition-colors"}>Features</Link>
-          <Link to="/about" className={active === "about" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground transition-colors"}>About</Link>
-        </nav>
-        <div className="flex items-center gap-2">
-          <Link to="/login" className="hidden sm:inline-flex"><Button variant="ghost" size="sm">Sign in</Button></Link>
-          <Link to="/login"><Button size="sm" className="rounded-full px-5">Get started</Button></Link>
-          <button onClick={() => setOpen(!open)} className="md:hidden p-2 rounded-md hover:bg-accent">
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </div>
-      {open && (
-        <div className="md:hidden border-t bg-background/95 px-4 py-4 flex flex-col gap-4 text-sm">
-          <Link to="/" onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">Home</Link>
-          <Link to="/features" onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">Features</Link>
-          <Link to="/about" onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">About</Link>
-        </div>
-      )}
-    </header>
-  );
-}
+// Public header is shared across every marketing page — see @/components/SiteHeader
+const PublicNav = SiteHeader;
 
 const FEATURE_GROUPS = [
   {

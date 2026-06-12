@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SiteHeader } from "@/components/SiteHeader";
 import { ArrowLeft, Shield } from "lucide-react";
 import logo from "@/assets/hamro-rent-logo.jpeg";
 
@@ -18,18 +19,7 @@ const LAST_UPDATED = "2082 Jestha 28";
 function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src={logo} alt="Hamro Rent" className="h-7 w-7 rounded-lg object-cover" />
-            <span className="font-display font-semibold text-sm">Hamro Rent</span>
-          </Link>
-          <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" /> Back
-          </Link>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <main className="max-w-3xl mx-auto px-4 py-12 sm:py-16">
         {/* Header */}

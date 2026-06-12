@@ -5,8 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getPublicStats } from "@/lib/public-stats.functions";
-import { ArrowRight, Menu, X, PlayCircle, Check, ChevronDown } from "lucide-react";
+import { ArrowRight, X, PlayCircle, Check, ChevronDown } from "lucide-react";
 import logo from "@/assets/hamro-rent-logo.jpeg";
+import { SiteHeader } from "@/components/SiteHeader";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -67,45 +68,8 @@ function fmtNPR(n: number) {
 }
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
-
-function Nav({ authed, onDemo }: { authed: boolean; onDemo: () => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <header className="sticky top-0 z-50 bg-background border-b border-border">
-      <div className="max-w-5xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5">
-          <img src={logo} alt="Hamro Rent" className="h-7 w-7 rounded-full object-cover" />
-          <span className="font-display text-base font-semibold tracking-tight">Hamro Rent</span>
-        </Link>
-        <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
-          <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
-          <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
-          <button onClick={onDemo} className="hover:text-foreground transition-colors">Demo</button>
-          {!authed
-            ? <Link to="/login" className="text-foreground font-medium hover:text-primary transition-colors">Sign in →</Link>
-            : <Link to="/dashboard" className="text-foreground font-medium hover:text-primary transition-colors">Dashboard →</Link>}
-        </nav>
-        <div className="flex items-center gap-2 md:hidden">
-          <Link to={authed ? "/dashboard" : "/login"} className="text-sm font-medium text-primary">
-            {authed ? "Dashboard" : "Sign in"}
-          </Link>
-          <button onClick={() => setOpen(!open)} className="p-1.5 rounded-md hover:bg-muted transition-colors">
-            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
-      {open && (
-        <div className="md:hidden border-t bg-background px-5 py-4 flex flex-col gap-3 text-sm">
-          <Link to="/features" onClick={() => setOpen(false)} className="text-muted-foreground py-1">Features</Link>
-          <Link to="/pricing" onClick={() => setOpen(false)} className="text-muted-foreground py-1">Pricing</Link>
-          <Link to="/about" onClick={() => setOpen(false)} className="text-muted-foreground py-1">About</Link>
-          <button onClick={() => { setOpen(false); onDemo(); }} className="text-left text-muted-foreground py-1">Try demo</button>
-        </div>
-      )}
-    </header>
-  );
-}
+// The public header now lives in @/components/SiteHeader and is shared across
+// every marketing page. See <SiteHeader /> usage below.
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
@@ -264,7 +228,7 @@ function LandingPage() {
         </div>
       )}
 
-      <Nav authed={authed} onDemo={openDemo} />
+      <SiteHeader active="home" onDemo={openDemo} />
 
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28 pb-20 sm:pb-28">
