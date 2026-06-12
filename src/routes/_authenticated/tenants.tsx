@@ -91,6 +91,7 @@ function TenantsPage() {
   const [editing, setEditing] = useState<any | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showProps, setShowProps] = useState(false);
+  const [showNeedProperty, setShowNeedProperty] = useState(false);
 
   // Pre-emptive client gate: block the form when no slot is free.
   // The server still enforces this (assertSlotAvailable) as the real boundary.
@@ -98,6 +99,11 @@ function TenantsPage() {
     !!sub && sub.tenant_slots > 0 && sub.tenants_used >= sub.tenant_slots;
 
   const openNew = () => {
+    // A tenant must belong to a property — block creation until one exists.
+    if (properties.length === 0) {
+      setShowNeedProperty(true);
+      return;
+    }
     if (slotsFull) {
       setShowUpgrade(true);
       return;
@@ -248,7 +254,64 @@ function TenantsPage() {
         onOpenChange={setShowProps}
         properties={properties}
       />
+
+      <NeedPropertyDialog
+        open={showNeedProperty}
+        onOpenChange={setShowNeedProperty}
+        onAddProperty={() => {
+          setShowNeedProperty(false);
+          setShowProps(true);
+        }}
+      />
     </div>
+  );
+}
+
+// ─── Need-Property Dialog ─────────────────────────────────────────────────────
+// Shown when the landlord tries to add a tenant before any property exists.
+// A tenant must be grouped under a property, so we redirect them to create one.
+
+function NeedPropertyDialog({
+  open,
+  onOpenChange,
+  onAddProperty,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onAddProperty: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Building2 className="h-6 w-6 text-primary" />
+          </div>
+          <DialogTitle className="text-center text-xl">
+            Add a property first
+          </DialogTitle>
+        </DialogHeader>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Every tenant belongs to a property. Create at least one property
+          (your building) before adding tenants.
+        </p>
+
+        <DialogFooter className="flex-col gap-2 sm:flex-col">
+          <Button className="w-full" onClick={onAddProperty}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            Add property
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => onOpenChange(false)}
+          >
+            Not now
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -836,6 +899,7 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave, properties = []
 
   const submit = (e: any) => {
     e.preventDefault();
+    if (!propertyId) return toast.error("Please select a property");
     const err = firstError(
       v.name(name),
       v.maxLen(room, "Room number", 40),
@@ -876,25 +940,29 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave, properties = []
             <FieldLabel help={HELP.tenantRoom}>Room</FieldLabel>
             <Input value={room} onChange={(e) => setRoom(e.target.value)} />
           </div>
-          {properties.length > 0 && (
-            <div>
-              <FieldLabel help="Group this tenant under one of your buildings. Manage the list from the Properties button.">
-                Property
-              </FieldLabel>
-              <select
-                value={propertyId}
-                onChange={(e) => setPropertyId(e.target.value)}
-                className="w-full text-sm border border-input rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-ring h-9"
-              >
-                <option value="">Ungrouped</option>
-                {properties.map((p: any) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <FieldLabel
+              help="Group this tenant under one of your buildings. Manage the list from the Properties button."
+              required
+            >
+              Property
+            </FieldLabel>
+            <select
+              value={propertyId}
+              onChange={(e) => setPropertyId(e.target.value)}
+              required
+              className="w-full text-sm border border-input rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-ring h-9"
+            >
+              <option value="" disabled>
+                Select a property
+              </option>
+              {properties.map((p: any) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <FieldLabel help={HELP.tenantPhone}>Phone</FieldLabel>
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} />

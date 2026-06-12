@@ -11,6 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { FieldLabel, HelpTip } from "@/components/HelpTip";
 import { HELP } from "@/lib/help-copy";
 import { BSMonthPicker } from "@/components/BSMonthPicker";
@@ -36,7 +43,7 @@ function NewBillPage() {
   const billsFn = useServerFn(listBills);
   const saveFn = useServerFn(saveBill);
   const getBillFn = useServerFn(getBill);
-  const { data: tenants = [] } = useQuery({ queryKey: ["tenants"], queryFn: () => tenantsFn() });
+  const { data: tenants = [], isLoading: tenantsLoading } = useQuery({ queryKey: ["tenants"], queryFn: () => tenantsFn() });
 
   // When editing, load the existing bill to prefill the form.
   const { data: editBill } = useQuery({
@@ -199,8 +206,37 @@ function NewBillPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  // A bill needs a tenant — block creation until at least one active tenant exists.
+  // Skip in edit mode (the bill already has its tenant) and while tenants load.
+  const activeTenants = (tenants as any[]).filter((t) => t.is_active);
+  const noActiveTenants = !isEdit && !tenantsLoading && activeTenants.length === 0;
+
   return (
     <div className="space-y-4 sm:space-y-6 w-full">
+      <Dialog
+        open={noActiveTenants}
+        onOpenChange={(o) => {
+          if (!o) nav({ to: "/tenants" });
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl">
+              Add a tenant first
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-center text-sm text-muted-foreground">
+            You need at least one active tenant before you can create a bill.
+            Add a tenant, then come back to bill them.
+          </p>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button asChild className="w-full">
+              <Link to="/tenants">Go to Tenants</Link>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">{isEdit ? "Edit bill" : "New bill"}</h1>
 
       <Card className="p-3 sm:p-5 space-y-4">
