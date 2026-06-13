@@ -23,8 +23,20 @@ import { HELP } from "@/lib/help-copy";
 import { BSMonthPicker } from "@/components/BSMonthPicker";
 import { approxCurrentBS, bsLabel } from "@/lib/bs-calendar";
 import { computeBillTotal, computeElectricity, computePaid, computeRemaining, fmtNPR, type ElectricityMode } from "@/lib/calc";
-import { Plus, Trash2, Info } from "lucide-react";
+import { Plus, Trash2, Info, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { v, firstError } from "@/lib/validators";
+
+// ─── Field error helper ───────────────────────────────────────────────────────
+function FieldError({ msg }: { msg?: string | null }) {
+  if (!msg) return null;
+  return (
+    <p className="flex items-center gap-1 text-xs text-destructive mt-1">
+      <AlertCircle className="h-3 w-3 flex-shrink-0" />
+      {msg}
+    </p>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/bills/new")({
   validateSearch: (search: Record<string, unknown>): { edit?: string; tenantId?: string } => ({
@@ -68,6 +80,27 @@ function NewBillPage() {
   const [carry, setCarry] = useState("0");
   const [notes, setNotes] = useState("");
   const [charges, setCharges] = useState<{ label: string; amount: string; auto?: boolean }[]>([]);
+
+  // ─── Field-level errors (shown after first blur / submit attempt) ─────────
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const touch = (field: string) => setTouched((t) => ({ ...t, [field]: true }));
+  const shouldShow = (field: string) => touched[field] || submitAttempted;
+
+  const errors = {
+    tenant:  !tenantId ? "Please select a tenant" : null,
+    rent:    v.amount(rent || "0", "Rent", { allowZero: true, max: 10_000_000 }),
+    water:   water !== "" && water !== "0" ? v.amount(water, "Water", { allowZero: true, max: 1_000_000 }) : null,
+    prev:    mode === "per_unit" && prev === "" ? "Previous reading is required" : null,
+    curr:    mode === "per_unit" && curr === "" ? "Current reading is required"
+             : mode === "per_unit" && Number(curr) < Number(prev) ? "Must be ≥ previous reading" : null,
+    rate:    mode === "per_unit" && !rate ? "Rate per unit is required" : null,
+    svc:     svc !== "" && svc !== "0" ? v.amount(svc, "Service charge", { allowZero: true, max: 100_000 }) : null,
+    direct:  mode === "direct" && !direct ? "Amount is required" : null,
+    carry:   carry !== "" && carry !== "0" ? v.amount(carry, "Carry-forward credit", { allowZero: true, max: 10_000_000 }) : null,
+    notes:   v.maxLen(notes, "Notes", 2000),
+  };
 
   const { data: priorBills = [] } = useQuery({
     queryKey: ["bills", tenantId],
@@ -165,6 +198,21 @@ function NewBillPage() {
 
   const submit = useMutation({
     mutationFn: async () => {
+      setSubmitAttempted(true);
+      // Client-side validation gate
+      const firstErr = firstError(
+        errors.tenant,
+        errors.rent,
+        errors.water,
+        errors.prev,
+        errors.curr,
+        errors.rate,
+        errors.svc,
+        errors.direct,
+        errors.carry,
+        errors.notes,
+      );
+      if (firstErr) throw new Error(firstErr);
       if (!tenantId) throw new Error("Pick a tenant");
       if (Number(rent) < 0) throw new Error("Rent cannot be negative");
       if (mode === "per_unit") {
@@ -242,14 +290,17 @@ function NewBillPage() {
       <Card className="p-3 sm:p-5 space-y-4">
         <div>
           <FieldLabel help={HELP.billTenant} required>Tenant</FieldLabel>
-          <Select value={tenantId} onValueChange={setTenantId}>
-            <SelectTrigger><SelectValue placeholder="Select tenant" /></SelectTrigger>
+          <Select value={tenantId} onValueChange={(v) => { setTenantId(v); touch("tenant"); }}>
+            <SelectTrigger className={shouldShow("tenant") && errors.tenant ? "border-destructive" : ""}>
+              <SelectValue placeholder="Select tenant" />
+            </SelectTrigger>
             <SelectContent>
               {tenants.filter((t: any) => t.is_active).map((t: any) => (
                 <SelectItem key={t.id} value={t.id}>{t.name} — Room {t.room_number ?? "—"}</SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {shouldShow("tenant") && <FieldError msg={errors.tenant} />}
         </div>
         <div>
           <FieldLabel help={HELP.billMonth} required>Bill month (BS)</FieldLabel>
@@ -258,20 +309,28 @@ function NewBillPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <FieldLabel help={HELP.rent} required>Rent (NPR)</FieldLabel>
-            <Input type="number" min="0" value={rent} onChange={(e) => setRent(e.target.value)} />
-            {tenantId && (tenants as any[]).find((t: any) => t.id === tenantId)?.base_rent != null && (
-              <p className="text-xs text-primary mt-1">
-                ✓ Pre-filled from tenant's base rent
-              </p>
+            <Input
+              type="number" min="0" value={rent}
+              onChange={(e) => setRent(e.target.value)}
+              onBlur={() => touch("rent")}
+              className={shouldShow("rent") && errors.rent ? "border-destructive" : ""}
+            />
+            {shouldShow("rent") && <FieldError msg={errors.rent} />}
+            {!errors.rent && tenantId && (tenants as any[]).find((t: any) => t.id === tenantId)?.base_rent != null && (
+              <p className="text-xs text-primary mt-1">✓ Pre-filled from tenant's base rent</p>
             )}
           </div>
           <div>
             <FieldLabel help={HELP.water}>Water (NPR)</FieldLabel>
-            <Input type="number" min="0" value={water} onChange={(e) => setWater(e.target.value)} />
-            {tenantId && (tenants as any[]).find((t: any) => t.id === tenantId)?.default_water_bill != null && (
-              <p className="text-xs text-primary mt-1">
-                ✓ Pre-filled from tenant's default water
-              </p>
+            <Input
+              type="number" min="0" value={water}
+              onChange={(e) => setWater(e.target.value)}
+              onBlur={() => touch("water")}
+              className={shouldShow("water") && errors.water ? "border-destructive" : ""}
+            />
+            {shouldShow("water") && <FieldError msg={errors.water} />}
+            {!errors.water && tenantId && (tenants as any[]).find((t: any) => t.id === tenantId)?.default_water_bill != null && (
+              <p className="text-xs text-primary mt-1">✓ Pre-filled from tenant's default water</p>
             )}
           </div>
         </div>
@@ -300,13 +359,58 @@ function NewBillPage() {
         </RadioGroup>
         {mode === "per_unit" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><FieldLabel help={HELP.electricityPrev}>Previous reading</FieldLabel><Input type="number" value={prev} onChange={(e) => setPrev(e.target.value)} /></div>
-            <div><FieldLabel help={HELP.electricityCurr}>Current reading</FieldLabel><Input type="number" value={curr} onChange={(e) => setCurr(e.target.value)} /></div>
-            <div><FieldLabel help={HELP.electricityRate}>Rate / unit (NPR)</FieldLabel><Input type="number" value={rate} onChange={(e) => setRate(e.target.value)} /></div>
-            <div><FieldLabel help={HELP.electricityService}>Service charge (NPR)</FieldLabel><Input type="number" value={svc} onChange={(e) => setSvc(e.target.value)} /></div>
+            <div>
+              <FieldLabel help={HELP.electricityPrev}>Previous reading</FieldLabel>
+              <Input
+                type="number" value={prev}
+                onChange={(e) => setPrev(e.target.value)}
+                onBlur={() => touch("prev")}
+                className={shouldShow("prev") && errors.prev ? "border-destructive" : ""}
+              />
+              {shouldShow("prev") && <FieldError msg={errors.prev} />}
+            </div>
+            <div>
+              <FieldLabel help={HELP.electricityCurr}>Current reading</FieldLabel>
+              <Input
+                type="number" value={curr}
+                onChange={(e) => setCurr(e.target.value)}
+                onBlur={() => touch("curr")}
+                className={shouldShow("curr") && errors.curr ? "border-destructive" : ""}
+              />
+              {shouldShow("curr") && <FieldError msg={errors.curr} />}
+            </div>
+            <div>
+              <FieldLabel help={HELP.electricityRate}>Rate / unit (NPR)</FieldLabel>
+              <Input
+                type="number" value={rate}
+                onChange={(e) => setRate(e.target.value)}
+                onBlur={() => touch("rate")}
+                className={shouldShow("rate") && errors.rate ? "border-destructive" : ""}
+              />
+              {shouldShow("rate") && <FieldError msg={errors.rate} />}
+            </div>
+            <div>
+              <FieldLabel help={HELP.electricityService}>Service charge (NPR)</FieldLabel>
+              <Input
+                type="number" value={svc}
+                onChange={(e) => setSvc(e.target.value)}
+                onBlur={() => touch("svc")}
+                className={shouldShow("svc") && errors.svc ? "border-destructive" : ""}
+              />
+              {shouldShow("svc") && <FieldError msg={errors.svc} />}
+            </div>
           </div>
         ) : (
-          <div><FieldLabel help={HELP.electricityDirect}>Amount (NPR)</FieldLabel><Input type="number" value={direct} onChange={(e) => setDirect(e.target.value)} /></div>
+          <div>
+            <FieldLabel help={HELP.electricityDirect}>Amount (NPR)</FieldLabel>
+            <Input
+              type="number" value={direct}
+              onChange={(e) => setDirect(e.target.value)}
+              onBlur={() => touch("direct")}
+              className={shouldShow("direct") && errors.direct ? "border-destructive" : ""}
+            />
+            {shouldShow("direct") && <FieldError msg={errors.direct} />}
+          </div>
         )}
         <p className="text-xs sm:text-sm text-muted-foreground">Electricity: {fmtNPR(elec)}</p>
       </Card>
@@ -339,10 +443,27 @@ function NewBillPage() {
       </Card>
 
       <Card className="p-3 sm:p-5 space-y-3">
-        <div><FieldLabel help={HELP.carryForward}>Carry-forward credit (NPR)</FieldLabel>
-          <Input type="number" min="0" value={carry} onChange={(e) => setCarry(e.target.value)} /></div>
-        <div><FieldLabel help={HELP.billNotes}>Notes</FieldLabel>
-          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
+        <div>
+          <FieldLabel help={HELP.carryForward}>Carry-forward credit (NPR)</FieldLabel>
+          <Input
+            type="number" min="0" value={carry}
+            onChange={(e) => setCarry(e.target.value)}
+            onBlur={() => touch("carry")}
+            className={shouldShow("carry") && errors.carry ? "border-destructive" : ""}
+          />
+          {shouldShow("carry") && <FieldError msg={errors.carry} />}
+        </div>
+        <div>
+          <FieldLabel help={HELP.billNotes}>Notes</FieldLabel>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            onBlur={() => touch("notes")}
+            className={shouldShow("notes") && errors.notes ? "border-destructive" : ""}
+            rows={2}
+          />
+          {shouldShow("notes") && <FieldError msg={errors.notes} />}
+        </div>
       </Card>
 
       <Card className="p-3 sm:p-5 bg-accent/30">

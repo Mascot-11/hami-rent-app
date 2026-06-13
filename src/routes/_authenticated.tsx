@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Download, Settings, LogOut,
   Plus, Menu, X, ChevronRight, UserCircle, ShieldAlert,
+  AlertTriangle, Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/hamro-rent-logo.jpeg";
@@ -12,6 +13,14 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { checkIsAdmin } from "@/lib/admin.functions";
+import { getMySubscription } from "@/lib/subscription.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
@@ -35,6 +44,26 @@ function AuthLayout() {
   });
   const isAdmin = !!adminData?.isAdmin;
 
+  // ─── Subscription state ───────────────────────────────────────────────────
+  const subFn = useServerFn(getMySubscription);
+  const { data: sub } = useQuery({
+    queryKey: ["my-subscription"],
+    queryFn: () => subFn(),
+    staleTime: 60_000,
+  });
+
+  // Expired popup: show once per session, but re-show on page load as long as expired
+  const [expiredDismissed, setExpiredDismissed] = useState(false);
+  const isExpired = !!sub && sub.plan !== "free" && sub.expired;
+
+  // Days remaining: show glow banner if ≤ 7 days left and not yet expired
+  const daysLeft = (() => {
+    if (!sub?.expires_at || sub.expired || sub.plan === "free") return null;
+    const ms = new Date(sub.expires_at).getTime() - Date.now();
+    const d = Math.ceil(ms / (1000 * 60 * 60 * 24));
+    return d >= 0 && d <= 7 ? d : null;
+  })();
+
   const signOut = async () => {
     await supabase.auth.signOut();
     router.invalidate();
@@ -53,6 +82,88 @@ function AuthLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/20">
+      {/* ── Expired Subscription Modal — persistent until renewed ───────────── */}
+      <Dialog
+        open={isExpired && !expiredDismissed}
+        onOpenChange={(open) => {
+          // Only allow dismiss via the button; clicking outside or pressing Esc
+          // still keeps it open (persistent). We achieve this by ignoring `false`.
+          if (!open) return;
+        }}
+      >
+        <DialogContent
+          className="max-w-md"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="h-7 w-7 text-destructive" />
+            </div>
+            <DialogTitle className="text-center text-xl">
+              Your subscription has expired
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center text-sm text-muted-foreground space-y-3 px-2">
+            <p>
+              Your <span className="font-semibold capitalize text-foreground">{sub?.plan}</span> plan
+              expired on{" "}
+              <span className="font-semibold text-foreground">
+                {sub?.expires_at ? new Date(sub.expires_at).toLocaleDateString() : "—"}
+              </span>.
+              Some features have been restricted.
+            </p>
+            <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-left space-y-1">
+              <p className="font-medium text-foreground">What's affected:</p>
+              <p>• Bill sharing with tenants (Share link, WhatsApp)</p>
+              <p>• Additional tenant slots beyond the free limit</p>
+              <p>• Priority support</p>
+            </div>
+            <p className="text-xs">Renew your plan to restore full access.</p>
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button asChild className="w-full">
+              <Link to="/pricing">Renew subscription</Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-muted-foreground"
+              onClick={() => setExpiredDismissed(true)}
+            >
+              Continue with limited access
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Days-remaining glow banner ───────────────────────────────────────── */}
+      {daysLeft !== null && (
+        <div
+          className="relative z-50 flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium text-amber-900"
+          style={{
+            background: "linear-gradient(90deg, #fef3c7, #fde68a, #fef3c7)",
+            boxShadow: "0 0 12px 2px rgba(251,191,36,0.55), 0 0 32px 4px rgba(251,191,36,0.25)",
+            animation: "subscriptionGlow 2.5s ease-in-out infinite",
+          }}
+        >
+          <Clock className="h-3.5 w-3.5 flex-shrink-0 text-amber-700" />
+          <span>
+            {daysLeft === 0
+              ? "Your subscription expires today!"
+              : `Your ${sub?.plan} subscription expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"}.`}
+            {" "}
+            <Link to="/pricing" className="underline font-semibold text-amber-800 hover:text-amber-900">
+              Renew now
+            </Link>
+          </span>
+          <style>{`
+            @keyframes subscriptionGlow {
+              0%, 100% { box-shadow: 0 0 12px 2px rgba(251,191,36,0.55), 0 0 32px 4px rgba(251,191,36,0.25); }
+              50% { box-shadow: 0 0 22px 6px rgba(251,191,36,0.85), 0 0 48px 10px rgba(251,191,36,0.45); }
+            }
+          `}</style>
+        </div>
+      )}
       {/* Top Bar */}
       <header className="border-b bg-card no-print sticky top-0 z-50 shadow-sm">
         <div className="px-3 sm:px-5 h-14 flex items-center justify-between gap-3">
