@@ -94,6 +94,7 @@ function TenantsPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showProps, setShowProps] = useState(false);
   const [showNeedProperty, setShowNeedProperty] = useState(false);
+  const [unarchiveTarget, setUnarchiveTarget] = useState<any | null>(null);
 
   // Pre-emptive client gate: block the form when no slot is free.
   // The server still enforces this (assertSlotAvailable) as the real boundary.
@@ -283,18 +284,25 @@ function TenantsPage() {
           pendingArchiveId={pendingArchiveId}
           pendingDeleteId={pendingDeleteId}
           onEdit={openEdit}
-          onReactivate={(id: string) => {
-            if (overLimit) {
-              toast.error(
-                `Cannot reactivate: you're over your free-tier limit. Archive ${overageCount} tenant${overageCount !== 1 ? "s" : ""} or renew your plan first.`
-              );
-              return;
-            }
-            archive.mutate({ id, is_active: true });
-          }}
+          onUnarchive={(tenant: any) => setUnarchiveTarget(tenant)}
           onDelete={(id: string) => del.mutate(id)}
         />
       )}
+
+      <UnarchiveDialog
+        tenant={unarchiveTarget}
+        overLimit={overLimit}
+        overageCount={overageCount}
+        reactivating={unarchiveTarget ? pendingArchiveId === unarchiveTarget.id : false}
+        onClose={() => setUnarchiveTarget(null)}
+        onConfirm={() => {
+          if (!unarchiveTarget) return;
+          archive.mutate(
+            { id: unarchiveTarget.id, is_active: true },
+            { onSuccess: () => setUnarchiveTarget(null) }
+          );
+        }}
+      />
 
       <TenantFormDialog
         open={showForm}
@@ -580,6 +588,106 @@ function UpgradeDialog({
   );
 }
 
+// ─── Unarchive Dialog ─────────────────────────────────────────────────────────
+
+function UnarchiveDialog({
+  tenant,
+  overLimit,
+  overageCount,
+  reactivating,
+  onClose,
+  onConfirm,
+}: {
+  tenant: any | null;
+  overLimit: boolean;
+  overageCount: number;
+  reactivating: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog open={!!tenant} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <ArchiveRestore className="h-6 w-6 text-primary" />
+          </div>
+          <DialogTitle className="text-center text-xl">
+            Unarchive {tenant?.name}?
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-3 text-sm text-muted-foreground">
+          {overLimit ? (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-3 text-amber-800 dark:text-amber-300 text-xs space-y-1">
+              <p className="font-semibold">Cannot unarchive right now</p>
+              <p>
+                Your subscription has expired and you're already{" "}
+                <strong>{overageCount} tenant{overageCount !== 1 ? "s" : ""}</strong> over
+                the free-tier limit. Unarchiving would add another.
+              </p>
+              <p>
+                To unarchive, first{" "}
+                <Link to="/pricing" className="underline font-semibold" onClick={onClose}>
+                  renew your plan
+                </Link>
+                {" "}or archive an existing active tenant to free up a slot.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-center">
+                <strong className="text-foreground">{tenant?.name}</strong> will be
+                moved back to your active tenant list.
+              </p>
+              <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs space-y-1">
+                {tenant?.room_number && (
+                  <p>Room: <span className="font-medium text-foreground">{tenant.room_number}</span></p>
+                )}
+                {tenant?.phone && (
+                  <p>Phone: <span className="font-medium text-foreground">{tenant.phone}</span></p>
+                )}
+                {tenant?.base_rent != null && (
+                  <p>Base rent: <span className="font-medium text-foreground">{fmtNPR(tenant.base_rent)}</span></p>
+                )}
+                {tenant?.move_in_date_bs && (
+                  <p>Moved in: <span className="font-medium text-foreground">{tenant.move_in_date_bs}</span></p>
+                )}
+                <p className="text-muted-foreground pt-1">
+                  All existing bills and payment history will remain intact.
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        <DialogFooter className="flex-col gap-2 sm:flex-col">
+          {!overLimit && (
+            <Button
+              className="w-full gap-1.5"
+              disabled={reactivating}
+              onClick={onConfirm}
+            >
+              {reactivating
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <ArchiveRestore className="h-4 w-4" />}
+              {reactivating ? "Unarchiving…" : "Yes, unarchive"}
+            </Button>
+          )}
+          <Button
+            variant={overLimit ? "default" : "ghost"}
+            className="w-full"
+            disabled={reactivating}
+            onClick={onClose}
+          >
+            {overLimit ? "Got it" : "Cancel"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Tenant List ──────────────────────────────────────────────────────────────
 
 function TenantList({
@@ -591,7 +699,7 @@ function TenantList({
   pendingDeleteId,
   onEdit,
   onArchive,
-  onReactivate,
+  onUnarchive,
   onDelete,
 }: any) {
   if (tenants.length === 0) return null;
@@ -612,7 +720,7 @@ function TenantList({
             deleting={pendingDeleteId === t.id}
             onEdit={onEdit}
             onArchive={onArchive}
-            onReactivate={onReactivate}
+            onUnarchive={onUnarchive}
             onDelete={onDelete}
           />
         ))}
@@ -630,7 +738,7 @@ function TenantRow({
   deleting,
   onEdit,
   onArchive,
-  onReactivate,
+  onUnarchive,
   onDelete,
 }: any) {
   const [expanded, setExpanded] = useState(false);
@@ -703,18 +811,18 @@ function TenantRow({
                 : <Archive className="h-4 w-4" />}
             </Button>
           )}
-          {onReactivate && (
+          {onUnarchive && (
             <Button
-              variant="ghost"
-              size="icon"
-              title={archiving ? "Reactivating…" : "Reactivate"}
-              className="h-8 w-8"
+              variant="outline"
+              size="sm"
+              className="text-xs h-8 gap-1.5"
               disabled={busy}
-              onClick={() => onReactivate(t.id)}
+              onClick={() => onUnarchive(t)}
             >
               {archiving
-                ? <Loader2 className="h-4 w-4 animate-spin" />
-                : <ArchiveRestore className="h-4 w-4" />}
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                : <ArchiveRestore className="h-3.5 w-3.5" />}
+              {archiving ? "Unarchiving…" : "Unarchive"}
             </Button>
           )}
           <Button
