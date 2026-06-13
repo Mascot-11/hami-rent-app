@@ -300,9 +300,7 @@ export const translations = {
 
   // ── Landing page — hero ───────────────────────────────────────────────────
   "land.badge":         { en: "Bikram Sambat · Nepal", ne: "विक्रम सम्वत · नेपाल" },
-  "land.hero.title":    { en: "Rent billing,
-done in seconds.", ne: "भाडा बिलिङ,
-सेकेन्डमा।" },
+  "land.hero.title":    { en: "Rent billing,\ndone in seconds.", ne: "भाडा बिलिङ,\nसेकेन्डमा।" },
   "land.hero.sub":      { en: "Track tenants, generate BS bills, calculate electricity, record payments, share receipts on WhatsApp. Everything a Nepali landlord needs.", ne: "भाडावाला ट्र्याक गर्नुस्, बि.सं. बिल बनाउनुस्, बिजुली हिसाब गर्नुस्, भुक्तानी रेकर्ड गर्नुस्, WhatsApp मा रसिद पठाउनुस्। नेपाली घरधनीलाई चाहिने सबै कुरा।" },
   "land.hero.cta":      { en: "Get started free", ne: "निःशुल्क सुरु गर्नुस्" },
   "land.hero.ctaDash":  { en: "Open dashboard", ne: "ड्यासबोर्ड खोल्नुस्" },
