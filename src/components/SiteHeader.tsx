@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hamro-rent-logo.jpeg";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useLanguage } from "@/lib/language-context";
 
 type ActivePage = "home" | "features" | "pricing" | "about";
 
@@ -29,6 +36,7 @@ export function SiteHeader({
 }) {
   const [open, setOpen] = useState(false);
   const [authed, setAuthed] = useState(false);
+  const { lang, setLang } = useLanguage();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
@@ -76,6 +84,36 @@ export function SiteHeader({
 
         {/* Right-side CTAs */}
         <div className="flex items-center gap-2">
+          {/* Language switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-xs font-medium px-2.5 border-dashed"
+              >
+                <Globe className="h-3.5 w-3.5" />
+                <span>{lang === "ne" ? "🇳🇵 नेपाली" : "🇬🇧 EN"}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                onClick={() => setLang("en")}
+                className={lang === "en" ? "bg-accent font-medium" : ""}
+              >
+                <span className="mr-2">🇬🇧</span> English
+                {lang === "en" && <span className="ml-auto text-[10px] text-primary">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setLang("ne")}
+                className={lang === "ne" ? "bg-accent font-medium" : ""}
+              >
+                <span className="mr-2">🇳🇵</span> नेपाली
+                {lang === "ne" && <span className="ml-auto text-[10px] text-primary">✓</span>}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {authed ? (
             <Link to="/dashboard">
               <Button size="sm" className="rounded-full px-5">
@@ -130,6 +168,23 @@ export function SiteHeader({
               Demo
             </button>
           )}
+          {/* Mobile language toggle */}
+          <div className="flex gap-2 pt-1 border-t">
+            <button
+              onClick={() => setLang("en")}
+              className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-colors
+                ${lang === "en" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              🇬🇧 EN
+            </button>
+            <button
+              onClick={() => setLang("ne")}
+              className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-colors
+                ${lang === "ne" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              🇳🇵 नेपाली
+            </button>
+          </div>
         </div>
       )}
     </header>

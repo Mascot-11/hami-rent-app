@@ -35,11 +35,7 @@ export const Route = createFileRoute("/_authenticated")({
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
   },
-  component: () => (
-    <LanguageProvider>
-      <AuthLayout />
-    </LanguageProvider>
-  ),
+  component: AuthLayout,
 });
 
 function AuthLayout() {
