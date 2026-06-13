@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { useLanguage } from "@/lib/language-context";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/about")({
@@ -35,6 +36,7 @@ function fmtNPR(n: number) {
 const PublicNav = SiteHeader;
 
 function AboutPage() {
+  const { t } = useLanguage();
   const fn = useServerFn(getPublicStats);
   const { data, isLoading } = useQuery({
     queryKey: ["public-stats"],
@@ -43,10 +45,10 @@ function AboutPage() {
   });
 
   const stats = [
-    { icon: <Building2 className="h-5 w-5" />, value: isLoading ? "…" : data && data.landlords > 0 ? `${data.landlords}+` : "Growing", label: "Landlords on the platform" },
-    { icon: <Users className="h-5 w-5" />, value: isLoading ? "…" : data && data.tenants > 0 ? `${data.tenants}+` : "Growing", label: "Active tenants tracked" },
-    { icon: <Banknote className="h-5 w-5" />, value: isLoading ? "…" : data && data.paymentsNPR > 0 ? fmtNPR(data.paymentsNPR) : "Growing", label: "Rent collected via platform" },
-    { icon: <CheckCircle2 className="h-5 w-5" />, value: "100%", label: "Bikram Sambat native" },
+    { icon: <Building2 className="h-5 w-5" />, value: isLoading ? "…" : data && data.landlords > 0 ? `${data.landlords}+` : t("about.growing"), label: t("about.stats.1") },
+    { icon: <Users className="h-5 w-5" />, value: isLoading ? "…" : data && data.tenants > 0 ? `${data.tenants}+` : t("about.growing"), label: t("about.stats.2") },
+    { icon: <Banknote className="h-5 w-5" />, value: isLoading ? "…" : data && data.paymentsNPR > 0 ? fmtNPR(data.paymentsNPR) : t("about.growing"), label: t("about.stats.3") },
+    { icon: <CheckCircle2 className="h-5 w-5" />, value: "100%", label: t("about.stats.4") },
   ];
 
   return (
@@ -61,13 +63,13 @@ function AboutPage() {
         </div>
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-4 py-1.5 text-xs font-semibold text-primary tracking-wide uppercase mb-8">
-            <Heart className="h-3.5 w-3.5" /> Built in Nepal · For Nepal
+            <Heart className="h-3.5 w-3.5" /> {t("about.badge")}
           </div>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-tight max-w-3xl mb-6">
-            Hamro Rent was built from a <span className="text-primary">real problem.</span>
+            {t("about.hero.title")} <span className="text-primary">{t("about.hero.title2")}</span>
           </h1>
           <p className="text-base sm:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-            Not a side project. Not an experiment. A direct answer to the chaos of managing rental properties in Nepal — with paper ledgers, mental Bikram Sambat conversions, and bills calculated on a phone's calculator app.
+            {t("about.hero.sub")}
           </p>
         </div>
       </section>
@@ -92,20 +94,20 @@ function AboutPage() {
             <div>
               <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-4">Our Story</div>
               <h2 className="font-display text-3xl sm:text-4xl leading-tight mb-6">
-                From a landlord's frustration to Nepal's rent platform.
+                {t("about.story.title")}
               </h2>
               <div className="space-y-5 text-background/75 text-sm sm:text-base leading-relaxed">
-                <p>Managing rental properties in Nepal means living in two worlds — the Bikram Sambat calendar your tenants use for everything, and the chaos of tracking who paid, how much, and when.</p>
-                <p>Every month: notebooks for each tenant, a phone calculator for electricity units, manual addition of water charges, remembering which tenant still owed रू 800 from last month. Then WhatsApp messages trying to explain the bill.</p>
-                <p>We tried spreadsheets. We tried generic rent apps from India. Nothing handled BS months natively. Nothing understood that the "Jestha bill" contains Baisakh's electricity readings. Nothing carried forward the previous balance automatically.</p>
-                <p className="text-background font-semibold text-base sm:text-lg">So we built exactly what was missing.</p>
+                <p>{t("about.story.p1")}</p>
+                <p>{t("about.story.p2")}</p>
+                <p>{t("about.story.p3")}</p>
+                <p className="text-background font-semibold text-base sm:text-lg">{t("about.story.pKey")}</p>
               </div>
             </div>
             <div className="space-y-5">
               {[
-                { icon: <Lightbulb className="h-5 w-5" />, title: "The insight", body: "Nepal's rental workflow is unique — BS calendar, carry-forward balances, per-unit NEA electricity, and tenants who need a receipt on WhatsApp. No existing tool understood this." },
-                { icon: <Code2 className="h-5 w-5" />, title: "The build", body: "Designed around real landlord workflows. BS 2080–2090 calendar. Per-unit meter readings with automatic carry-forward. Payment tracking with partial payments. One-tap shareable bill links." },
-                { icon: <Heart className="h-5 w-5" />, title: "The mission", body: "Give every Nepali landlord — whether they have 2 rooms or 20 — the same professional billing infrastructure, completely free." },
+                { icon: <Lightbulb className="h-5 w-5" />, title: t("about.insight.title"), body: t("about.insight.body") },
+                { icon: <Code2 className="h-5 w-5" />, title: t("about.build.title"), body: t("about.build.body") },
+                { icon: <Heart className="h-5 w-5" />, title: t("about.mission.title"), body: t("about.mission.body") },
               ].map((item) => (
                 <div key={item.title} className="flex gap-4 bg-background/5 rounded-2xl p-5 border border-background/10">
                   <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center flex-shrink-0">{item.icon}</div>
@@ -123,7 +125,7 @@ function AboutPage() {
       {/* Mission */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
         <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-4">Our Mission</div>
-        <h2 className="font-display text-3xl sm:text-4xl max-w-2xl leading-tight mb-10">Why we built Hamro Rent for Nepal specifically.</h2>
+        <h2 className="font-display text-3xl sm:text-4xl max-w-2xl leading-tight mb-10">{t("about.missionSec.title")}</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           {[
             { title: "Bikram Sambat — not an afterthought", body: "Every bill, every payment date, every report uses BS. This isn't a Gregorian app with a conversion layer bolted on. BS is the foundation." },
@@ -150,14 +152,14 @@ function AboutPage() {
       <section className="bg-muted/30 border-y">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
           <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-4">The Builder</div>
-          <h2 className="font-display text-3xl sm:text-4xl mb-10">Built by someone who needed it.</h2>
+          <h2 className="font-display text-3xl sm:text-4xl mb-10">{t("about.builder.title")}</h2>
           <Card className="p-6 sm:p-8 max-w-2xl">
             <div className="flex items-start gap-5">
               <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-display text-2xl">S</div>
               <div className="flex-1">
                 <div className="font-display text-xl mb-0.5">Shreeyush Dhungana</div>
-                <div className="text-sm text-primary font-medium mb-3">Founder & Developer</div>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">Built Hamro Rent to solve a real problem — tracking rent, electricity, and water for Nepali tenants without the chaos of notebooks and calculators. Every feature was driven by actual landlord workflows.</p>
+                <div className="text-sm text-primary font-medium mb-3">{t("about.builder.role")}</div>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{t("about.builder.bio")}</p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {["Full-stack development", "Nepal real estate", "Bikram Sambat systems"].map((tag) => (
                     <span key={tag} className="text-xs px-2.5 py-1 bg-primary/8 text-primary rounded-full font-medium">{tag}</span>
@@ -174,11 +176,11 @@ function AboutPage() {
 
       {/* CTA */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
-        <h2 className="font-display text-3xl sm:text-4xl mb-4">Ready to bring order to your rentals?</h2>
-        <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-xl mx-auto leading-relaxed">Free to start. No installation. Works on your phone. Bikram Sambat throughout.</p>
+        <h2 className="font-display text-3xl sm:text-4xl mb-4">{t("about.cta.title")}</h2>
+        <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-xl mx-auto leading-relaxed">{t("about.cta.sub")}</p>
         <Link to="/login">
           <Button size="lg" className="rounded-full px-8 h-12 shadow-lg shadow-primary/20">
-            Create free account <ArrowRight className="h-4 w-4 ml-1" />
+            {t("about.cta.btn")} <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </Link>
       </section>
@@ -189,6 +191,7 @@ function AboutPage() {
 }
 
 export function PublicFooter() {
+  const { t } = useLanguage();
   return (
     <footer className="border-t bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
@@ -197,10 +200,10 @@ export function PublicFooter() {
           <span className="font-display font-semibold text-foreground">Hamro Rent</span>
         </Link>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-          <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
-          <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
-          <Link to="/login" className="hover:text-foreground transition-colors">Sign in</Link>
+          <Link to="/" className="hover:text-foreground transition-colors">{t("pub.footer.home")}</Link>
+          <Link to="/features" className="hover:text-foreground transition-colors">{t("pub.footer.features")}</Link>
+          <Link to="/about" className="hover:text-foreground transition-colors">{t("pub.footer.about")}</Link>
+          <Link to="/login" className="hover:text-foreground transition-colors">{t("pub.footer.signIn")}</Link>
         </div>
         <span className="text-xs">© 2082 Hamro Rent</span>
       </div>

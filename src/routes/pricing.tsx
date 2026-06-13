@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import { useLanguage } from "@/lib/language-context";
 import logo from "@/assets/hamro-rent-logo.jpeg";
 
 export const Route = createFileRoute("/pricing")({
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/pricing")({
 
 // ─── Plan definitions ─────────────────────────────────────────────────────────
 // Slot counts MUST stay in sync with what the super admin actually grants.
-// Monthly pricing; yearly shown as a discounted equivalent (2 months free).
+// Monthly pricing; yearly shown as a discounted equivalent ({t("pricing.2free")}).
 type Plan = {
   name: string;
   monthly: number;
@@ -38,75 +39,51 @@ type Plan = {
   points: string[];
 };
 
-const PLANS: Plan[] = [
-  {
-    name: "Free",
-    monthly: 0,
-    yearly: 0,
-    blurb: "For a single small property.",
-    featured: false,
-    cta: "Start free",
-    points: [
-      "3 active tenant slots",
-      "Automatic monthly bills in BS calendar",
-      "Shareable bill receipts on WhatsApp",
-      "Excel export of all your data",
-    ],
-  },
-  {
-    name: "Basic",
-    monthly: 150,
-    yearly: 1500,
-    blurb: "For a growing building.",
-    featured: true,
-    cta: "Choose Basic",
-    points: [
-      "10 active tenant slots",
-      "Everything in Free",
-      "Multi-property grouping",
-      "Pay via eSewa, Khalti, bank, or cash",
-    ],
-  },
-  {
-    name: "Pro",
-    monthly: 300,
-    yearly: 3000,
-    blurb: "For multi-floor & multi-building landlords.",
-    featured: false,
-    cta: "Choose Pro",
-    points: [
-      "30 active tenant slots",
-      "Everything in Basic",
-      "Priority slot activation",
-      "Custom plans available on request",
-    ],
-  },
-];
 
-const FAQS = [
-  {
-    q: "How does billing work?",
-    a: "Pick a plan, sign up, and request the upgrade. You pay manually via eSewa, Khalti, bank transfer, or cash. Once payment is confirmed, the admin activates your tenant slots — usually the same day.",
-  },
-  {
-    q: "What is a tenant slot?",
-    a: "A slot is one active tenant you can manage. Archiving a tenant frees their slot. Your plan sets how many active tenants you can have at once.",
-  },
-  {
-    q: "Can I switch plans later?",
-    a: "Yes. Move up or down anytime. If you downgrade below your active tenant count, archive a few tenants to fit the new limit.",
-  },
-  {
-    q: "Is there a refund if I stop?",
-    a: "Plans are prepaid for the period you choose. You keep access until the period ends; there are no automatic charges after that.",
-  },
-];
 
 function fmt(n: number) {
   return n === 0 ? "रू 0" : `रू ${n.toLocaleString()}`;
 }
 
 function PricingPage() {
+  const { t } = useLanguage();
+  const PLANS: Plan[] = [
+    {
+      name: t("plan.free.name"),
+      monthly: 0,
+      yearly: 0,
+      blurb: t("plan.free.blurb"),
+      featured: false,
+      cta: t("plan.free.cta"),
+      points: [t("plan.free.p1"), t("plan.free.p2"), t("plan.free.p3"), t("plan.free.p4")],
+    },
+    {
+      name: t("plan.basic.name"),
+      monthly: 150,
+      yearly: 1500,
+      blurb: t("plan.basic.blurb"),
+      featured: true,
+      cta: t("plan.basic.cta"),
+      points: [t("plan.basic.p1"), t("plan.basic.p2"), t("plan.basic.p3"), t("plan.basic.p4")],
+    },
+    {
+      name: t("plan.pro.name"),
+      monthly: 300,
+      yearly: 3000,
+      blurb: t("plan.pro.blurb"),
+      featured: false,
+      cta: t("plan.pro.cta"),
+      points: [t("plan.pro.p1.pricing"), t("plan.pro.p2"), t("plan.pro.p3.pricing"), t("plan.pro.p4.pricing")],
+    },
+  ];
+
+  const FAQS = [
+    { q: t("pricing.faq.1.q"), a: t("pricing.faq.1.a") },
+    { q: t("pricing.faq.2.q"), a: t("pricing.faq.2.a") },
+    { q: t("pricing.faq.3.q"), a: t("pricing.faq.3.a") },
+    { q: t("pricing.faq.4.q"), a: t("pricing.faq.4.a") },
+  ];
+
   const [authed, setAuthed] = useState(false);
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
 
@@ -127,19 +104,19 @@ function PricingPage() {
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-8 text-center">
         <p className="hr-reveal text-xs uppercase tracking-widest text-primary font-medium mb-5 inline-flex items-center gap-1.5 justify-center">
-          <Sparkles className="h-3.5 w-3.5" /> Simple monthly pricing
+          <Sparkles className="h-3.5 w-3.5" /> {t("pricing.badge")}
         </p>
         <h1
           className="hr-reveal font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] max-w-2xl mx-auto"
           style={{ animationDelay: "60ms" }}
         >
-          Pay for the tenants you manage.
+          {t("pricing.title")}
         </h1>
         <p
           className="hr-reveal mt-6 text-base sm:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed"
           style={{ animationDelay: "120ms" }}
         >
-          Start free for up to 3 tenants. Upgrade when your building grows — no card, no lock-in.
+          {t("pricing.sub")}
         </p>
 
         {/* Billing cycle toggle */}
@@ -157,10 +134,10 @@ function PricingPage() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {c === "monthly" ? "Monthly" : "Yearly"}
+              {c === "monthly" ? t("pricing.monthly") : t("pricing.yearly")}
               {c === "yearly" && (
                 <span className="ml-1.5 text-[10px] uppercase tracking-wide text-primary">
-                  2 months free
+                  {t("pricing.2free")}
                 </span>
               )}
             </button>
@@ -175,10 +152,10 @@ function PricingPage() {
             const price = cycle === "monthly" ? pl.monthly : pl.yearly;
             const note =
               pl.monthly === 0
-                ? "forever"
+                ? t("pricing.forever")
                 : cycle === "monthly"
-                  ? "per month"
-                  : "per year · manual payment";
+                  ? t("pricing.perMonth")
+                  : t("pricing.perYear");
             return (
               <div
                 key={pl.name}
@@ -203,7 +180,7 @@ function PricingPage() {
                 </div>
                 {pl.monthly > 0 && cycle === "yearly" && (
                   <p className="mt-1 text-xs text-primary">
-                    Just रू {Math.round(pl.yearly / 12).toLocaleString()}/mo billed yearly
+                    {t("pricing.justPerMo", { n: Math.round(pl.yearly / 12).toLocaleString() })}
                   </p>
                 )}
 
@@ -232,10 +209,9 @@ function PricingPage() {
         </div>
 
         <p className="hr-reveal-fade mt-8 text-center text-xs text-muted-foreground max-w-lg mx-auto">
-          After signing up, request an upgrade from Settings. The admin allocates your tenant slots
-          once payment is confirmed. Need more than 30 tenants?{" "}
+          {t("pricing.note")}{" "}
           <Link to="/about" className="text-primary underline">
-            Talk to us
+            {t("pricing.talkToUs")}
           </Link>
           .
         </p>
@@ -261,14 +237,14 @@ function PricingPage() {
       {/* CTA */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 py-16 sm:py-24 text-center">
         <h2 className="font-display text-3xl sm:text-4xl leading-tight">
-          Start free. <span className="text-primary">Upgrade when ready.</span>
+          {t("pricing.finalTitle")} <span className="text-primary">{t("pricing.finalTitle2")}</span>
         </h2>
         <div className="mt-8 flex flex-wrap gap-3 items-center justify-center">
           <Link
             to={authed ? "/dashboard" : "/login"}
             className="inline-flex items-center gap-2 bg-foreground text-background text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-foreground/85 transition-colors"
           >
-            {authed ? "Open dashboard" : "Get started free"} <ArrowRight className="h-3.5 w-3.5" />
+            {authed ? t("pricing.getDash") : t("pricing.getFree")} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <Link
             to="/"
@@ -288,13 +264,13 @@ function PricingPage() {
           </div>
           <div className="flex gap-6 text-sm text-muted-foreground">
             <Link to="/features" className="hover:text-foreground transition-colors">
-              Features
+              {t("pub.footer.features")}
             </Link>
             <Link to="/pricing" className="hover:text-foreground transition-colors">
-              Pricing
+              {t("pub.footer.pricing")}
             </Link>
             <Link to="/terms" className="hover:text-foreground transition-colors">
-              Terms
+              {t("pub.footer.terms")}
             </Link>
           </div>
           <p className="text-xs text-muted-foreground">© 2082 Hamro Rent</p>

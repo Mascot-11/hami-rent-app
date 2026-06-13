@@ -8,6 +8,7 @@ import { getPublicStats } from "@/lib/public-stats.functions";
 import { ArrowRight, X, PlayCircle, Check, ChevronDown } from "lucide-react";
 import logo from "@/assets/hamro-rent-logo.jpeg";
 import { SiteHeader } from "@/components/SiteHeader";
+import { useLanguage } from "@/lib/language-context";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -75,47 +76,6 @@ function fmtNPR(n: number) {
 
 // ─── Pricing plans (slots are allocated manually by the admin after payment) ──
 // NOTE: keep these in sync with what the super admin actually grants.
-const plans = [
-  {
-    name: "Free",
-    price: "रू 0",
-    priceNote: "forever",
-    featured: false,
-    cta: "Start free",
-    points: [
-      "3 active tenant slots",
-      "Automatic monthly bills in BS calendar",
-      "Shareable bill receipts",
-      "Excel export of all your data",
-    ],
-  },
-  {
-    name: "Basic",
-    price: "रू 150",
-    priceNote: "per month · manual payment",
-    featured: true,
-    cta: "Choose Basic",
-    points: [
-      "10 active tenant slots",
-      "Everything in Free",
-      "Multi-property grouping",
-      "Pay via eSewa, Khalti, bank, or cash",
-    ],
-  },
-  {
-    name: "Pro",
-    price: "रू 300",
-    priceNote: "per month · manual payment",
-    featured: false,
-    cta: "Choose Pro",
-    points: [
-      "30 active tenant slots",
-      "Everything in Basic",
-      "Best for multi-floor buildings",
-      "Need more? Custom plans available",
-    ],
-  },
-];
 
 function Footer() {
   return (
@@ -128,10 +88,10 @@ function Footer() {
           <span className="text-sm text-muted-foreground">Hamro Rent</span>
         </div>
         <div className="flex gap-6 text-sm text-muted-foreground">
-          <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
-          <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
-          <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
-          <Link to="/login" className="hover:text-foreground transition-colors">Sign in</Link>
+          <Link to="/features" className="hover:text-foreground transition-colors">{t("pub.footer.features")}</Link>
+          <Link to="/pricing" className="hover:text-foreground transition-colors">{t("pub.footer.pricing")}</Link>
+          <Link to="/about" className="hover:text-foreground transition-colors">{t("pub.footer.about")}</Link>
+          <Link to="/login" className="hover:text-foreground transition-colors">{t("pub.footer.signIn")}</Link>
         </div>
         <p className="text-xs text-muted-foreground">© 2082 Hamro Rent</p>
       </div>
@@ -143,6 +103,51 @@ function Footer() {
 // ─── Landing ──────────────────────────────────────────────────────────────────
 
 function LandingPage() {
+  const { t } = useLanguage();
+
+  const plans = [
+    {
+      name: t("plan.free.name"),
+      price: "रू 0",
+      priceNote: t("land.price.forever"),
+      featured: false,
+      cta: t("plan.free.cta"),
+      points: [
+        t("plan.free.p1"),
+        t("plan.free.p2"),
+        t("plan.free.p3"),
+        t("plan.free.p4"),
+      ],
+    },
+    {
+      name: t("plan.basic.name"),
+      price: "रू 150",
+      priceNote: t("land.price.perMonth"),
+      featured: true,
+      cta: t("plan.basic.cta"),
+      points: [
+        t("plan.basic.p1"),
+        t("plan.basic.p2"),
+        t("plan.basic.p3"),
+        t("plan.basic.p4"),
+      ],
+    },
+    {
+      name: t("plan.pro.name"),
+      price: "रू 300",
+      priceNote: t("land.price.perMonth"),
+      featured: false,
+      cta: t("plan.pro.cta"),
+      points: [
+        t("plan.pro.p1"),
+        t("plan.pro.p2"),
+        t("plan.pro.p3"),
+        t("plan.pro.p4"),
+      ],
+    },
+  ];
+  
+
   const [authed, setAuthed] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [demoTab, setDemoTab] = useState<"dashboard" | "tenant" | "bill">("dashboard");
@@ -194,30 +199,30 @@ function LandingPage() {
   };
 
   const cta = authed ? "/dashboard" : "/login";
-  const ctaLabel = authed ? "Open dashboard" : "Get started free";
+  const ctaLabel = authed ? t("land.hero.ctaDash") : t("land.hero.cta");
 
   const liveStats = [
-    { value: stats && stats.landlords > 0 ? `${stats.landlords}+` : "—", label: "Landlords" },
-    { value: stats && stats.tenants > 0 ? `${stats.tenants}+` : "—", label: "Active tenants" },
-    { value: stats && stats.paymentsNPR > 0 ? fmtNPR(stats.paymentsNPR) : "—", label: "Rent collected" },
+    { value: stats && stats.landlords > 0 ? `${stats.landlords}+` : "—", label: t("land.stats.landlords") },
+    { value: stats && stats.tenants > 0 ? `${stats.tenants}+` : "—", label: t("land.stats.tenants") },
+    { value: stats && stats.paymentsNPR > 0 ? fmtNPR(stats.paymentsNPR) : "—", label: t("land.stats.collected") },
   ];
 
   const features = [
-    { title: "Bikram Sambat native", body: "Every bill, payment, and report in BS. No date conversion anywhere." },
-    { title: "Smart electricity", body: "Per-unit meter readings or direct amount. Previous reading remembered." },
-    { title: "Carry-forward", body: "Unpaid balance or credit rolls into next month automatically." },
-    { title: "Shareable bill links", body: "One tap generates a public page your tenant opens on WhatsApp." },
-    { title: "Payment tracking", body: "Cash, eSewa, Khalti, bank. Partial payments. Full history per tenant." },
-    { title: "Excel export", body: "Monthly summary, tenant ledger, payment log — three sheets, one click." },
+    { title: t("land.feat.1.title"), body: t("land.feat.1.body") },
+    { title: t("land.feat.2.title"), body: t("land.feat.2.body") },
+    { title: t("land.feat.3.title"), body: t("land.feat.3.body") },
+    { title: t("land.feat.4.title"), body: t("land.feat.4.body") },
+    { title: t("land.feat.5.title"), body: t("land.feat.5.body") },
+    { title: t("land.feat.6.title"), body: t("land.feat.6.body") },
   ];
 
   const faqs = [
-    { q: "Is it free?", a: "Yes — no credit card, no plan limits, no expiry." },
-    { q: "Does it work in Bikram Sambat?", a: "BS is the default. Every bill, payment date, and report uses BS 2080–2090." },
-    { q: "Can tenants see bills without an account?", a: "Yes. Each bill has a public shareable link — no login needed for tenants." },
-    { q: "What if a tenant overpays or underpays?", a: "The balance carries forward automatically into next month's bill." },
-    { q: "Can I export my data?", a: "Yes. Excel export with summary, tenant overview, and payment ledger sheets." },
-    { q: "Does it work on mobile?", a: "Yes — fully responsive, no app installation needed." },
+    { q: t("land.faq.1.q"), a: t("land.faq.1.a") },
+    { q: t("land.faq.2.q"), a: t("land.faq.2.a") },
+    { q: t("land.faq.3.q"), a: t("land.faq.3.a") },
+    { q: t("land.faq.4.q"), a: t("land.faq.4.a") },
+    { q: t("land.faq.5.q"), a: t("land.faq.5.a") },
+    { q: t("land.faq.6.q"), a: t("land.faq.6.a") },
   ];
 
   return (
@@ -233,23 +238,23 @@ function LandingPage() {
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28 pb-20 sm:pb-28">
         <p className="hr-reveal text-xs uppercase tracking-widest text-primary font-medium mb-6">
-          Bikram Sambat · Nepal
+          {t("land.badge")}
         </p>
         <h1 className="hr-reveal font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] max-w-2xl" style={{ animationDelay: "70ms" }}>
-          Rent billing,<br />done in seconds.
+          {t("land.hero.title").split("\n")[0]}<br />{t("land.hero.title").split("\n")[1]}
         </h1>
         <p className="hr-reveal mt-6 text-base sm:text-lg text-muted-foreground max-w-lg leading-relaxed" style={{ animationDelay: "140ms" }}>
-          Track tenants, generate BS bills, calculate electricity, record payments, share receipts on WhatsApp. Everything a Nepali landlord needs.
+          {t("land.hero.sub")}
         </p>
         <div className="hr-reveal mt-10 flex flex-wrap gap-3 items-center" style={{ animationDelay: "210ms" }}>
           <Link to={cta} className="inline-flex items-center gap-2 bg-foreground text-background text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-foreground/85 transition-colors">
             {ctaLabel} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <button onClick={openDemo} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <PlayCircle className="h-4 w-4 text-primary" /> Try live demo
+            <PlayCircle className="h-4 w-4 text-primary" /> {t("land.hero.demo")}
           </button>
         </div>
-        <p className="mt-5 text-xs text-muted-foreground">Free · No install · Works on phone</p>
+        <p className="mt-5 text-xs text-muted-foreground">{t("land.hero.fine")}</p>
       </section>
 
       {/* ── Live stats ── */}
@@ -278,7 +283,7 @@ function LandingPage() {
         </div>
         <div className="mt-12 pt-10 border-t border-border">
           <Link to="/features" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 transition-colors">
-            See all features <ArrowRight className="h-3.5 w-3.5" />
+            {t("land.feat.seeAll")} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </section>
@@ -289,10 +294,10 @@ function LandingPage() {
           <p className="text-xs uppercase tracking-widest text-primary font-medium mb-10">How it works</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
             {[
-              { n: "1", t: "Add tenants", d: "Name, room, rent. One minute each." },
-              { n: "2", t: "Create a bill", d: "Pick tenant and BS month. Enter meter reading — done." },
-              { n: "3", t: "Record payments", d: "Cash, eSewa, Khalti. Partial or full." },
-              { n: "4", t: "Share receipt", d: "WhatsApp the link. Tenant opens it, no app needed." },
+              { n: "1", t: t("land.how.1.t"), d: t("land.how.1.d") },
+              { n: "2", t: t("land.how.2.t"), d: t("land.how.2.d") },
+              { n: "3", t: t("land.how.3.t"), d: t("land.how.3.d") },
+              { n: "4", t: t("land.how.4.t"), d: t("land.how.4.d") },
             ].map((s) => (
               <div key={s.n}>
                 <div className="font-display text-4xl text-primary mb-4">{s.n}</div>
@@ -303,7 +308,7 @@ function LandingPage() {
           </div>
           <div className="mt-12 pt-10 border-t border-background/10">
             <button onClick={openDemo} className="inline-flex items-center gap-2 text-sm text-background/70 hover:text-background transition-colors">
-              <PlayCircle className="h-4 w-4 text-primary" /> Try the demo
+              <PlayCircle className="h-4 w-4 text-primary" /> {t("land.how.demo")}
             </button>
           </div>
         </div>
@@ -314,11 +319,10 @@ function LandingPage() {
         <div className="max-w-5xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-3">Pricing</p>
           <h2 className="font-display text-2xl sm:text-3xl max-w-md leading-tight mb-3">
-            Start free. Upgrade when your building grows.
+            {t("land.price.title")}
           </h2>
           <p className="text-sm text-muted-foreground max-w-md mb-10 leading-relaxed">
-            Simple monthly plans based on tenant slots — the number of active tenants you can manage.
-            Pay via eSewa, Khalti, bank transfer, or cash. No card required.
+            {t("land.price.sub")}
           </p>
           <div className="grid sm:grid-cols-3 gap-4">
             {plans.map((pl, i) => (
@@ -349,11 +353,9 @@ function LandingPage() {
             ))}
           </div>
           <p className="mt-6 text-xs text-muted-foreground">
-            See{" "}
-            <Link to="/pricing" className="text-primary underline">
-              full pricing, yearly discounts & FAQs →
-            </Link>{" "}
-            After signing up, request an upgrade and the admin will allocate your tenant slots once payment is confirmed.
+            {t("land.price.seeAll")}
+            <br />
+            {t("land.price.note")}
           </p>
         </div>
       </section>
@@ -383,18 +385,18 @@ function LandingPage() {
       <section className="border-t border-border">
         <div className="max-w-5xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl max-w-lg leading-tight">
-            Your bills,<br />
-            <span className="text-primary">already calculated.</span>
+            {t("land.cta.title")}<br />
+            <span className="text-primary">{t("land.cta.title2")}</span>
           </h2>
           <p className="mt-4 text-base text-muted-foreground max-w-sm leading-relaxed">
-            Free for every Nepali landlord. No installation. Works on any phone.
+            {t("land.cta.sub")}
           </p>
           <div className="mt-8 flex flex-wrap gap-3 items-center">
             <Link to={cta} className="inline-flex items-center gap-2 bg-foreground text-background text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-foreground/85 transition-colors">
               {ctaLabel} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <button onClick={openDemo} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Try demo first
+              {t("land.cta.demoBtn")}
             </button>
           </div>
         </div>
@@ -413,7 +415,7 @@ function LandingPage() {
                   <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                   <span className="text-xs font-semibold uppercase tracking-widest text-primary">Live Demo</span>
                 </div>
-                <p className="font-display text-lg">Hamro Rent Simulator</p>
+                <p className="font-display text-lg">{t("demo.title")}</p>
               </div>
               <button onClick={() => setDemoOpen(false)} className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
@@ -427,7 +429,7 @@ function LandingPage() {
                   className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide transition-colors border-b-2 -mb-px ${
                     demoTab === t ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}>
-                  {t === "dashboard" ? "Dashboard" : t === "tenant" ? "Tenants" : "New Bill"}
+                  {t === "dashboard" ? t("demo.tab.dash") : t === "tenant" ? t("demo.tab.tenant") : t("demo.tab.bill")}
                 </button>
               ))}
             </div>
@@ -438,10 +440,10 @@ function LandingPage() {
                 <div className="space-y-5">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { l: "Tenants", v: String(demoData.tenants.length) },
-                      { l: "Collected", v: `रू ${demoData.bills.reduce((s: number, b: any) => s + b.paid, 0).toLocaleString()}` },
-                      { l: "Outstanding", v: `रू ${demoData.bills.reduce((s: number, b: any) => s + Math.max(0, b.total - b.paid), 0).toLocaleString()}` },
-                      { l: "Bills", v: String(demoData.bills.length) },
+                      { l: t("demo.stat.tenants"), v: String(demoData.tenants.length) },
+                      { l: t("demo.stat.collected"), v: `रू ${demoData.bills.reduce((s: number, b: any) => s + b.paid, 0).toLocaleString()}` },
+                      { l: t("demo.stat.outstanding"), v: `रू ${demoData.bills.reduce((s: number, b: any) => s + Math.max(0, b.total - b.paid), 0).toLocaleString()}` },
+                      { l: t("demo.stat.bills"), v: String(demoData.bills.length) },
                     ].map(({ l, v }) => (
                       <div key={l} className="border border-border rounded-lg p-3">
                         <p className="text-xs text-muted-foreground mb-1">{l}</p>
@@ -495,9 +497,9 @@ function LandingPage() {
                   <div className="border border-border rounded-lg p-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">Add Tenant</p>
                     <div className="grid sm:grid-cols-3 gap-3 mb-4">
-                      <input className="text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Full name" value={newTenant.name} onChange={e => setNewTenant({ ...newTenant, name: e.target.value })} />
-                      <input className="text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Room number" value={newTenant.room} onChange={e => setNewTenant({ ...newTenant, room: e.target.value })} />
-                      <input type="number" className="text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Rent (रू)" value={newTenant.rent} onChange={e => setNewTenant({ ...newTenant, rent: e.target.value })} />
+                      <input className="text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" placeholder={t("demo.namePlaceholder")} value={newTenant.name} onChange={e => setNewTenant({ ...newTenant, name: e.target.value })} />
+                      <input className="text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" placeholder={t("demo.roomPlaceholder")} value={newTenant.room} onChange={e => setNewTenant({ ...newTenant, room: e.target.value })} />
+                      <input type="number" className="text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" placeholder={t("demo.rentPlaceholder")} value={newTenant.rent} onChange={e => setNewTenant({ ...newTenant, rent: e.target.value })} />
                     </div>
                     <button onClick={addTenant} className="text-sm bg-foreground text-background px-4 py-2 rounded-md hover:bg-foreground/85 transition-colors">Add tenant</button>
                   </div>
@@ -511,17 +513,17 @@ function LandingPage() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1.5">Tenant</p>
                       <select className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" value={billForm.tenantId} onChange={e => setBillForm({ ...billForm, tenantId: e.target.value })}>
-                        <option value="">Select tenant…</option>
+                        <option value="">{t("demo.selectTenant")}</option>
                         {demoData.tenants.map((t: any) => <option key={t.id} value={t.id}>{t.name} · Room {t.room}</option>)}
                       </select>
                     </div>
                     <div className="grid sm:grid-cols-2 gap-3">
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1.5">Electricity (रू)</p>
+                        <p className="text-xs text-muted-foreground mb-1.5">{t("demo.electricity")}</p>
                         <input type="number" className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" placeholder="1500" value={billForm.electricity} onChange={e => setBillForm({ ...billForm, electricity: e.target.value })} />
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1.5">Water (रू)</p>
+                        <p className="text-xs text-muted-foreground mb-1.5">{t("demo.water")}</p>
                         <input type="number" className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-primary" value={billForm.water} onChange={e => setBillForm({ ...billForm, water: e.target.value })} />
                       </div>
                     </div>
@@ -552,9 +554,9 @@ function LandingPage() {
             </div>
 
             <div className="border-t border-border px-5 sm:px-7 py-4 flex items-center justify-between bg-muted/10">
-              <p className="text-xs text-muted-foreground">Data saved in browser · clears after 3 days</p>
+              <p className="text-xs text-muted-foreground">{t("demo.footer")}</p>
               <Link to={authed ? "/dashboard" : "/login"} onClick={() => setDemoOpen(false)} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-                {authed ? "Go to dashboard" : "Create account"} <ArrowRight className="h-3.5 w-3.5" />
+                {authed ? t("demo.goToDash") : t("demo.createAccount")} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>

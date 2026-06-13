@@ -14,12 +14,15 @@ import { useLanguage } from "@/lib/language-context";
 
 type ActivePage = "home" | "features" | "pricing" | "about";
 
-const NAV_LINKS: { to: string; label: string; key: ActivePage }[] = [
-  { to: "/", label: "Home", key: "home" },
-  { to: "/features", label: "Features", key: "features" },
-  { to: "/pricing", label: "Pricing", key: "pricing" },
-  { to: "/about", label: "About", key: "about" },
-];
+function useNavLinks() {
+  const { t } = useLanguage();
+  return [
+    { to: "/", label: t("pub.nav.home"), key: "home" as ActivePage },
+    { to: "/features", label: t("pub.nav.features"), key: "features" as ActivePage },
+    { to: "/pricing", label: t("pub.nav.pricing"), key: "pricing" as ActivePage },
+    { to: "/about", label: t("pub.nav.about"), key: "about" as ActivePage },
+  ];
+}
 
 /**
  * Single source of truth for the public/marketing site header.
@@ -36,7 +39,8 @@ export function SiteHeader({
 }) {
   const [open, setOpen] = useState(false);
   const [authed, setAuthed] = useState(false);
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
+  const NAV_LINKS = useNavLinks();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
@@ -77,7 +81,7 @@ export function SiteHeader({
               onClick={onDemo}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              Demo
+              {t("pub.nav.demo")}
             </button>
           )}
         </nav>
@@ -117,19 +121,19 @@ export function SiteHeader({
           {authed ? (
             <Link to="/dashboard">
               <Button size="sm" className="rounded-full px-5">
-                Dashboard
+                {t("pub.nav.dashboard")}
               </Button>
             </Link>
           ) : (
             <>
               <Link to="/login" className="hidden sm:inline-flex">
                 <Button variant="ghost" size="sm">
-                  Sign in
+                  {t("pub.nav.signIn")}
                 </Button>
               </Link>
               <Link to="/login">
                 <Button size="sm" className="rounded-full px-5">
-                  Get started
+                  {t("pub.nav.getStarted")}
                 </Button>
               </Link>
             </>
@@ -165,7 +169,7 @@ export function SiteHeader({
               }}
               className="text-left text-muted-foreground hover:text-foreground"
             >
-              Demo
+              {t("pub.nav.demo")}
             </button>
           )}
           {/* Mobile language toggle */}
