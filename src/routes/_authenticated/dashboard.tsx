@@ -267,11 +267,11 @@ function Dashboard() {
                     {collectedDiff.toFixed(1)}%
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">vs previous month</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("dash.vsPrevMonth")}</p>
                 {Math.abs(collected - prevCollected) > 0 && (
                   <p className="text-xs text-muted-foreground">
                     {collected > prevCollected ? "+" : ""}
-                    {fmtNPR(collected - prevCollected)} difference
+                    {fmtNPR(collected - prevCollected)} {t("dash.difference")}
                   </p>
                 )}
               </>

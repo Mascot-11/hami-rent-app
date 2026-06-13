@@ -22,15 +22,19 @@ export const Route = createFileRoute("/_authenticated/export")({
   component: ExportPage,
 });
 
-const PERIOD_OPTIONS: { value: StatementPeriod; label: string; icon: React.ReactNode; desc: string }[] = [
-  { value: "monthly",  label: "This Month",     icon: <Calendar className="h-4 w-4" />,      desc: "Current BS month only" },
-  { value: "3months",  label: "Last 3 Months",  icon: <CalendarDays className="h-4 w-4" />,  desc: "Past 3 Bikram Sambat months" },
-  { value: "6months",  label: "Last 6 Months",  icon: <CalendarRange className="h-4 w-4" />, desc: "Half-year overview" },
-  { value: "yearly",   label: "Full Year",       icon: <TrendingUp className="h-4 w-4" />,   desc: "All bills in current BS year" },
-];
+function usePeriodOptions() {
+  const { t } = useLanguage();
+  return [
+    { value: "monthly" as StatementPeriod,  label: t("export.thisMonth"), icon: <Calendar className="h-4 w-4" />,      desc: t("export.thisMonthDesc") },
+    { value: "3months" as StatementPeriod,  label: t("export.last3"),     icon: <CalendarDays className="h-4 w-4" />,  desc: t("export.last3Desc") },
+    { value: "6months" as StatementPeriod,  label: t("export.last6"),     icon: <CalendarRange className="h-4 w-4" />, desc: t("export.last6Desc") },
+    { value: "yearly"  as StatementPeriod,  label: t("export.fullYear"),  icon: <TrendingUp className="h-4 w-4" />,   desc: t("export.fullYearDesc") },
+  ];
+}
 
 function ExportPage() {
   const { t } = useLanguage();
+  const PERIOD_OPTIONS = usePeriodOptions();
   const dashFn    = useServerFn(getDashboard);
   const profileFn = useServerFn(getProfile);
 
@@ -147,7 +151,7 @@ function ExportPage() {
           <div>
             <h2 className="font-semibold text-base">{t("export.downloadStmt")}</h2>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Professional PDF rent collection statement with logo, summary, and bill breakdown.
+              {t("export.pdfDesc")}
             </p>
           </div>
         </div>
@@ -178,7 +182,7 @@ function ExportPage() {
         {/* Selected period preview */}
         <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-sm">
           <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <span className="text-muted-foreground">Period:</span>
+          <span className="text-muted-foreground">{t("export.period")}</span>
           <span className="font-medium">{periodLabel}</span>
         </div>
 
@@ -197,10 +201,10 @@ function ExportPage() {
 
       {/* ── Excel Export ── */}
       <Card className="p-4 sm:p-5 space-y-4">
-        <FieldLabel help={HELP.exportAllTenants}>All-tenants Excel export</FieldLabel>
+        <FieldLabel help={HELP.exportAllTenants}>{t("export.allTenantsExcel")}</FieldLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <FieldLabel help={HELP.exportFilterYear}>BS Year</FieldLabel>
+            <FieldLabel help={HELP.exportFilterYear}>{t("export.bsYear")}</FieldLabel>
             <Select value={yearFilter} onValueChange={setYearFilter}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -210,7 +214,7 @@ function ExportPage() {
             </Select>
           </div>
           <div>
-            <FieldLabel help={HELP.exportFilterStatus}>Status</FieldLabel>
+            <FieldLabel help={HELP.exportFilterStatus}>{t("label.status")}</FieldLabel>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>

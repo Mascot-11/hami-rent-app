@@ -246,6 +246,47 @@ export const translations = {
   "profile.saveProfile":   { en: "Save profile",     ne: "प्रोफाइल सेभ" },
   "profile.complete":      { en: "Profile complete", ne: "प्रोफाइल पूर्ण" },
   "profile.incomplete":    { en: "Profile incomplete",ne: "प्रोफाइल अपूर्ण" },
+
+  // ── Profile page (remaining) ──────────────────────────────────────────────
+  "profile.subtitle":       { en: "Your details appear on bills and receipts shared with tenants.", ne: "तपाईंको विवरण भाडावालासँग साझा गरिने बिल र रसिदमा देखिन्छ।" },
+  "profile.incompleteDesc": { en: "Add your name, phone, and address so they appear on tenant bills and receipts.", ne: "भाडावालाका बिल र रसिदमा देखाउन आफ्नो नाम, फोन र ठेगाना थप्नुस्।" },
+  "profile.tenantSlots":    { en: "TENANT SLOTS",    ne: "भाडावाला स्लट" },
+  "profile.slotsRemaining": { en: "{n} slots remaining for new active tenants.", ne: "{n} स्लट नयाँ सक्रिय भाडावालाका लागि बाँकी छ।" },
+  "profile.accountEmail":   { en: "ACCOUNT EMAIL",   ne: "खाता इमेल" },
+  "profile.emailNote":      { en: "Your login email. Cannot be changed here.", ne: "तपाईंको लगइन इमेल। यहाँ परिवर्तन गर्न सकिँदैन।" },
+  "profile.landlordDetails":{ en: "LANDLORD DETAILS",ne: "घरधनीको विवरण" },
+  "profile.fullNameHint":   { en: "e.g. Ram Bahadur Shrestha", ne: "जस्तै: राम बहादुर श्रेष्ठ" },
+  "profile.phoneNumber":    { en: "Phone number",    ne: "फोन नम्बर" },
+  "profile.phoneHint":      { en: "e.g. 9841000000", ne: "जस्तै: ९८४१०००००" },
+  "profile.addressHint":    { en: "e.g. Baneshwor, Kathmandu", ne: "जस्तै: बानेश्वर, काठमाडौं" },
+  "profile.savedToast":     { en: "Profile saved",  ne: "प्रोफाइल सेभ भयो" },
+
+  // ── Export period options ─────────────────────────────────────────────────
+  "export.thisMonth":       { en: "This Month",      ne: "यो महिना" },
+  "export.thisMonthDesc":   { en: "Current BS month only", ne: "हालको बि.सं. महिना मात्र" },
+  "export.last3":           { en: "Last 3 Months",   ne: "पछिल्लो ३ महिना" },
+  "export.last3Desc":       { en: "Past 3 Bikram Sambat months", ne: "पछिल्लो ३ बि.सं. महिनाहरू" },
+  "export.last6":           { en: "Last 6 Months",   ne: "पछिल्लो ६ महिना" },
+  "export.last6Desc":       { en: "Half-year overview", ne: "अर्ध-वार्षिक अवलोकन" },
+  "export.fullYear":        { en: "Full Year",       ne: "पूर्ण वर्ष" },
+  "export.fullYearDesc":    { en: "All bills in current BS year", ne: "हालको बि.सं. वर्षका सबै बिलहरू" },
+  "export.period":          { en: "Period:",         ne: "अवधि:" },
+  "export.allTenantsExcel": { en: "All-tenants Excel export", ne: "सम्पूर्ण भाडावाला Excel निर्यात" },
+  "export.pdfDesc":         { en: "Professional PDF rent collection statement with logo, summary, and bill breakdown.", ne: "लोगो, सारांश र बिल विवरणसहित व्यावसायिक PDF स्टेटमेन्ट।" },
+
+  // ── Settings page ─────────────────────────────────────────────────────────
+  "settings.title":         { en: "Settings",        ne: "सेटिङ" },
+  "settings.planLabel":     { en: "{plan} plan",     ne: "{plan} योजना" },
+  "settings.lapsed":        { en: "(lapsed — free tier limits apply)", ne: "(समाप्त — निःशुल्क सीमा लागू)" },
+  "settings.slotsUsed":     { en: "{used} of {slots} tenant slot(s) used", ne: "{used} / {slots} भाडावाला स्लट प्रयोगमा" },
+  "settings.validUntil":    { en: " · valid until {date}", ne: " · {date} सम्म मान्य" },
+  "settings.needMore":      { en: "Need more tenant slots? Payments are handled manually — contact the administrator to upgrade your plan.", ne: "थप भाडावाला स्लट चाहिन्छ? भुक्तानी म्यानुअल रूपमा हुन्छ — योजना अपग्रेड गर्न प्रशासकलाई सम्पर्क गर्नुस्।" },
+  "settings.landlordProfile":{ en: "Landlord profile", ne: "घरधनीको प्रोफाइल" },
+  "settings.profileDesc":   { en: "Name, phone & address used on bills", ne: "बिलमा प्रयोग हुने नाम, फोन र ठेगाना" },
+  "settings.editProfile":   { en: "Edit profile",   ne: "प्रोफाइल सम्पादन" },
+  "settings.exportData":    { en: "Export data",    ne: "डेटा निर्यात" },
+  "settings.exportDesc":    { en: "Download your bills as Excel spreadsheet", ne: "आफ्ना बिलहरू Excel मा डाउनलोड गर्नुस्" },
+  "settings.goToExport":    { en: "Go to export",  ne: "निर्यातमा जानुस्" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

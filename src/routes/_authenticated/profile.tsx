@@ -96,7 +96,7 @@ function ProfilePage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["profile"] });
-      toast.success("Profile saved");
+      toast.success(t("profile.savedToast"));
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -110,7 +110,7 @@ function ProfilePage() {
       <div>
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">{t("profile.title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Your details appear on bills and receipts shared with tenants.
+          {t("profile.subtitle")}
         </p>
       </div>
 
@@ -119,9 +119,9 @@ function ProfilePage() {
         <div className="flex gap-3 items-start bg-warning/10 border border-warning/25 rounded-xl p-4 text-sm">
           <AlertCircle className="h-5 w-5 text-warning-foreground flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-warning-foreground">Profile incomplete</p>
+            <p className="font-medium text-warning-foreground">{t("profile.incomplete")}</p>
             <p className="text-muted-foreground text-xs mt-0.5">
-              Add your name, phone, and address so they appear on tenant bills and receipts.
+              {t("profile.incompleteDesc")}
             </p>
           </div>
         </div>
@@ -130,7 +130,7 @@ function ProfilePage() {
       {isComplete && (
         <div className="flex gap-3 items-center bg-success/10 border border-success/20 rounded-xl p-4 text-sm">
           <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-          <p className="font-medium text-success">Profile complete</p>
+          <p className="font-medium text-success">{t("profile.complete")}</p>
         </div>
       )}
 
@@ -140,24 +140,24 @@ function ProfilePage() {
       {/* Email (read-only) */}
       <Card className="p-4 sm:p-5 space-y-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide mb-2">
-          <Mail className="h-3.5 w-3.5" /> Account email
+          <Mail className="h-3.5 w-3.5" /> {t("profile.accountEmail")}
         </div>
         <p className="text-sm font-medium">{email || "—"}</p>
-        <p className="text-xs text-muted-foreground">Your login email. Cannot be changed here.</p>
+        <p className="text-xs text-muted-foreground">{t("profile.emailNote")}</p>
       </Card>
 
       {/* Editable profile */}
       <Card className="p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
-          <User className="h-3.5 w-3.5" /> Landlord details
+          <User className="h-3.5 w-3.5" /> {t("profile.landlordDetails")}
         </div>
 
         <div className="space-y-1.5">
           <label className="text-sm font-medium">
-            Full name <span className="text-destructive">*</span>
+            {t("profile.fullName")} <span className="text-destructive">*</span>
           </label>
           <Input
-            placeholder="e.g. Ram Bahadur Shrestha"
+            placeholder={t("profile.fullNameHint")}
             value={fullName}
             onChange={e => setFullName(e.target.value)}
           />
@@ -165,10 +165,10 @@ function ProfilePage() {
 
         <div className="space-y-1.5">
           <label className="text-sm font-medium flex items-center gap-1.5">
-            <Phone className="h-3.5 w-3.5 text-muted-foreground" /> Phone number
+            <Phone className="h-3.5 w-3.5 text-muted-foreground" /> {t("profile.phoneNumber")}
           </label>
           <Input
-            placeholder="e.g. 9841000000"
+            placeholder={t("profile.phoneHint")}
             value={phone}
             onChange={e => setPhone(e.target.value)}
           />
@@ -176,10 +176,10 @@ function ProfilePage() {
 
         <div className="space-y-1.5">
           <label className="text-sm font-medium flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-muted-foreground" /> Address
+            <MapPin className="h-3.5 w-3.5 text-muted-foreground" /> {t("profile.address")}
           </label>
           <Textarea
-            placeholder="e.g. Baneshwor, Kathmandu"
+            placeholder={t("profile.addressHint")}
             value={address}
             onChange={e => setAddress(e.target.value)}
             rows={3}
