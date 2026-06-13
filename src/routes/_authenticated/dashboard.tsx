@@ -12,7 +12,8 @@ import { computeBillTotal, computePaid, computeStatus, fmtNPR, type BillStatus }
 import { Plus, TrendingUp, TrendingDown, Minus, Users, CheckCircle2, Clock, AlertCircle, FileText } from "lucide-react";
 import { useState } from "react";
 import { BSMonthPicker } from "@/components/BSMonthPicker";
-import { WalkthroughTutorial } from "@/components/WalkthroughTutorial";
+import { WalkthroughTutorial, useOnboarding } from "@/components/WalkthroughTutorial";
+import { EmptyDashboard } from "@/components/EmptyDashboard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Hamro Rent" }, { name: "robots", content: "noindex" }] }),
@@ -29,6 +30,8 @@ function Dashboard() {
   const fn = useServerFn(getDashboard);
   const { data, isLoading } = useQuery({ queryKey: ["dashboard"], queryFn: () => fn() });
   const cur = approxCurrentBS();
+  const { active: tutorialActive, dismiss: dismissTutorial } = useOnboarding();
+  const [tutorialForced, setTutorialForced] = useState(false);
 
   const [filterYear, setFilterYear] = useState(cur.year);
   const [filterMonth, setFilterMonth] = useState(cur.month);
@@ -49,6 +52,34 @@ function Dashboard() {
   const bills = data?.bills ?? [];
   const active = tenants.filter((t: any) => t.is_active);
   const inactive = tenants.filter((t: any) => !t.is_active);
+
+  // ── Empty state: new user with no tenants ─────────────────────────────────
+  // Show tutorial overlay OR inline empty state guide, not the blank dashboard.
+  const isNewUser = active.length === 0 && bills.length === 0;
+  const tutorialSeen = typeof window !== "undefined"
+    ? !!localStorage.getItem("hamrorent_tutorial_done_v2")
+    : false;
+
+  if (isNewUser && !tutorialForced) {
+    return (
+      <>
+        {/* Full-screen tour fires automatically for first-timers */}
+        <WalkthroughTutorial />
+        {/* Inline guide shown once the tour is dismissed or skipped */}
+        {!tutorialActive && (
+          <EmptyDashboard
+            tutorialSeen={tutorialSeen}
+            onRestartTutorial={() => {
+              localStorage.removeItem("hamrorent_tutorial_done_v2");
+              setTutorialForced(true);
+              // Re-mount tutorial by briefly forcing it on
+              setTimeout(() => setTutorialForced(false), 50);
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   // Selected month bills
   const monthBills = bills.filter(
@@ -120,7 +151,6 @@ function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <WalkthroughTutorial />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
