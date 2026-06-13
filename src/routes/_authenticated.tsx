@@ -197,23 +197,29 @@ function AuthLayout() {
             {/* ── Language selector ─────────────────────────────────────── */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs font-medium px-2.5 border-dashed"
+                >
                   <Globe className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline font-medium">{lang === "ne" ? "नेपाली" : "EN"}</span>
+                  <span>{lang === "ne" ? "🇳🇵 नेपाली" : "🇬🇧 EN"}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem
                   onClick={() => setLang("en")}
                   className={lang === "en" ? "bg-accent font-medium" : ""}
                 >
                   <span className="mr-2">🇬🇧</span> English
+                  {lang === "en" && <span className="ml-auto text-[10px] text-primary">✓</span>}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setLang("ne")}
                   className={lang === "ne" ? "bg-accent font-medium" : ""}
                 >
                   <span className="mr-2">🇳🇵</span> नेपाली
+                  {lang === "ne" && <span className="ml-auto text-[10px] text-primary">✓</span>}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -259,6 +265,32 @@ function AuthLayout() {
             ))}
           </nav>
           <AdminPanelLink onNavigate={() => setSidebarOpen(false)} />
+          {/* ── Language switcher in sidebar ─────────────────────────── */}
+          <div className="p-3 border-t">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-2 px-1">
+              {t("nav.language")}
+            </p>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setLang("en")}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors
+                  ${lang === "en"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+              >
+                🇬🇧 EN
+              </button>
+              <button
+                onClick={() => setLang("ne")}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors
+                  ${lang === "ne"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+              >
+                🇳🇵 नेपाली
+              </button>
+            </div>
+          </div>
           <div className="p-3 border-t">
             <button
               onClick={() => { setSidebarOpen(false); signOut(); }}
