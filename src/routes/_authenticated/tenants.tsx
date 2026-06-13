@@ -33,6 +33,13 @@ import { FieldLabel } from "@/components/HelpTip";
 import { HELP } from "@/lib/help-copy";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Plus,
   Archive,
   ArchiveRestore,
@@ -44,6 +51,11 @@ import {
   Building2,
   AlertTriangle,
   Loader2,
+  Phone,
+  Home,
+  IndianRupee,
+  CalendarDays,
+  MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
 import { bsLabel } from "@/lib/bs-calendar";
@@ -703,21 +715,40 @@ function TenantList({
   onDelete,
 }: any) {
   if (tenants.length === 0) return null;
+  const isArchived = title === "Archived";
   return (
-    <Card className="p-3 sm:p-5">
-      <h2 className="text-base sm:text-lg font-semibold mb-3">
-        {title} ({tenants.length})
-      </h2>
-      <div className="space-y-2">
+    <Card className="overflow-hidden">
+      {/* Table header */}
+      <div className="px-4 py-3 border-b flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          {isArchived ? (
+            <span className="inline-flex h-2 w-2 rounded-full bg-muted-foreground/40" />
+          ) : (
+            <span className="inline-flex h-2 w-2 rounded-full bg-green-500" />
+          )}
+          {title}
+          <span className="text-xs font-normal text-muted-foreground">({tenants.length})</span>
+        </h2>
+      </div>
+
+      {/* Column headers — hidden on mobile */}
+      <div className="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 px-4 py-2 bg-muted/30 border-b text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span>Tenant</span>
+        <span>Room</span>
+        <span>Phone</span>
+        <span>Base rent</span>
+        <span className="text-right pr-1">Actions</span>
+      </div>
+
+      <div className="divide-y">
         {tenants.map((t: any, idx: number) => (
           <TenantRow
             key={t.id}
             tenant={t}
-            // For active lists: tenants beyond freeSlots index are "excess".
-            // Archived tenants are never excess (they don't consume a slot).
-            isExcess={overLimit && title !== "Archived" && idx >= freeSlots}
+            isExcess={overLimit && !isArchived && idx >= freeSlots}
             archiving={pendingArchiveId === t.id}
             deleting={pendingDeleteId === t.id}
+            isArchived={isArchived}
             onEdit={onEdit}
             onArchive={onArchive}
             onUnarchive={onUnarchive}
@@ -736,6 +767,7 @@ function TenantRow({
   isExcess,
   archiving,
   deleting,
+  isArchived,
   onEdit,
   onArchive,
   onUnarchive,
@@ -745,114 +777,157 @@ function TenantRow({
   const busy = archiving || deleting;
 
   return (
-    <div className={`rounded-md border overflow-hidden ${isExcess ? "border-amber-300 dark:border-amber-700" : ""}`}>
-      {/* Over-limit nudge strip */}
+    <div className={isExcess ? "bg-amber-50/50 dark:bg-amber-950/10" : ""}>
+      {/* Over-limit strip */}
       {isExcess && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
-          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-          <span>Over free-tier limit — archive to come back within quota</span>
+        <div className="flex items-center gap-2 px-4 py-1 bg-amber-100/80 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="h-3 w-3 flex-shrink-0" />
+          Over free-tier limit — archive this tenant to come back within quota
         </div>
       )}
-      {/* Main row */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3">
-        <Link
-          to="/tenants/$tenantId"
-          params={{ tenantId: t.id }}
-          className="flex-1 min-w-0"
-        >
-          <div className="font-medium text-sm sm:text-base truncate">{t.name}</div>
-          <div className="text-xs sm:text-sm text-muted-foreground truncate">
-            Room {t.room_number ?? "—"}
-            {t.phone ? ` · ${t.phone}` : ""}
-            {t.move_in_date_bs ? ` · Moved in: ${t.move_in_date_bs}` : ""}
-            {t.base_rent != null ? ` · Rent: ${fmtNPR(t.base_rent)}` : ""}
+
+      {/* Mobile layout */}
+      <div className="sm:hidden flex items-start justify-between gap-3 px-4 py-3">
+        <Link to="/tenants/$tenantId" params={{ tenantId: t.id }} className="min-w-0 flex-1 space-y-1">
+          <p className="font-medium text-sm truncate">{t.name}</p>
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+            {t.room_number && <span className="flex items-center gap-1"><Home className="h-3 w-3" />{t.room_number}</span>}
+            {t.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{t.phone}</span>}
+            {t.base_rent != null && <span className="flex items-center gap-1"><IndianRupee className="h-3 w-3" />{fmtNPR(t.base_rent)}</span>}
+            {t.move_in_date_bs && <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{t.move_in_date_bs}</span>}
           </div>
         </Link>
+        <TenantActions
+          tenant={t}
+          busy={busy}
+          archiving={archiving}
+          deleting={deleting}
+          isArchived={isArchived}
+          expanded={expanded}
+          onToggleExpand={() => setExpanded(v => !v)}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onUnarchive={onUnarchive}
+          onDelete={onDelete}
+        />
+      </div>
 
-        <div className="flex gap-0.5 flex-wrap sm:gap-1 sm:flex-nowrap flex-shrink-0 items-center">
-          {/* Bills toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs h-8 gap-1"
-            disabled={busy}
-            onClick={() => setExpanded((v) => !v)}
-          >
-            <Receipt className="h-3.5 w-3.5" />
-            Bills
-            {expanded ? (
-              <ChevronUp className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronDown className="h-3.5 w-3.5" />
-            )}
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs h-8"
-            disabled={busy}
-            onClick={() => onEdit(t)}
-          >
-            Edit
-          </Button>
-
-          {onArchive && (
-            <Button
-              variant="ghost"
-              size="icon"
-              title={archiving ? "Archiving…" : "Archive"}
-              className="h-8 w-8"
-              disabled={busy}
-              onClick={() => onArchive(t.id)}
-            >
-              {archiving
-                ? <Loader2 className="h-4 w-4 animate-spin" />
-                : <Archive className="h-4 w-4" />}
-            </Button>
+      {/* Desktop table row */}
+      <div className="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 px-4 py-3 items-center">
+        <Link to="/tenants/$tenantId" params={{ tenantId: t.id }} className="min-w-0">
+          <p className="font-medium text-sm truncate">{t.name}</p>
+          {t.move_in_date_bs && (
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+              <CalendarDays className="h-3 w-3" /> {t.move_in_date_bs}
+            </p>
           )}
-          {onUnarchive && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 gap-1.5"
-              disabled={busy}
-              onClick={() => onUnarchive(t)}
-            >
-              {archiving
-                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                : <ArchiveRestore className="h-3.5 w-3.5" />}
-              {archiving ? "Unarchiving…" : "Unarchive"}
-            </Button>
-          )}
+        </Link>
+        <span className="text-sm text-muted-foreground truncate">
+          {t.room_number
+            ? <span className="flex items-center gap-1"><Home className="h-3.5 w-3.5 flex-shrink-0" />{t.room_number}</span>
+            : <span className="text-muted-foreground/40">—</span>}
+        </span>
+        <span className="text-sm text-muted-foreground truncate">
+          {t.phone
+            ? <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5 flex-shrink-0" />{t.phone}</span>
+            : <span className="text-muted-foreground/40">—</span>}
+        </span>
+        <span className="text-sm font-medium">
+          {t.base_rent != null
+            ? fmtNPR(t.base_rent)
+            : <span className="text-muted-foreground/40 font-normal">—</span>}
+        </span>
+        <TenantActions
+          tenant={t}
+          busy={busy}
+          archiving={archiving}
+          deleting={deleting}
+          isArchived={isArchived}
+          expanded={expanded}
+          onToggleExpand={() => setExpanded(v => !v)}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onUnarchive={onUnarchive}
+          onDelete={onDelete}
+        />
+      </div>
+
+      {/* Expandable bill history */}
+      {expanded && <TenantBillHistory tenantId={t.id} tenantName={t.name} />}
+    </div>
+  );
+}
+
+// ─── Tenant Actions (dropdown + bills toggle) ─────────────────────────────────
+
+function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expanded, onToggleExpand, onEdit, onArchive, onUnarchive, onDelete }: any) {
+  return (
+    <div className="flex items-center gap-1 flex-shrink-0">
+      {/* Bills toggle */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 text-xs gap-1 px-2"
+        disabled={busy}
+        onClick={onToggleExpand}
+        title={expanded ? "Hide bills" : "View bills"}
+      >
+        <Receipt className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Bills</span>
+        {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+      </Button>
+
+      {/* Actions dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
             disabled={busy}
+          >
+            {(archiving || deleting)
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <MoreHorizontal className="h-4 w-4" />}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuItem onClick={() => onEdit(t)}>
+            Edit tenant
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {!isArchived && onArchive && (
+            <DropdownMenuItem
+              onClick={() => onArchive(t.id)}
+              className="text-muted-foreground"
+            >
+              <Archive className="h-3.5 w-3.5 mr-2" />
+              Archive
+            </DropdownMenuItem>
+          )}
+          {isArchived && onUnarchive && (
+            <DropdownMenuItem onClick={() => onUnarchive(t)}>
+              <ArchiveRestore className="h-3.5 w-3.5 mr-2" />
+              Unarchive
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
             onClick={() => {
-              if (
-                confirm(
-                  `Delete ${t.name}? This removes all bills and payments.`
-                )
-              )
+              if (confirm(`Delete ${t.name}? This removes all bills and payments.`))
                 onDelete(t.id);
             }}
           >
-            {deleting
-              ? <Loader2 className="h-4 w-4 animate-spin" />
-              : <Trash2 className="h-4 w-4" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Expandable bill history */}
-      {expanded && (
-        <TenantBillHistory tenantId={t.id} tenantName={t.name} />
-      )}
+            <Trash2 className="h-3.5 w-3.5 mr-2" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
+
 
 // ─── Tenant Bill History ──────────────────────────────────────────────────────
 

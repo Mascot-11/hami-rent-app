@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Download, Settings, LogOut,
-  Plus, Menu, X, ChevronRight, UserCircle, ShieldAlert,
+  Menu, X, ChevronRight, UserCircle, ShieldAlert,
   AlertTriangle, Clock, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -77,7 +77,6 @@ function AuthLayout() {
   const links = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/tenants", label: "Tenants", icon: Users },
-    { to: "/bills/new", label: "New Bill", icon: Plus },
     { to: "/export", label: "Export", icon: Download },
     { to: "/profile", label: "Profile", icon: UserCircle },
     { to: "/settings", label: "Settings", icon: Settings },
@@ -185,11 +184,6 @@ function AuthLayout() {
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/bills/new" className="hidden sm:flex">
-              <Button size="sm" className="h-8 rounded-full px-4 text-xs gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> New Bill
-              </Button>
-            </Link>
             <Button
               variant="ghost"
               size="sm"
@@ -267,7 +261,6 @@ function AuthLayout() {
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <Link to="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
                 <Link to="/tenants" className="hover:text-primary transition-colors">Tenants</Link>
-                <Link to="/bills/new" className="hover:text-primary transition-colors">New Bill</Link>
                 <Link to="/export" className="hover:text-primary transition-colors">Export</Link>
                 <Link to="/settings" className="hover:text-primary transition-colors">Settings</Link>
               </div>
