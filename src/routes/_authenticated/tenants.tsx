@@ -863,7 +863,7 @@ function TenantRow({
 
 // ─── Tenant Actions (dropdown + bills toggle) ─────────────────────────────────
 
-function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expanded, onToggleExpand, onEdit, onArchive, onUnarchive, onDelete }: any) {
+function TenantActions({ tenant: ten, busy, archiving, deleting, isArchived, expanded, onToggleExpand, onEdit, onArchive, onUnarchive, onDelete }: any) {
   const { t } = useLanguage();
   return (
     <div className="flex items-center gap-1 flex-shrink-0">
@@ -896,13 +896,13 @@ function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expan
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
-          <DropdownMenuItem onClick={() => onEdit(t)}>
+          <DropdownMenuItem onClick={() => onEdit(ten)}>
             {t("tenants.editMenu")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {!isArchived && onArchive && (
             <DropdownMenuItem
-              onClick={() => onArchive(t.id)}
+              onClick={() => onArchive(ten.id)}
               className="text-muted-foreground"
             >
               <Archive className="h-3.5 w-3.5 mr-2" />
@@ -910,7 +910,7 @@ function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expan
             </DropdownMenuItem>
           )}
           {isArchived && onUnarchive && (
-            <DropdownMenuItem onClick={() => onUnarchive(t)}>
+            <DropdownMenuItem onClick={() => onUnarchive(ten)}>
               <ArchiveRestore className="h-3.5 w-3.5 mr-2" />
               {t("action.unarchive")}
             </DropdownMenuItem>
@@ -919,8 +919,8 @@ function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expan
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onClick={() => {
-              if (confirm(`Delete ${t.name}? This removes all bills and payments.`))
-                onDelete(t.id);
+              if (confirm(`Delete ${ten.name}? This removes all bills and payments.`))
+                onDelete(ten.id);
             }}
           >
             <Trash2 className="h-3.5 w-3.5 mr-2" />

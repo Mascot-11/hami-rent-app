@@ -191,7 +191,7 @@ function ProfilePage() {
           disabled={save.isPending}
           className="w-full sm:w-auto"
         >
-          {save.isPending ? {t("action.saving")} : {t("profile.saveProfile")}}
+          {save.isPending ? t("action.saving") : t("profile.saveProfile")}
         </Button>
       </Card>
     </div>
