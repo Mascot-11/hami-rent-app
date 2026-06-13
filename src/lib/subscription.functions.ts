@@ -41,13 +41,23 @@ export const getMySubscription = createServerFn({ method: "GET" })
       : expired ? FREE_SLOTS
       : sub.tenant_slots;
 
+    const used = count ?? 0;
+
+    // over_limit: user has more active tenants than their current slot allowance.
+    // This happens when a paid plan lapses and they had > FREE_SLOTS tenants.
+    // We never auto-archive — they must archive voluntarily to come back in range.
+    const over_limit = used > slots;
+    const overage_count = over_limit ? used - slots : 0;
+
     return {
       plan: sub?.plan ?? "free",
       status: sub?.status ?? "active",
       expired,
       expires_at: sub?.expires_at ?? null,
       tenant_slots: slots,
-      tenants_used: count ?? 0,
+      tenants_used: used,
+      over_limit,
+      overage_count,
     };
   });
 

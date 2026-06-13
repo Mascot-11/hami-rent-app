@@ -42,6 +42,7 @@ import {
   Receipt,
   Sparkles,
   Building2,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { bsLabel } from "@/lib/bs-calendar";
@@ -98,6 +99,12 @@ function TenantsPage() {
   const slotsFull =
     !!sub && sub.tenant_slots > 0 && sub.tenants_used >= sub.tenant_slots;
 
+  // Over-limit: subscription lapsed and they have more tenants than free tier allows.
+  // Existing tenants remain readable; new adds and reactivations are blocked.
+  const overLimit = !!sub?.over_limit;
+  const overageCount = sub?.overage_count ?? 0;
+  const freeSlots = sub?.tenant_slots ?? 3;
+
   const openNew = () => {
     // A tenant must belong to a property — block creation until one exists.
     if (properties.length === 0) {
@@ -144,7 +151,15 @@ function TenantsPage() {
         {sub && sub.tenant_slots > 0 && (
           <p className="text-xs text-muted-foreground -mt-1">
             {sub.tenants_used} of {sub.tenant_slots} tenant slots used
-            {slotsFull && (
+            {overLimit && (
+              <>
+                {" · "}
+                <span className="text-amber-600 font-medium">
+                  {overageCount} over free-tier limit
+                </span>
+              </>
+            )}
+            {!overLimit && slotsFull && (
               <>
                 {" · "}
                 <button
@@ -158,7 +173,12 @@ function TenantsPage() {
           </p>
         )}
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button onClick={openNew} className="w-full sm:w-auto">
+          <Button
+            onClick={openNew}
+            className="w-full sm:w-auto"
+            disabled={overLimit}
+            title={overLimit ? `Archive ${overageCount} tenant${overageCount !== 1 ? "s" : ""} or renew your plan to add more` : undefined}
+          >
             <Plus className="h-4 w-4 mr-1.5" />
             Add tenant
           </Button>
@@ -175,10 +195,37 @@ function TenantsPage() {
 
       {isLoading && <p className="text-muted-foreground text-sm">Loading…</p>}
 
+      {/* ── Over-limit warning — shown when lapsed plan had more tenants than free tier ── */}
+      {overLimit && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-4 flex gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="space-y-1.5 text-sm">
+            <p className="font-semibold text-amber-900 dark:text-amber-300">
+              You're over your free-tier limit by {overageCount} tenant{overageCount !== 1 ? "s" : ""}
+            </p>
+            <p className="text-amber-800 dark:text-amber-400 text-xs leading-relaxed">
+              Your subscription has expired. The free plan allows{" "}
+              <strong>{freeSlots} active tenants</strong>, but you currently have{" "}
+              <strong>{sub?.tenants_used}</strong>. Your existing tenants and all their
+              bills are safe — nothing has been deleted. However, you cannot add new
+              tenants or reactivate archived ones until you're back within the limit.
+            </p>
+            <p className="text-amber-800 dark:text-amber-400 text-xs">
+              To resolve this:{" "}
+              <Link to="/pricing" className="underline font-semibold">renew your plan</Link>
+              {" "}to restore your slots, or archive at least{" "}
+              <strong>{overageCount}</strong> tenant{overageCount !== 1 ? "s" : ""} below.
+            </p>
+          </div>
+        </div>
+      )}
+
       {properties.length === 0 ? (
         <TenantList
           title="Active"
           tenants={active}
+          overLimit={overLimit}
+          freeSlots={freeSlots}
           onEdit={openEdit}
           onArchive={(id: string) => archive.mutate({ id, is_active: false })}
           onDelete={(id: string) => del.mutate(id)}
@@ -190,6 +237,8 @@ function TenantsPage() {
               key={p.id}
               title={p.name}
               tenants={active.filter((t: any) => t.property_id === p.id)}
+              overLimit={overLimit}
+              freeSlots={freeSlots}
               onEdit={openEdit}
               onArchive={(id: string) => archive.mutate({ id, is_active: false })}
               onDelete={(id: string) => del.mutate(id)}
@@ -200,6 +249,8 @@ function TenantsPage() {
             tenants={active.filter(
               (t: any) => !t.property_id || !properties.some((p: any) => p.id === t.property_id),
             )}
+            overLimit={overLimit}
+            freeSlots={freeSlots}
             onEdit={openEdit}
             onArchive={(id: string) => archive.mutate({ id, is_active: false })}
             onDelete={(id: string) => del.mutate(id)}
@@ -211,8 +262,18 @@ function TenantsPage() {
         <TenantList
           title="Archived"
           tenants={archived}
+          overLimit={overLimit}
+          freeSlots={freeSlots}
           onEdit={openEdit}
-          onReactivate={(id: string) => archive.mutate({ id, is_active: true })}
+          onReactivate={(id: string) => {
+            if (overLimit) {
+              toast.error(
+                `Cannot reactivate: you're over your free-tier limit. Archive ${overageCount} tenant${overageCount !== 1 ? "s" : ""} or renew your plan first.`
+              );
+              return;
+            }
+            archive.mutate({ id, is_active: true });
+          }}
           onDelete={(id: string) => del.mutate(id)}
         />
       )}
@@ -501,6 +562,8 @@ function UpgradeDialog({
 function TenantList({
   title,
   tenants,
+  overLimit,
+  freeSlots,
   onEdit,
   onArchive,
   onReactivate,
@@ -513,10 +576,13 @@ function TenantList({
         {title} ({tenants.length})
       </h2>
       <div className="space-y-2">
-        {tenants.map((t: any) => (
+        {tenants.map((t: any, idx: number) => (
           <TenantRow
             key={t.id}
             tenant={t}
+            // For active lists: tenants beyond freeSlots index are "excess".
+            // Archived tenants are never excess (they don't consume a slot).
+            isExcess={overLimit && title !== "Archived" && idx >= freeSlots}
             onEdit={onEdit}
             onArchive={onArchive}
             onReactivate={onReactivate}
@@ -532,6 +598,7 @@ function TenantList({
 
 function TenantRow({
   tenant: t,
+  isExcess,
   onEdit,
   onArchive,
   onReactivate,
@@ -540,7 +607,14 @@ function TenantRow({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <div className={`rounded-md border overflow-hidden ${isExcess ? "border-amber-300 dark:border-amber-700" : ""}`}>
+      {/* Over-limit nudge strip */}
+      {isExcess && (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>Over free-tier limit — archive to come back within quota</span>
+        </div>
+      )}
       {/* Main row */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3">
         <Link

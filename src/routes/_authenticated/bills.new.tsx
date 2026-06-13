@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { listTenants } from "@/lib/tenants.functions";
 import { listBills, saveBill, getBill } from "@/lib/bills.functions";
+import { getMySubscription } from "@/lib/subscription.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +56,17 @@ function NewBillPage() {
   const billsFn = useServerFn(listBills);
   const saveFn = useServerFn(saveBill);
   const getBillFn = useServerFn(getBill);
+  const subFn = useServerFn(getMySubscription);
   const { data: tenants = [], isLoading: tenantsLoading } = useQuery({ queryKey: ["tenants"], queryFn: () => tenantsFn() });
+  const { data: sub } = useQuery({ queryKey: ["my-subscription"], queryFn: () => subFn(), staleTime: 60_000 });
+
+  // Tenants sorted by name (server already sorts, but we need stable index for slot math).
+  // Excess tenants = active tenants beyond the allowed slot count after expiry.
+  const activeTenantsSorted = (tenants as any[]).filter((t) => t.is_active);
+  const freeSlots = sub?.tenant_slots ?? 3;
+  const excessTenantIds = new Set(
+    sub?.over_limit ? activeTenantsSorted.slice(freeSlots).map((t: any) => t.id) : []
+  );
 
   // When editing, load the existing bill to prefill the form.
   const { data: editBill } = useQuery({
@@ -89,7 +100,9 @@ function NewBillPage() {
   const shouldShow = (field: string) => touched[field] || submitAttempted;
 
   const errors = {
-    tenant:  !tenantId ? "Please select a tenant" : null,
+    tenant:  !tenantId ? "Please select a tenant"
+             : excessTenantIds.has(tenantId) ? "This tenant is over your free-tier slot limit. Archive other tenants or renew your plan to bill them."
+             : null,
     rent:    v.amount(rent || "0", "Rent", { allowZero: true, max: 10_000_000 }),
     water:   water !== "" && water !== "0" ? v.amount(water, "Water", { allowZero: true, max: 1_000_000 }) : null,
     prev:    mode === "per_unit" && prev === "" ? "Previous reading is required" : null,
@@ -258,9 +271,22 @@ function NewBillPage() {
   // Skip in edit mode (the bill already has its tenant) and while tenants load.
   const activeTenants = (tenants as any[]).filter((t) => t.is_active);
   const noActiveTenants = !isEdit && !tenantsLoading && activeTenants.length === 0;
+  const allTenantsExcess = !isEdit && excessTenantIds.size > 0 && excessTenantIds.size === activeTenants.length;
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full">
+
+      {/* Over-limit info banner — shown when some tenants are excess */}
+      {!isEdit && sub?.over_limit && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-3 flex gap-2 text-xs text-amber-800 dark:text-amber-300">
+          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" />
+          <span>
+            Your subscription expired. {excessTenantIds.size} tenant{excessTenantIds.size !== 1 ? "s are" : " is"} over your free-tier limit and cannot be billed until you{" "}
+            <Link to="/pricing" className="underline font-semibold">renew your plan</Link>
+            {" "}or archive other tenants.
+          </span>
+        </div>
+      )}
       <Dialog
         open={noActiveTenants}
         onOpenChange={(o) => {
@@ -296,7 +322,10 @@ function NewBillPage() {
             </SelectTrigger>
             <SelectContent>
               {tenants.filter((t: any) => t.is_active).map((t: any) => (
-                <SelectItem key={t.id} value={t.id}>{t.name} — Room {t.room_number ?? "—"}</SelectItem>
+                <SelectItem key={t.id} value={t.id} disabled={excessTenantIds.has(t.id)}>
+                  {t.name} — Room {t.room_number ?? "—"}
+                  {excessTenantIds.has(t.id) ? " ⚠ over limit" : ""}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
