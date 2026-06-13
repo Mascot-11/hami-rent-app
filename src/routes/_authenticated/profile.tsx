@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLanguage } from "@/lib/language-context";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { v, firstError } from "@/lib/validators";
@@ -50,6 +51,7 @@ function SlotCard() {
 }
 
 function ProfilePage() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const getFn = useServerFn(getProfile);
   const upsertFn = useServerFn(upsertProfile);
@@ -106,7 +108,7 @@ function ProfilePage() {
   return (
     <div className="space-y-4 sm:space-y-6 max-w-xl">
       <div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">My Profile</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">{t("profile.title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Your details appear on bills and receipts shared with tenants.
         </p>
@@ -189,7 +191,7 @@ function ProfilePage() {
           disabled={save.isPending}
           className="w-full sm:w-auto"
         >
-          {save.isPending ? "Saving…" : "Save profile"}
+          {save.isPending ? {t("action.saving")} : {t("profile.saveProfile")}}
         </Button>
       </Card>
     </div>

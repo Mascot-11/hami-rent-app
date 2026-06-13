@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Download, Settings, LogOut,
   Menu, X, ChevronRight, UserCircle, ShieldAlert,
-  AlertTriangle, Clock, Loader2,
+  AlertTriangle, Clock, Loader2, Globe,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/hamro-rent-logo.jpeg";
@@ -21,6 +21,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LanguageProvider, useLanguage } from "@/lib/language-context";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
@@ -28,12 +35,17 @@ export const Route = createFileRoute("/_authenticated")({
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
   },
-  component: AuthLayout,
+  component: () => (
+    <LanguageProvider>
+      <AuthLayout />
+    </LanguageProvider>
+  ),
 });
 
 function AuthLayout() {
   const nav = useNavigate();
   const router = useRouter();
+  const { t, lang, setLang } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const adminFn = useServerFn(checkIsAdmin);
   const { data: adminData } = useQuery({
@@ -71,15 +83,15 @@ function AuthLayout() {
     await supabase.auth.signOut();
     router.invalidate();
     nav({ to: "/login" });
-    toast.success("Signed out");
+    toast.success(t("nav.signOut"));
   };
 
   const links = [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/tenants", label: "Tenants", icon: Users },
-    { to: "/export", label: "Export", icon: Download },
-    { to: "/profile", label: "Profile", icon: UserCircle },
-    { to: "/settings", label: "Settings", icon: Settings },
+    { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { to: "/tenants",   label: t("nav.tenants"),   icon: Users },
+    { to: "/export",    label: t("nav.export"),    icon: Download },
+    { to: "/profile",   label: t("nav.profile"),   icon: UserCircle },
+    { to: "/settings",  label: t("nav.settings"),  icon: Settings },
   ];
 
   return (
@@ -103,36 +115,34 @@ function AuthLayout() {
               <AlertTriangle className="h-7 w-7 text-destructive" />
             </div>
             <DialogTitle className="text-center text-xl">
-              Your subscription has expired
+              {t("sub.expired.title")}
             </DialogTitle>
           </DialogHeader>
           <div className="text-center text-sm text-muted-foreground space-y-3 px-2">
             <p>
-              Your <span className="font-semibold capitalize text-foreground">{sub?.plan}</span> plan
-              expired on{" "}
-              <span className="font-semibold text-foreground">
-                {sub?.expires_at ? new Date(sub.expires_at).toLocaleDateString() : "—"}
-              </span>.
-              Some features have been restricted.
+              {t("sub.expired.body", {
+                plan: sub?.plan ?? "",
+                date: sub?.expires_at ? new Date(sub.expires_at).toLocaleDateString() : "—",
+              })}
             </p>
             <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-left space-y-1">
-              <p className="font-medium text-foreground">What's affected:</p>
-              <p>• Bill sharing with tenants (Share link, WhatsApp)</p>
-              <p>• Additional tenant slots beyond the free limit</p>
-              <p>• Priority support</p>
+              <p className="font-medium text-foreground">{t("sub.expired.affected")}</p>
+              <p>{t("sub.expired.item1")}</p>
+              <p>{t("sub.expired.item2")}</p>
+              <p>{t("sub.expired.item3")}</p>
             </div>
-            <p className="text-xs">Renew your plan to restore full access.</p>
+            <p className="text-xs">{t("sub.expired.cta")}</p>
           </div>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button asChild className="w-full">
-              <Link to="/pricing">Renew subscription</Link>
+              <Link to="/pricing">{t("action.renew")}</Link>
             </Button>
             <Button
               variant="ghost"
               className="w-full text-muted-foreground"
               onClick={() => setExpiredDismissed(true)}
             >
-              Continue with limited access
+              {t("action.continueLimit")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -151,11 +161,11 @@ function AuthLayout() {
           <Clock className="h-3.5 w-3.5 flex-shrink-0 text-amber-700" />
           <span>
             {daysLeft === 0
-              ? "Your subscription expires today!"
-              : `Your ${sub?.plan} subscription expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"}.`}
+              ? t("sub.days.expiresToday")
+              : t("sub.days.expiresIn", { plan: sub?.plan ?? "", n: daysLeft })}
             {" "}
             <Link to="/pricing" className="underline font-semibold text-amber-800 hover:text-amber-900">
-              Renew now
+              {t("sub.days.renewNow")}
             </Link>
           </span>
           <style>{`
@@ -183,7 +193,31 @@ function AuthLayout() {
               <span className="hidden sm:inline">Hamro Rent</span>
             </Link>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {/* ── Language selector ─────────────────────────────────────── */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2">
+                  <Globe className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline font-medium">{lang === "ne" ? "नेपाली" : "EN"}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                <DropdownMenuItem
+                  onClick={() => setLang("en")}
+                  className={lang === "en" ? "bg-accent font-medium" : ""}
+                >
+                  <span className="mr-2">🇬🇧</span> English
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLang("ne")}
+                  className={lang === "ne" ? "bg-accent font-medium" : ""}
+                >
+                  <span className="mr-2">🇳🇵</span> नेपाली
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button
               variant="ghost"
               size="sm"
@@ -194,7 +228,7 @@ function AuthLayout() {
               {signingOut
                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 : <LogOut className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{signingOut ? "Signing out…" : "Sign out"}</span>
+              <span className="hidden sm:inline">{signingOut ? t("nav.signingOut") : t("nav.signOut")}</span>
             </Button>
           </div>
         </div>
@@ -234,7 +268,7 @@ function AuthLayout() {
               {signingOut
                 ? <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
                 : <LogOut className="h-4 w-4 flex-shrink-0" />}
-              <span>{signingOut ? "Signing out…" : "Sign out"}</span>
+              <span>{signingOut ? t("nav.signingOut") : t("nav.signOut")}</span>
             </button>
           </div>
         </aside>
@@ -259,10 +293,10 @@ function AuthLayout() {
             <div className="max-w-6xl mx-auto px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
               <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Hamro Rent 🇳🇵</p>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <Link to="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
-                <Link to="/tenants" className="hover:text-primary transition-colors">Tenants</Link>
-                <Link to="/export" className="hover:text-primary transition-colors">Export</Link>
-                <Link to="/settings" className="hover:text-primary transition-colors">Settings</Link>
+                <Link to="/dashboard" className="hover:text-primary transition-colors">{t("nav.dashboard")}</Link>
+                <Link to="/tenants" className="hover:text-primary transition-colors">{t("nav.tenants")}</Link>
+                <Link to="/export" className="hover:text-primary transition-colors">{t("nav.export")}</Link>
+                <Link to="/settings" className="hover:text-primary transition-colors">{t("nav.settings")}</Link>
               </div>
             </div>
           </footer>

@@ -14,6 +14,7 @@ import { useState } from "react";
 import { BSMonthPicker } from "@/components/BSMonthPicker";
 import { WalkthroughTutorial, useOnboarding } from "@/components/WalkthroughTutorial";
 import { EmptyDashboard } from "@/components/EmptyDashboard";
+import { useLanguage } from "@/lib/language-context";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Hamro Rent" }, { name: "robots", content: "noindex" }] }),
@@ -32,6 +33,7 @@ function Dashboard() {
   const cur = approxCurrentBS();
   const { active: tutorialActive, dismiss: dismissTutorial } = useOnboarding();
   const [tutorialForced, setTutorialForced] = useState(false);
+  const { t } = useLanguage();
 
   const [filterYear, setFilterYear] = useState(cur.year);
   const [filterMonth, setFilterMonth] = useState(cur.month);
@@ -154,9 +156,9 @@ function Dashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold">{t("dash.title")}</h1>
           <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
-            {isCurrentMonth ? "Current month: " : "Viewing: "}
+            {isCurrentMonth ? t("dash.currentMonth") : t("dash.viewing")}
             {bsLabel(filterYear, filterMonth)}
             {" · "}Rent advance for {bsMonthName(rentForMonth.month)} {rentForMonth.year}
           </p>
@@ -172,37 +174,37 @@ function Dashboard() {
       {/* Top Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
         <Stat
-          label="Active tenants"
+          label={t("dash.activeTenants")}
           value={String(active.length)}
-          sub={`${inactive.length} inactive`}
+          sub={`${inactive.length} ${t("dash.inactive")}`}
           icon={<Users className="h-4 w-4" />}
           help={HELP.dashActiveTenants}
         />
         <Stat
-          label="Paid this month"
+          label={t("dash.paidThisMonth")}
           value={String(paidCount)}
-          sub={`of ${totals.length} billed`}
+          sub={`${t("dash.of")} ${totals.length} ${t("label.active").toLowerCase()}`}
           icon={<CheckCircle2 className="h-4 w-4 text-green-500" />}
           help={HELP.dashPaidThisMonth}
         />
         <Stat
-          label="Pending / Partial"
+          label={t("dash.pendingPartial")}
           value={`${pendingCount} / ${partialCount}`}
           sub={overpaidCount > 0 ? `${overpaidCount} overpaid` : undefined}
           icon={<Clock className="h-4 w-4 text-yellow-500" />}
           help={HELP.dashPendingThisMonth}
         />
         <Stat
-          label="Collected"
+          label={t("dash.collected")}
           value={fmtNPR(collected)}
-          sub={`${collectionRate}% of expected`}
+          sub={`${collectionRate}${t("dash.ofExpected")}`}
           icon={<TrendingUp className="h-4 w-4 text-primary" />}
           help={HELP.dashCollected}
         />
         <Stat
-          label="Outstanding"
+          label={t("dash.outstanding")}
           value={fmtNPR(outstanding)}
-          sub={`Expected: ${fmtNPR(expected)}`}
+          sub={`${t("dash.expected")}${fmtNPR(expected)}`}
           icon={<AlertCircle className="h-4 w-4 text-red-400" />}
           help={HELP.dashExpected}
         />
@@ -210,7 +212,7 @@ function Dashboard() {
 
       {/* Month-over-month */}
       <Card className="p-3 sm:p-5">
-        <h2 className="text-sm sm:text-base font-semibold mb-3">Month-over-month</h2>
+        <h2 className="text-sm sm:text-base font-semibold mb-3">{t("dash.monthOverMonth")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="rounded-md bg-muted/40 p-3">
             <p className="text-xs text-muted-foreground mb-1">
@@ -283,14 +285,14 @@ function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
             <FileText className="h-4 w-4 text-muted-foreground" />
-            Bills
+            {t("dash.bills")}
           </h2>
         </div>
 
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Month</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("label.month")}</p>
             <BSMonthPicker
               year={filterYear}
               month={filterMonth}
@@ -301,7 +303,7 @@ function Dashboard() {
             />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Status</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("label.status")}</p>
             <div className="flex flex-wrap gap-1">
               {(["all", "paid", "partial", "pending", "overpaid"] as StatusFilter[]).map((s) => (
                 <button
@@ -319,20 +321,20 @@ function Dashboard() {
             </div>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Tenant</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("label.tenant")}</p>
             <input
               type="text"
-              placeholder="Search name…"
+              placeholder={t("dash.searchName")}
               value={filterTenant}
               onChange={(e) => setFilterTenant(e.target.value)}
               className="w-full text-sm border rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Room</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("label.room")}</p>
             <input
               type="text"
-              placeholder="Room number…"
+              placeholder={t("dash.roomNumber")}
               value={filterRoom}
               onChange={(e) => setFilterRoom(e.target.value)}
               className="w-full text-sm border rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-primary"

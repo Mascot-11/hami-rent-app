@@ -58,6 +58,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/lib/language-context";
 import { bsLabel } from "@/lib/bs-calendar";
 import {
   computeBillTotal,
@@ -77,6 +78,7 @@ export const Route = createFileRoute("/_authenticated/tenants")({
 
 function TenantsPage() {
   const qc = useQueryClient();
+  const { t } = useLanguage();
   const listFn = useServerFn(listTenants);
   const upsertFn = useServerFn(upsertTenant);
   const setActiveFn = useServerFn(setTenantActive);
@@ -170,15 +172,15 @@ function TenantsPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-3">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">Tenants</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">{t("tenants.title")}</h1>
         {sub && sub.tenant_slots > 0 && (
           <p className="text-xs text-muted-foreground -mt-1">
-            {sub.tenants_used} of {sub.tenant_slots} tenant slots used
+            {t("tenants.slotsUsed", { used: sub.tenants_used, limit: sub.tenant_slots })}
             {overLimit && (
               <>
                 {" · "}
                 <span className="text-amber-600 font-medium">
-                  {overageCount} over free-tier limit
+                  {t("tenants.overLimit", { n: overageCount })}
                 </span>
               </>
             )}
@@ -203,7 +205,7 @@ function TenantsPage() {
             title={overLimit ? `Archive ${overageCount} tenant${overageCount !== 1 ? "s" : ""} or renew your plan to add more` : undefined}
           >
             <Plus className="h-4 w-4 mr-1.5" />
-            Add tenant
+            {t("tenants.addTenant")}
           </Button>
           <Button
             variant="outline"
@@ -211,7 +213,7 @@ function TenantsPage() {
             className="w-full sm:w-auto"
           >
             <Building2 className="h-4 w-4 mr-1.5" />
-            Manage properties
+            {t("tenants.manageProps")}
           </Button>
         </div>
       </div>
@@ -714,6 +716,7 @@ function TenantList({
   onUnarchive,
   onDelete,
 }: any) {
+  const { t } = useLanguage();
   if (tenants.length === 0) return null;
   const isArchived = title === "Archived";
   return (
@@ -733,11 +736,11 @@ function TenantList({
 
       {/* Column headers — hidden on mobile */}
       <div className="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 px-4 py-2 bg-muted/30 border-b text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        <span>Tenant</span>
-        <span>Room</span>
-        <span>Phone</span>
-        <span>Base rent</span>
-        <span className="text-right pr-1">Actions</span>
+        <span>{t("tenants.colName")}</span>
+        <span>{t("tenants.colRoom")}</span>
+        <span>{t("tenants.colPhone")}</span>
+        <span>{t("tenants.colRent")}</span>
+        <span className="text-right pr-1">{t("tenants.colActions")}</span>
       </div>
 
       <div className="divide-y">
@@ -861,6 +864,7 @@ function TenantRow({
 // ─── Tenant Actions (dropdown + bills toggle) ─────────────────────────────────
 
 function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expanded, onToggleExpand, onEdit, onArchive, onUnarchive, onDelete }: any) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center gap-1 flex-shrink-0">
       {/* Bills toggle */}
@@ -873,7 +877,7 @@ function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expan
         title={expanded ? "Hide bills" : "View bills"}
       >
         <Receipt className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Bills</span>
+        <span className="hidden sm:inline">{t("tenants.bills")}</span>
         {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
       </Button>
 
@@ -893,7 +897,7 @@ function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expan
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuItem onClick={() => onEdit(t)}>
-            Edit tenant
+            {t("tenants.editMenu")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {!isArchived && onArchive && (
@@ -902,13 +906,13 @@ function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expan
               className="text-muted-foreground"
             >
               <Archive className="h-3.5 w-3.5 mr-2" />
-              Archive
+              {t("action.archive")}
             </DropdownMenuItem>
           )}
           {isArchived && onUnarchive && (
             <DropdownMenuItem onClick={() => onUnarchive(t)}>
               <ArchiveRestore className="h-3.5 w-3.5 mr-2" />
-              Unarchive
+              {t("action.unarchive")}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
@@ -920,7 +924,7 @@ function TenantActions({ tenant: t, busy, archiving, deleting, isArchived, expan
             }}
           >
             <Trash2 className="h-3.5 w-3.5 mr-2" />
-            Delete
+            {t("action.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

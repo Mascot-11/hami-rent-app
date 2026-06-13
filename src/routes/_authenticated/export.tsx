@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { useLanguage } from "@/lib/language-context";
 import { getDashboard } from "@/lib/bills.functions";
 import { getProfile } from "@/lib/profile.functions";
 import { Card } from "@/components/ui/card";
@@ -29,6 +30,7 @@ const PERIOD_OPTIONS: { value: StatementPeriod; label: string; icon: React.React
 ];
 
 function ExportPage() {
+  const { t } = useLanguage();
   const dashFn    = useServerFn(getDashboard);
   const profileFn = useServerFn(getProfile);
 
@@ -134,7 +136,7 @@ function ExportPage() {
 
   return (
     <div className="space-y-5 sm:space-y-7 w-full">
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">Export</h1>
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display">{t("export.title")}</h1>
 
       {/* ── PDF Statement ── */}
       <Card className="p-4 sm:p-6 space-y-5 border-primary/20">
@@ -143,7 +145,7 @@ function ExportPage() {
             <FileText className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="font-semibold text-base">Download Statement</h2>
+            <h2 className="font-semibold text-base">{t("export.downloadStmt")}</h2>
             <p className="text-sm text-muted-foreground mt-0.5">
               Professional PDF rent collection statement with logo, summary, and bill breakdown.
             </p>
@@ -186,9 +188,9 @@ function ExportPage() {
           className="w-full sm:w-auto gap-2"
         >
           {generating ? (
-            <><Loader2 className="h-4 w-4 animate-spin" />Generating PDF…</>
+            <><Loader2 className="h-4 w-4 animate-spin" />{t("export.generatingPdf")}</>
           ) : (
-            <><Download className="h-4 w-4" />Download Statement (PDF)</>
+            <><Download className="h-4 w-4" />{t("export.downloadPdf")}</>
           )}
         </Button>
       </Card>
@@ -202,7 +204,7 @@ function ExportPage() {
             <Select value={yearFilter} onValueChange={setYearFilter}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All years</SelectItem>
+                <SelectItem value="all">{t("export.allYears")}</SelectItem>
                 {bsYearOptions().map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -212,19 +214,19 @@ function ExportPage() {
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="partial">Partial</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="overpaid">Overpaid</SelectItem>
+                <SelectItem value="all">{t("export.allStatuses")}</SelectItem>
+                <SelectItem value="paid">{t("label.paid")}</SelectItem>
+                <SelectItem value="partial">{t("label.partial")}</SelectItem>
+                <SelectItem value="pending">{t("label.pending")}</SelectItem>
+                <SelectItem value="overpaid">{t("label.overpaid")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <Button onClick={exportExcel} variant="outline" className="w-full sm:w-auto gap-2" disabled={exportingExcel || !data}>
           {exportingExcel
-            ? <><Loader2 className="h-4 w-4 animate-spin" />Generating Excel…</>
-            : <><Download className="h-4 w-4" />Download Excel</>}
+            ? <><Loader2 className="h-4 w-4 animate-spin" />{t("export.generatingExcel")}</>
+            : <><Download className="h-4 w-4" />{t("export.downloadExcel")}</>}
         </Button>
       </Card>
     </div>
