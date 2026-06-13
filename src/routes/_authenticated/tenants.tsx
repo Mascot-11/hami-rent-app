@@ -43,6 +43,7 @@ import {
   Sparkles,
   Building2,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { bsLabel } from "@/lib/bs-calendar";
@@ -123,22 +124,31 @@ function TenantsPage() {
     setShowForm(true);
   };
 
+  // Track which tenant ID is currently being archived/deleted so each row
+  // can show its own spinner without every row lighting up at once.
+  const [pendingArchiveId, setPendingArchiveId] = useState<string | null>(null);
+  const [pendingDeleteId,  setPendingDeleteId]  = useState<string | null>(null);
+
   const archive = useMutation({
     mutationFn: (v: { id: string; is_active: boolean }) =>
       setActiveFn({ data: v }),
+    onMutate: (v) => setPendingArchiveId(v.id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tenants"] });
       toast.success("Updated");
     },
+    onSettled: () => setPendingArchiveId(null),
   });
 
   const del = useMutation({
     mutationFn: (id: string) => delFn({ data: { id } }),
+    onMutate: (id) => setPendingDeleteId(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tenants"] });
       toast.success("Deleted");
     },
     onError: (e: any) => toast.error(e.message),
+    onSettled: () => setPendingDeleteId(null),
   });
 
   const active = tenants.filter((t: any) => t.is_active);
@@ -226,6 +236,8 @@ function TenantsPage() {
           tenants={active}
           overLimit={overLimit}
           freeSlots={freeSlots}
+          pendingArchiveId={pendingArchiveId}
+          pendingDeleteId={pendingDeleteId}
           onEdit={openEdit}
           onArchive={(id: string) => archive.mutate({ id, is_active: false })}
           onDelete={(id: string) => del.mutate(id)}
@@ -239,6 +251,8 @@ function TenantsPage() {
               tenants={active.filter((t: any) => t.property_id === p.id)}
               overLimit={overLimit}
               freeSlots={freeSlots}
+              pendingArchiveId={pendingArchiveId}
+              pendingDeleteId={pendingDeleteId}
               onEdit={openEdit}
               onArchive={(id: string) => archive.mutate({ id, is_active: false })}
               onDelete={(id: string) => del.mutate(id)}
@@ -251,6 +265,8 @@ function TenantsPage() {
             )}
             overLimit={overLimit}
             freeSlots={freeSlots}
+            pendingArchiveId={pendingArchiveId}
+            pendingDeleteId={pendingDeleteId}
             onEdit={openEdit}
             onArchive={(id: string) => archive.mutate({ id, is_active: false })}
             onDelete={(id: string) => del.mutate(id)}
@@ -264,6 +280,8 @@ function TenantsPage() {
           tenants={archived}
           overLimit={overLimit}
           freeSlots={freeSlots}
+          pendingArchiveId={pendingArchiveId}
+          pendingDeleteId={pendingDeleteId}
           onEdit={openEdit}
           onReactivate={(id: string) => {
             if (overLimit) {
@@ -454,12 +472,15 @@ function PropertyManagerDialog({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 flex-shrink-0"
+                  disabled={remove.isPending}
                   onClick={() => {
                     if (confirm(`Delete property "${p.name}"? Its tenants become ungrouped.`))
                       remove.mutate(p.id);
                   }}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {remove.isPending
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <Trash2 className="h-4 w-4" />}
                 </Button>
               </div>
             ))}
@@ -484,8 +505,10 @@ function PropertyManagerDialog({
               disabled={!name.trim() || add.isPending}
               onClick={() => add.mutate()}
             >
-              <Plus className="h-4 w-4 mr-1.5" />
-              Add property
+              {add.isPending
+                ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                : <Plus className="h-4 w-4 mr-1.5" />}
+              {add.isPending ? "Adding…" : "Add property"}
             </Button>
           </div>
         </div>
@@ -564,6 +587,8 @@ function TenantList({
   tenants,
   overLimit,
   freeSlots,
+  pendingArchiveId,
+  pendingDeleteId,
   onEdit,
   onArchive,
   onReactivate,
@@ -583,6 +608,8 @@ function TenantList({
             // For active lists: tenants beyond freeSlots index are "excess".
             // Archived tenants are never excess (they don't consume a slot).
             isExcess={overLimit && title !== "Archived" && idx >= freeSlots}
+            archiving={pendingArchiveId === t.id}
+            deleting={pendingDeleteId === t.id}
             onEdit={onEdit}
             onArchive={onArchive}
             onReactivate={onReactivate}
@@ -599,12 +626,15 @@ function TenantList({
 function TenantRow({
   tenant: t,
   isExcess,
+  archiving,
+  deleting,
   onEdit,
   onArchive,
   onReactivate,
   onDelete,
 }: any) {
   const [expanded, setExpanded] = useState(false);
+  const busy = archiving || deleting;
 
   return (
     <div className={`rounded-md border overflow-hidden ${isExcess ? "border-amber-300 dark:border-amber-700" : ""}`}>
@@ -637,6 +667,7 @@ function TenantRow({
             variant="outline"
             size="sm"
             className="text-xs h-8 gap-1"
+            disabled={busy}
             onClick={() => setExpanded((v) => !v)}
           >
             <Receipt className="h-3.5 w-3.5" />
@@ -652,6 +683,7 @@ function TenantRow({
             variant="ghost"
             size="sm"
             className="text-xs h-8"
+            disabled={busy}
             onClick={() => onEdit(t)}
           >
             Edit
@@ -661,28 +693,35 @@ function TenantRow({
             <Button
               variant="ghost"
               size="icon"
-              title="Archive"
+              title={archiving ? "Archiving…" : "Archive"}
               className="h-8 w-8"
+              disabled={busy}
               onClick={() => onArchive(t.id)}
             >
-              <Archive className="h-4 w-4" />
+              {archiving
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <Archive className="h-4 w-4" />}
             </Button>
           )}
           {onReactivate && (
             <Button
               variant="ghost"
               size="icon"
-              title="Reactivate"
+              title={archiving ? "Reactivating…" : "Reactivate"}
               className="h-8 w-8"
+              disabled={busy}
               onClick={() => onReactivate(t.id)}
             >
-              <ArchiveRestore className="h-4 w-4" />
+              {archiving
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <ArchiveRestore className="h-4 w-4" />}
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
+            disabled={busy}
             onClick={() => {
               if (
                 confirm(
@@ -692,7 +731,9 @@ function TenantRow({
                 onDelete(t.id);
             }}
           >
-            <Trash2 className="h-4 w-4" />
+            {deleting
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <Trash2 className="h-4 w-4" />}
           </Button>
         </div>
       </div>
@@ -1116,7 +1157,10 @@ function TenantFormDialog({ open, onOpenChange, initial, onSave, properties = []
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={uploading}>{uploading ? "Uploading..." : "Save"}</Button>
+            <Button type="submit" disabled={uploading} className="gap-1.5">
+              {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {uploading ? "Uploading…" : "Save"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

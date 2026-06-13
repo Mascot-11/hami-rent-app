@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Download, Settings, LogOut,
   Plus, Menu, X, ChevronRight, UserCircle, ShieldAlert,
-  AlertTriangle, Clock,
+  AlertTriangle, Clock, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/hamro-rent-logo.jpeg";
@@ -64,7 +64,10 @@ function AuthLayout() {
     return d >= 0 && d <= 7 ? d : null;
   })();
 
+  const [signingOut, setSigningOut] = useState(false);
+
   const signOut = async () => {
+    setSigningOut(true);
     await supabase.auth.signOut();
     router.invalidate();
     nav({ to: "/login" });
@@ -191,10 +194,13 @@ function AuthLayout() {
               variant="ghost"
               size="sm"
               onClick={signOut}
+              disabled={signingOut}
               className="h-8 text-xs text-muted-foreground hover:text-foreground gap-1.5"
             >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sign out</span>
+              {signingOut
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                : <LogOut className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">{signingOut ? "Signing out…" : "Sign out"}</span>
             </Button>
           </div>
         </div>
@@ -228,10 +234,13 @@ function AuthLayout() {
           <div className="p-3 border-t">
             <button
               onClick={() => { setSidebarOpen(false); signOut(); }}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors w-full"
+              disabled={signingOut}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors w-full disabled:opacity-60"
             >
-              <LogOut className="h-4 w-4 flex-shrink-0" />
-              <span>Sign out</span>
+              {signingOut
+                ? <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                : <LogOut className="h-4 w-4 flex-shrink-0" />}
+              <span>{signingOut ? "Signing out…" : "Sign out"}</span>
             </button>
           </div>
         </aside>

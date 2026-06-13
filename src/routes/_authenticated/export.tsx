@@ -39,13 +39,18 @@ function ExportPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedPeriod, setSelectedPeriod] = useState<StatementPeriod>("monthly");
   const [generating, setGenerating] = useState(false);
+  const [exportingExcel, setExportingExcel] = useState(false);
 
   const current = approxCurrentBS();
 
   // ── Excel export ──────────────────────────────────────────────────────────
-  const exportExcel = () => {
+  const exportExcel = async () => {
     if (!data) return;
-    let bills = data.bills as any[];
+    setExportingExcel(true);
+    try {
+      // Small yield so the spinner renders before the sync XLSX work blocks
+      await new Promise((r) => setTimeout(r, 30));
+      let bills = data.bills as any[];
     if (yearFilter !== "all") bills = bills.filter((b) => b.bs_year === Number(yearFilter));
     if (statusFilter !== "all") {
       bills = bills.filter((b) => computeStatus(b, b.additional_charges ?? [], b.payments ?? []) === statusFilter);
@@ -99,6 +104,9 @@ function ExportPage() {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(payments), "Payment Ledger");
     XLSX.writeFile(wb, `rent-export-${new Date().toISOString().slice(0, 10)}.xlsx`);
     toast.success("Exported");
+    } finally {
+      setExportingExcel(false);
+    }
   };
 
   // ── PDF statement ─────────────────────────────────────────────────────────
@@ -213,8 +221,10 @@ function ExportPage() {
             </Select>
           </div>
         </div>
-        <Button onClick={exportExcel} variant="outline" className="w-full sm:w-auto">
-          <Download className="h-4 w-4 mr-1.5" />Download Excel
+        <Button onClick={exportExcel} variant="outline" className="w-full sm:w-auto gap-2" disabled={exportingExcel || !data}>
+          {exportingExcel
+            ? <><Loader2 className="h-4 w-4 animate-spin" />Generating Excel…</>
+            : <><Download className="h-4 w-4" />Download Excel</>}
         </Button>
       </Card>
     </div>

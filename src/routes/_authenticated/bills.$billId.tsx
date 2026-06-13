@@ -336,9 +336,13 @@ function BillPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const [pendingPayId, setPendingPayId] = useState<string | null>(null);
+
   const removePay = useMutation({
     mutationFn: (id: string) => delPayFn({ data: { id } }),
+    onMutate: (id) => setPendingPayId(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["bill", billId] }); toast.success("Removed"); },
+    onSettled: () => setPendingPayId(null),
   });
 
   const removeBill = useMutation({
@@ -526,8 +530,15 @@ function BillPage() {
             </Button>
           )}
 
-          <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete this bill and all its payments?")) removeBill.mutate(); }}>
-            <Trash2 className="h-4 w-4" />
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={removeBill.isPending}
+            onClick={() => { if (confirm("Delete this bill and all its payments?")) removeBill.mutate(); }}
+          >
+            {removeBill.isPending
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <Trash2 className="h-4 w-4" />}
           </Button>
         </div>
       </div>
@@ -643,9 +654,12 @@ function BillPage() {
                 </div>
                 <Button
                   variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0"
+                  disabled={removePay.isPending}
                   onClick={() => { if (confirm("Delete payment?")) removePay.mutate(p.id); }}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {pendingPayId === p.id
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <Trash2 className="h-4 w-4" />}
                 </Button>
               </div>
             ))}
