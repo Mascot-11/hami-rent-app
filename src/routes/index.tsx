@@ -78,6 +78,7 @@ function fmtNPR(n: number) {
 // NOTE: keep these in sync with what the super admin actually grants.
 
 function Footer() {
+  const { t } = useLanguage();
   return (
     <>
     <div className="max-w-6xl mx-auto px-4"><AdSlot placement="landing" className="my-8" /></div>
