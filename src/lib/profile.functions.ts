@@ -5,7 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const ProfileInput = z.object({
   full_name: z.string().trim().min(1).max(120),
-  phone: z.string().trim().regex(/^(\\+?977[- ]?)?(9[5-8]\\d{8}|0\\d{1,2}[- ]?\\d{6,7})$/, "Invalid Nepali phone number").nullable().optional().or(z.literal("").transform(() => null)),
+  phone: z.string().trim().regex(/^(\+?977[- ]?)?(9[5-8]\d{8}|0\d{1,2}[- ]?\d{6,7})$/, "Invalid Nepali phone number").nullable().optional().or(z.literal("").transform(() => null)),
   address: z.string().trim().max(300).nullable().optional(),
   // Storage PATH in the private "tenant-docs" bucket (e.g. "<uid>/qr/payment_qr_...png"),
   // not a public URL. Must stay within the caller's own folder.

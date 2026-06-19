@@ -6,8 +6,8 @@
 
 // Nepali numbers: mobile 98/97/96xxxxxxxx, landline 0X-XXXXXXX; allow +977.
 export const PHONE_RE = /^(\+?977[- ]?)?(9[5-8]\d{8}|0\d{1,2}[- ]?\d{6,7})$/;
-// Bikram Sambat date as used in the app: YYYY-MM-DD, years 2070–2110.
-export const BS_DATE_RE = /^(20[7-9]\d|2110)-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[0-2])$/;
+// Bikram Sambat date as used in the app: YYYY-MM-DD, years 2070–2100 (matches bills.bs_year CHECK constraint).
+export const BS_DATE_RE = /^(207\d|208\d|209\d|2100)-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[0-2])$/;
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export const ADSENSE_CLIENT_RE = /^ca-pub-\d{10,20}$/;
 export const NUMERIC_SLOT_RE = /^\d{1,30}$/;
