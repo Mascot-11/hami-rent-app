@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { User, Phone, MapPin, Mail, CheckCircle2, AlertCircle, Crown } from "lucide-react";
+import { User, Phone, MapPin, Mail, CheckCircle2, AlertCircle, Crown, QrCode, Loader2, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { getMySubscription } from "@/lib/subscription.functions";
+import { SignedImg } from "@/hooks/use-signed-url";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "My Profile — Hamro Rent" }, { name: "robots", content: "noindex" }] }),
@@ -72,6 +73,8 @@ function ProfilePage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [qrPath, setQrPath] = useState<string | null>(null);
+  const [uploadingQr, setUploadingQr] = useState(false);
 
   // Populate form when profile loads
   useEffect(() => {
@@ -79,8 +82,38 @@ function ProfilePage() {
       setFullName(profile.full_name ?? "");
       setPhone(profile.phone ?? "");
       setAddress(profile.address ?? "");
+      setQrPath(profile.payment_qr_path ?? null);
     }
   }, [profile]);
+
+  // Same allowlist/size cap as tenant document uploads — uploads are an
+  // injection/abuse vector regardless of feature.
+  const MAX_QR_BYTES = 5 * 1024 * 1024; // 5 MB
+  const ALLOWED_QR_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+  const safeName = (n: string) => n.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
+
+  const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if (!file) return;
+    if (file.size > MAX_QR_BYTES) return toast.error("File too large (max 5 MB)");
+    if (!ALLOWED_QR_TYPES.has(file.type)) return toast.error("Please upload a JPG, PNG, or WEBP image");
+
+    setUploadingQr(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const path = `${user.id}/qr/payment_qr_${Date.now()}_${safeName(file.name)}`;
+      const { data, error } = await supabase.storage.from("tenant-docs").upload(path, file, { upsert: true });
+      if (error) throw new Error(error.message);
+      setQrPath(data.path);
+      toast.success("QR uploaded — click Save profile to apply");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setUploadingQr(false);
+    }
+  };
 
   const save = useMutation({
     mutationFn: () => {
@@ -91,6 +124,7 @@ function ProfilePage() {
           full_name: fullName.trim(),
           phone: phone.trim() || null,
           address: address.trim() || null,
+          payment_qr_path: qrPath,
         },
       });
     },
@@ -189,6 +223,59 @@ function ProfilePage() {
         <Button
           onClick={() => save.mutate()}
           disabled={save.isPending}
+          className="w-full sm:w-auto"
+        >
+          {save.isPending ? t("action.saving") : t("profile.saveProfile")}
+        </Button>
+      </Card>
+
+      {/* Payment QR */}
+      <Card className="p-4 sm:p-5 space-y-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
+          <QrCode className="h-3.5 w-3.5" /> {t("profile.paymentQr")}
+        </div>
+        <p className="text-xs text-muted-foreground">{t("profile.paymentQrDesc")}</p>
+
+        <div className="flex items-center gap-4">
+          {qrPath ? (
+            <div className="relative">
+              <SignedImg
+                path={qrPath}
+                alt="Payment QR"
+                className="h-28 w-28 rounded-lg object-contain border bg-white p-1"
+              />
+              <button
+                type="button"
+                onClick={() => setQrPath(null)}
+                title={t("profile.removeQr")}
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="h-28 w-28 rounded-lg border border-dashed flex items-center justify-center text-muted-foreground">
+              <QrCode className="h-8 w-8" />
+            </div>
+          )}
+
+          <label className="inline-flex items-center gap-1.5 text-sm font-medium border rounded-lg px-3 py-2 cursor-pointer hover:bg-muted disabled:opacity-50">
+            {uploadingQr && <Loader2 className="h-4 w-4 animate-spin" />}
+            {uploadingQr ? t("profile.uploadingQr") : qrPath ? t("profile.changeQr") : t("profile.uploadQr")}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleQrUpload}
+              disabled={uploadingQr}
+            />
+          </label>
+        </div>
+
+        <Button
+          onClick={() => save.mutate()}
+          disabled={save.isPending}
+          variant="outline"
           className="w-full sm:w-auto"
         >
           {save.isPending ? t("action.saving") : t("profile.saveProfile")}

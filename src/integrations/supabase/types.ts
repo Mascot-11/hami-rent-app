@@ -166,6 +166,7 @@ export type Database = {
           full_name: string
           id: string
           owner_id: string
+          payment_qr_path: string | null
           phone: string | null
           updated_at: string
         }
@@ -175,6 +176,7 @@ export type Database = {
           full_name: string
           id?: string
           owner_id: string
+          payment_qr_path?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -184,6 +186,7 @@ export type Database = {
           full_name?: string
           id?: string
           owner_id?: string
+          payment_qr_path?: string | null
           phone?: string | null
           updated_at?: string
         }

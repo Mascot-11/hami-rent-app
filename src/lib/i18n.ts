@@ -260,6 +260,12 @@ export const translations = {
   "profile.phoneHint":      { en: "e.g. 9841000000", ne: "जस्तै: ९८४१०००००" },
   "profile.addressHint":    { en: "e.g. Baneshwor, Kathmandu", ne: "जस्तै: बानेश्वर, काठमाडौं" },
   "profile.savedToast":     { en: "Profile saved",  ne: "प्रोफाइल सेभ भयो" },
+  "profile.paymentQr":      { en: "Payment QR",     ne: "भुक्तानी QR" },
+  "profile.paymentQrDesc":  { en: "Upload your eSewa, Khalti, or bank QR. It's added to every tenant bill automatically.", ne: "आफ्नो eSewa, खल्ती वा बैंक QR अपलोड गर्नुस्। यो प्रत्येक भाडावालाको बिलमा स्वतः थपिन्छ।" },
+  "profile.uploadQr":       { en: "Upload QR photo", ne: "QR फोटो अपलोड गर्नुस्" },
+  "profile.changeQr":       { en: "Change QR",      ne: "QR बदलनुस्" },
+  "profile.removeQr":       { en: "Remove",          ne: "हटाउनुस्" },
+  "profile.uploadingQr":    { en: "Uploading…",      ne: "अपलोड हुँदैछ…" },
 
   // ── Export period options ─────────────────────────────────────────────────
   "export.thisMonth":       { en: "This Month",      ne: "यो महिना" },

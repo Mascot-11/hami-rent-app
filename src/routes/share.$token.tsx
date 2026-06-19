@@ -87,6 +87,18 @@ function SharedBillPage() {
           )}
 
           {bill.notes && <p className="text-sm text-muted-foreground italic border-t pt-3">{bill.notes}</p>}
+
+          {bill.payment_qr_url && (
+            <div className="border-t pt-4 flex flex-col items-center gap-2 print:break-inside-avoid">
+              <p className="text-sm font-semibold">Payment QR</p>
+              <img
+                src={bill.payment_qr_url}
+                alt="Payment QR"
+                className="h-44 w-44 rounded-lg object-contain border bg-white p-2"
+              />
+              <p className="text-xs text-muted-foreground">Scan to pay</p>
+            </div>
+          )}
         </Card>
 
         <p className="text-xs text-center text-muted-foreground no-print">

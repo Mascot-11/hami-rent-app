@@ -28,9 +28,13 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
-// Only expose the fields the share page actually needs — never owner_id
+// Only expose the fields the share page actually needs — never owner_id.
+// NOTE: "owner_id" IS included in the DB query below so the server can look
+// up the landlord's payment QR, but it is stripped out before the response
+// is built — see the explicit field list in the response construction below.
 const SAFE_SELECT = [
   "id",
+  "owner_id",
   "bs_year",
   "bs_month",
   "rent_this_month",
@@ -48,6 +52,8 @@ const SAFE_SELECT = [
   "payments(id,payment_date_bs,amount_paid,payment_method,note)",
   "tenants(name,room_number)",
 ].join(", ");
+
+const QR_SIGN_TTL = 60 * 10; // 10 minutes — minted fresh on every page load
 
 export const Route = createFileRoute("/api/public/bill/$token")({
   server: {
@@ -102,7 +108,33 @@ export const Route = createFileRoute("/api/public/bill/$token")({
           return json({ error: "Not found or link has been disabled" }, 404);
         }
 
-        return new Response(JSON.stringify(bill), {
+        // ── Resolve the landlord's payment QR (if any) ──────────────────
+        // bill.owner_id is only ever used server-side, to look up the QR
+        // path, and is deleted from the response object below.
+        let paymentQrUrl: string | null = null;
+        const ownerId = (bill as any).owner_id;
+        if (ownerId) {
+          const { data: profile } = await supabase
+            .from("landlord_profiles")
+            .select("payment_qr_path")
+            .eq("owner_id", ownerId)
+            .maybeSingle();
+          const qrPath = profile?.payment_qr_path;
+          if (qrPath && qrPath.split("/")[0] === ownerId) {
+            const { data: signed } = await supabase.storage
+              .from("tenant-docs")
+              .createSignedUrl(qrPath, QR_SIGN_TTL);
+            paymentQrUrl = signed?.signedUrl ?? null;
+          }
+        }
+
+        // ── Build the response explicitly — never spread the raw row,
+        // so a future column addition to `bills` can't accidentally leak.
+        const safeBill = { ...(bill as any) };
+        delete safeBill.owner_id;
+        safeBill.payment_qr_url = paymentQrUrl;
+
+        return new Response(JSON.stringify(safeBill), {
           status: 200,
           headers: {
             "Content-Type": "application/json",

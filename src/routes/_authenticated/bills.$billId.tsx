@@ -5,6 +5,8 @@ import { useState, useCallback } from "react";
 import { getBill, deleteBill, recordPayment, deletePayment } from "@/lib/bills.functions";
 import { adminGetBill, checkIsAdmin } from "@/lib/admin.functions";
 import { getMySubscription } from "@/lib/subscription.functions";
+import { getProfile } from "@/lib/profile.functions";
+import { useSignedUrl, SignedImg } from "@/hooks/use-signed-url";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { v, firstError } from "@/lib/validators";
@@ -55,7 +57,7 @@ function billFilename(bill: any) {
 
 // ─── Canvas bill image ────────────────────────────────────────────────────────
 
-async function renderBillToCanvas(bill: any, logoSrc: string): Promise<HTMLCanvasElement> {
+async function renderBillToCanvas(bill: any, logoSrc: string, qrUrl?: string | null): Promise<HTMLCanvasElement> {
   const charges  = bill.additional_charges ?? [];
   const payments = bill.payments ?? [];
   const total     = computeBillTotal(bill, charges);
@@ -71,6 +73,7 @@ async function renderBillToCanvas(bill: any, logoSrc: string): Promise<HTMLCanva
   const LINE    = 30;
   const GAP     = 20;
   const DPR     = 2;
+  const QR_SIZE = 150;
 
   // ── Dynamic height
   const billRows   = 3 + charges.length + (bill.carry_forward_credit > 0 ? 1 : 0);
@@ -82,6 +85,7 @@ async function renderBillToCanvas(bill: any, logoSrc: string): Promise<HTMLCanva
     GAP + 1 +                       // divider
     (payRows > 0 ? GAP + 16 + payRows * LINE : 0) +
     (bill.notes ? GAP + 16 + LINE : 0) +
+    (qrUrl ? GAP + 24 + QR_SIZE + 8 : 0) + // payment QR block
     GAP + 52;                       // footer
 
   const canvas = document.createElement("canvas");
@@ -220,6 +224,27 @@ async function renderBillToCanvas(bill: any, logoSrc: string): Promise<HTMLCanva
     y += LINE;
   }
 
+  // ── Payment QR
+  if (qrUrl) {
+    hr(y); y += GAP;
+    txt("Payment QR", W / 2, y, { size: 12, weight: "600", color: "#6b7280", align: "center" });
+    y += 12;
+    try {
+      const qrImg = new Image();
+      qrImg.crossOrigin = "anonymous";
+      qrImg.src = qrUrl;
+      await new Promise<void>((res) => { qrImg.onload = () => res(); qrImg.onerror = () => res(); });
+      const qx = (W - QR_SIZE) / 2;
+      rr(qx - 4, y, QR_SIZE + 8, QR_SIZE + 8, 8, "#ffffff");
+      ctx.strokeStyle = "#e5e7eb"; ctx.lineWidth = 1;
+      ctx.strokeRect(qx - 4, y, QR_SIZE + 8, QR_SIZE + 8);
+      ctx.drawImage(qrImg, qx, y + 4, QR_SIZE, QR_SIZE);
+    } catch { /* skip if the QR image fails to load */ }
+    y += QR_SIZE + 8 + 16;
+    txt("Scan to pay", W / 2, y, { size: 11, color: "#9ca3af", align: "center" });
+    y += 8;
+  }
+
   // ── Footer
   y += GAP;
   hr(y, "#f1f5f9"); y += 18;
@@ -235,8 +260,8 @@ async function renderBillToCanvas(bill: any, logoSrc: string): Promise<HTMLCanva
 
 // ─── Download helper ──────────────────────────────────────────────────────────
 
-async function downloadBillImage(bill: any, logoSrc: string) {
-  const canvas = await renderBillToCanvas(bill, logoSrc);
+async function downloadBillImage(bill: any, logoSrc: string, qrUrl?: string | null) {
+  const canvas = await renderBillToCanvas(bill, logoSrc, qrUrl);
   const filename = billFilename(bill) + ".png";
   const blob = await new Promise<Blob>((res) => canvas.toBlob((b) => res(b!), "image/png"));
 
@@ -270,8 +295,8 @@ async function downloadBillImage(bill: any, logoSrc: string) {
   toast.success(`Downloaded: ${filename}`);
 }
 
-async function saveBillImageFile(bill: any, logoSrc: string) {
-  const canvas = await renderBillToCanvas(bill, logoSrc);
+async function saveBillImageFile(bill: any, logoSrc: string, qrUrl?: string | null) {
+  const canvas = await renderBillToCanvas(bill, logoSrc, qrUrl);
   const filename = billFilename(bill) + ".png";
   const blob = await new Promise<Blob>((res) => canvas.toBlob((b) => res(b!), "image/png"));
   const url = URL.createObjectURL(blob);
@@ -311,6 +336,18 @@ function BillPage() {
   });
   // Free users (no sub or plan === "free") cannot use bill sharing
   const canShare = !!sub && sub.plan !== "free" && !sub.expired;
+
+  // Payment QR: getProfile always returns the CALLER's own profile, so this
+  // is only meaningful when the caller is the bill's actual owner (i.e. not
+  // an admin viewing someone else's bill via adminGetBill).
+  const profileFn = useServerFn(getProfile);
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => profileFn(),
+    enabled: !isAdmin,
+    staleTime: 60_000,
+  });
+  const qrUrl = useSignedUrl(!isAdmin ? profile?.payment_qr_path : null);
 
   const { data: bill, isLoading } = useQuery({
     queryKey: ["bill", billId],
@@ -354,25 +391,25 @@ function BillPage() {
     if (!bill) return;
     setImgBusy(true);
     try {
-      await downloadBillImage(bill, logo);
+      await downloadBillImage(bill, logo, qrUrl);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to generate image");
     } finally {
       setImgBusy(false);
     }
-  }, [bill]);
+  }, [bill, qrUrl]);
 
   const handleDownloadImage = useCallback(async () => {
     if (!bill) return;
     setImgBusy(true);
     try {
-      await saveBillImageFile(bill, logo);
+      await saveBillImageFile(bill, logo, qrUrl);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to generate image");
     } finally {
       setImgBusy(false);
     }
-  }, [bill]);
+  }, [bill, qrUrl]);
 
   if (isLoading || !bill) return <p className="text-muted-foreground">Loading…</p>;
 
@@ -596,6 +633,20 @@ function BillPage() {
 
         {bill.notes && <p className="text-xs sm:text-sm text-muted-foreground mt-3 italic">{bill.notes}</p>}
       </Card>
+
+      {!isAdmin && profile?.payment_qr_path && (
+        <Card className="p-3 sm:p-5 flex items-center gap-3">
+          <SignedImg
+            path={profile.payment_qr_path}
+            alt="Payment QR"
+            className="h-16 w-16 rounded-lg object-contain border bg-white p-1 flex-shrink-0"
+          />
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            This QR is automatically included on the shareable link and image for this bill.{" "}
+            <Link to="/profile" className="text-primary underline">Manage in Profile</Link>
+          </p>
+        </Card>
+      )}
 
       {/* Record payment */}
       <Card className="p-3 sm:p-5">
