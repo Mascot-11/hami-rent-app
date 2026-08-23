@@ -30,13 +30,7 @@ function useNavLinks() {
  * identical everywhere. Auth state is resolved internally, so callers don't
  * need to pass it. The landing page may pass `onDemo` to surface its demo CTA.
  */
-export function SiteHeader({
-  active,
-  onDemo,
-}: {
-  active?: ActivePage;
-  onDemo?: () => void;
-}) {
+export function SiteHeader({ active, onDemo }: { active?: ActivePage; onDemo?: () => void }) {
   const [open, setOpen] = useState(false);
   const [authed, setAuthed] = useState(false);
   const { lang, setLang, t } = useLanguage();
@@ -52,25 +46,23 @@ export function SiteHeader({
 
   const linkClass = (key: ActivePage) =>
     active === key
-      ? "text-foreground font-medium"
-      : "text-muted-foreground hover:text-foreground transition-colors";
+      ? "rounded-full bg-foreground/[0.06] text-foreground font-medium px-3 py-1.5"
+      : "rounded-full px-3 py-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/75 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2.5 group">
           <img
             src={logo}
             alt="Hamro Rent"
-            className="h-7 w-7 rounded-full object-cover"
+            className="h-8 w-8 rounded-full object-cover ring-1 ring-border transition-transform duration-300 group-hover:scale-105"
           />
-          <span className="font-display text-base font-semibold tracking-tight">
-            Hamro Rent
-          </span>
+          <span className="font-display text-base font-semibold tracking-tight">Hamro Rent</span>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-7 text-sm">
+        <nav className="hidden md:flex items-center gap-1 text-sm">
           {NAV_LINKS.map((l) => (
             <Link key={l.key} to={l.to} className={linkClass(l.key)}>
               {l.label}
@@ -79,7 +71,7 @@ export function SiteHeader({
           {onDemo && (
             <button
               onClick={onDemo}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="rounded-full px-3 py-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               {t("pub.nav.demo")}
             </button>
@@ -120,7 +112,10 @@ export function SiteHeader({
 
           {authed ? (
             <Link to="/dashboard">
-              <Button size="sm" className="rounded-full px-5">
+              <Button
+                size="sm"
+                className="rounded-full px-5 shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+              >
                 {t("pub.nav.dashboard")}
               </Button>
             </Link>
@@ -132,7 +127,10 @@ export function SiteHeader({
                 </Button>
               </Link>
               <Link to="/login">
-                <Button size="sm" className="rounded-full px-5">
+                <Button
+                  size="sm"
+                  className="rounded-full px-5 shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+                >
                   {t("pub.nav.getStarted")}
                 </Button>
               </Link>
@@ -152,12 +150,7 @@ export function SiteHeader({
       {open && (
         <div className="md:hidden border-t bg-background/95 px-4 py-4 flex flex-col gap-4 text-sm">
           {NAV_LINKS.map((l) => (
-            <Link
-              key={l.key}
-              to={l.to}
-              onClick={() => setOpen(false)}
-              className={linkClass(l.key)}
-            >
+            <Link key={l.key} to={l.to} onClick={() => setOpen(false)} className={linkClass(l.key)}>
               {l.label}
             </Link>
           ))}
