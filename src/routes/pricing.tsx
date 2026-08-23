@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
+import { AmbientBackdrop } from "@/components/AmbientBackdrop";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
@@ -39,8 +40,6 @@ type Plan = {
   points: string[];
 };
 
-
-
 function fmt(n: number) {
   return n === 0 ? "रू 0" : `रू ${n.toLocaleString()}`;
 }
@@ -73,7 +72,12 @@ function PricingPage() {
       blurb: t("plan.pro.blurb"),
       featured: false,
       cta: t("plan.pro.cta"),
-      points: [t("plan.pro.p1.pricing"), t("plan.pro.p2"), t("plan.pro.p3.pricing"), t("plan.pro.p4.pricing")],
+      points: [
+        t("plan.pro.p1.pricing"),
+        t("plan.pro.p2"),
+        t("plan.pro.p3.pricing"),
+        t("plan.pro.p4.pricing"),
+      ],
     },
   ];
 
@@ -98,7 +102,8 @@ function PricingPage() {
   const dest = authed ? "/settings" : "/login";
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div className="relative min-h-screen bg-background text-foreground font-sans">
+      <AmbientBackdrop />
       <SiteHeader active="pricing" />
 
       {/* Hero */}
@@ -121,7 +126,7 @@ function PricingPage() {
 
         {/* Billing cycle toggle */}
         <div
-          className="hr-reveal mt-9 inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 p-1 text-sm"
+          className="glass hr-reveal mt-9 inline-flex items-center gap-1 rounded-full p-1 text-sm"
           style={{ animationDelay: "180ms" }}
         >
           {(["monthly", "yearly"] as const).map((c) => (
@@ -159,50 +164,54 @@ function PricingPage() {
             return (
               <div
                 key={pl.name}
-                className={`hr-pop relative rounded-2xl border p-6 flex flex-col bg-background transition-transform duration-200 hover:-translate-y-1 ${
+                className={`hr-pop hr-card rounded-[1.3rem] ${
                   pl.featured
-                    ? "border-primary shadow-lg ring-1 ring-primary/20"
-                    : "border-border hover:shadow-sm"
+                    ? "bg-gradient-to-b from-primary/70 via-primary/25 to-primary/5 p-[1.5px] shadow-xl shadow-primary/10 hover:-translate-y-1 transition-transform duration-300"
+                    : "glass glass-hover"
                 }`}
                 style={{ animationDelay: `${i * 90 + 120}ms` }}
               >
-                {pl.featured && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wide bg-primary text-primary-foreground rounded-full px-3 py-1 shadow-sm">
-                    Most popular
-                  </span>
-                )}
-                <p className="font-display font-semibold text-lg">{pl.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{pl.blurb}</p>
-
-                <div className="mt-5 flex items-baseline gap-1.5">
-                  <span className="font-display text-4xl tabular-nums">{fmt(price)}</span>
-                  <span className="text-xs text-muted-foreground">{note}</span>
-                </div>
-                {pl.monthly > 0 && cycle === "yearly" && (
-                  <p className="mt-1 text-xs text-primary">
-                    {t("pricing.justPerMo", { n: Math.round(pl.yearly / 12).toLocaleString() })}
-                  </p>
-                )}
-
-                <ul className="mt-6 space-y-2.5 text-sm text-muted-foreground flex-1">
-                  {pl.points.map((pt) => (
-                    <li key={pt} className="flex gap-2 items-start">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  to={dest}
-                  className={`mt-7 inline-flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors ${
-                    pl.featured
-                      ? "bg-foreground text-background hover:bg-foreground/85"
-                      : "border border-border hover:bg-muted"
-                  }`}
+                <div
+                  className={`relative flex flex-col h-full rounded-[calc(1.3rem-1.5px)] p-6 ${pl.featured ? "glass-deep" : ""}`}
                 >
-                  {pl.cta} <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
+                  {pl.featured && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wide bg-primary text-primary-foreground rounded-full px-3 py-1 shadow-sm">
+                      Most popular
+                    </span>
+                  )}
+                  <p className="font-display font-semibold text-lg">{pl.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{pl.blurb}</p>
+
+                  <div className="mt-5 flex items-baseline gap-1.5">
+                    <span className="font-display text-4xl tabular-nums">{fmt(price)}</span>
+                    <span className="text-xs text-muted-foreground">{note}</span>
+                  </div>
+                  {pl.monthly > 0 && cycle === "yearly" && (
+                    <p className="mt-1 text-xs text-primary">
+                      {t("pricing.justPerMo", { n: Math.round(pl.yearly / 12).toLocaleString() })}
+                    </p>
+                  )}
+
+                  <ul className="mt-6 space-y-2.5 text-sm text-muted-foreground flex-1">
+                    {pl.points.map((pt) => (
+                      <li key={pt} className="flex gap-2 items-start">
+                        <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span>{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    to={dest}
+                    className={`mt-7 inline-flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-full transition-colors ${
+                      pl.featured
+                        ? "bg-primary text-primary-foreground hr-glow hover:-translate-y-0.5 hover:shadow-xl"
+                        : "border border-foreground/10 bg-white/50 backdrop-blur hover:bg-white/80 hover:border-primary/30"
+                    }`}
+                  >
+                    {pl.cta} <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
               </div>
             );
           })}
@@ -218,7 +227,7 @@ function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="border-t border-border bg-muted/20">
+      <section className="border-t border-white/60">
         <div className="max-w-3xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-8 text-center">
             Pricing questions
@@ -244,7 +253,8 @@ function PricingPage() {
             to={authed ? "/dashboard" : "/login"}
             className="inline-flex items-center gap-2 bg-foreground text-background text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-foreground/85 transition-colors"
           >
-            {authed ? t("pricing.getDash") : t("pricing.getFree")} <ArrowRight className="h-3.5 w-3.5" />
+            {authed ? t("pricing.getDash") : t("pricing.getFree")}{" "}
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <Link
             to="/"
@@ -256,7 +266,7 @@ function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border">
+      <footer className="border-t border-white/60 bg-white/40 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <img src={logo} alt="" className="h-5 w-5 rounded-full object-cover opacity-70" />

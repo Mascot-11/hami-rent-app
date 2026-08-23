@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import logo from "@/assets/hamro-rent-logo.jpeg";
+import { AmbientBackdrop } from "@/components/AmbientBackdrop";
 import { ArrowLeft, Lock, Mail, User, Phone, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
@@ -35,15 +36,26 @@ function LoginPage() {
 
   const switchMode = (next: "signin" | "signup") => {
     setMode(next);
-    setEmail(""); setPassword(""); setFullName(""); setPhone(""); setAddress("");
+    setEmail("");
+    setPassword("");
+    setFullName("");
+    setPhone("");
+    setAddress("");
   };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     // ── Field validation ──
-    const err = mode === "signin"
-      ? firstError(v.email(email), v.password(password))
-      : firstError(v.email(email), v.password(password, { signup: true }), v.name(fullName), v.phone(phone), v.maxLen(address, "Address", 300));
+    const err =
+      mode === "signin"
+        ? firstError(v.email(email), v.password(password))
+        : firstError(
+            v.email(email),
+            v.password(password, { signup: true }),
+            v.name(fullName),
+            v.phone(phone),
+            v.maxLen(address, "Address", 300),
+          );
     if (err) return toast.error(err);
     setLoading(true);
     try {
@@ -58,7 +70,9 @@ function LoginPage() {
         try {
           const { data } = await supabase.rpc("is_current_user_super_admin");
           isAdmin = data === true;
-        } catch { /* fall through to dashboard */ }
+        } catch {
+          /* fall through to dashboard */
+        }
         nav({ to: isAdmin ? "/admin/dashboard" : "/dashboard" });
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -70,34 +84,48 @@ function LoginPage() {
 
         // Save landlord profile right after signup using the new session
         if (data.user) {
-          await supabase.from("landlord_profiles").upsert({
-            owner_id: data.user.id,
-            full_name: fullName.trim(),
-            phone: phone.trim() || null,
-            address: address.trim() || null,
-          }, { onConflict: "owner_id" });
+          await supabase.from("landlord_profiles").upsert(
+            {
+              owner_id: data.user.id,
+              full_name: fullName.trim(),
+              phone: phone.trim() || null,
+              address: address.trim() || null,
+            },
+            { onConflict: "owner_id" },
+          );
         }
 
         toast.success("Account created — check your email to confirm");
         nav({ to: "/dashboard" });
       }
-    } catch (err: any) {
-      toast.error(err.message ?? "Failed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="relative min-h-screen flex bg-background">
+      <AmbientBackdrop />
       {/* Left panel — branding */}
-      <div className="hidden lg:flex flex-col justify-between w-[420px] xl:w-[480px] bg-foreground text-background p-10 flex-shrink-0">
-        <Link to="/" className="flex items-center gap-2.5">
-          <img src={logo} alt="Hamro Rent" className="h-9 w-9 rounded-full object-cover ring-2 ring-background/20" />
+      <div className="hidden lg:flex flex-col justify-between w-[420px] xl:w-[480px] bg-foreground text-background p-10 flex-shrink-0 relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/25 blur-[90px]" />
+          <div className="absolute bottom-0 -left-20 h-64 w-64 rounded-full bg-primary/10 blur-[80px]" />
+        </div>
+        <Link to="/" className="relative flex items-center gap-2.5">
+          <img
+            src={logo}
+            alt="Hamro Rent"
+            className="h-9 w-9 rounded-full object-cover ring-2 ring-background/20"
+          />
           <span className="font-display text-xl font-bold text-background">Hamro Rent</span>
         </Link>
-        <div>
-          <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-4">Trusted by Nepali landlords</div>
+        <div className="relative">
+          <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-4">
+            Trusted by Nepali landlords
+          </div>
           <h2 className="font-display text-4xl xl:text-5xl text-background leading-tight mb-6">
             Your rental ledger, managed.
           </h2>
@@ -107,23 +135,35 @@ function LoginPage() {
               "Electricity meter readings with carry-forward",
               "Shareable receipts for your tenants on WhatsApp",
               "Monthly summaries & Excel exports",
-            ].map(f => (
+            ].map((f) => (
               <div key={f} className="flex items-start gap-3 text-background/70 text-sm">
                 <div className="h-5 w-5 rounded-full bg-primary/20 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
                 </div>
                 {f}
               </div>
             ))}
           </div>
         </div>
-        <p className="text-xs text-background/35">© 2082 Hamro Rent · Built by Shreeyush Dhungana</p>
+        <p className="relative text-xs text-background/35">
+          © 2082 Hamro Rent · Built by Shreeyush Dhungana
+        </p>
       </div>
 
       {/* Right panel — form */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 sm:px-8 overflow-y-auto">
-        <div className="w-full max-w-md">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 lg:hidden">
+        <div className="glass-deep w-full max-w-md rounded-3xl p-7 sm:p-9 my-auto">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 lg:hidden"
+          >
             <ArrowLeft className="h-4 w-4" /> Back to home
           </Link>
 
@@ -152,14 +192,16 @@ function LoginPage() {
             {mode === "signup" && (
               <>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Full name <span className="text-destructive">*</span></label>
+                  <label className="text-sm font-medium">
+                    Full name <span className="text-destructive">*</span>
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       required
                       placeholder="e.g. Ram Bahadur Shrestha"
                       value={fullName}
-                      onChange={e => setFullName(e.target.value)}
+                      onChange={(e) => setFullName(e.target.value)}
                       className="pl-9 h-11"
                     />
                   </div>
@@ -171,7 +213,7 @@ function LoginPage() {
                     <Input
                       placeholder="e.g. 9841000000"
                       value={phone}
-                      onChange={e => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value)}
                       className="pl-9 h-11"
                     />
                   </div>
@@ -183,7 +225,7 @@ function LoginPage() {
                     <Input
                       placeholder="e.g. Baneshwor, Kathmandu"
                       value={address}
-                      onChange={e => setAddress(e.target.value)}
+                      onChange={(e) => setAddress(e.target.value)}
                       className="pl-9 h-11"
                     />
                   </div>
@@ -193,14 +235,16 @@ function LoginPage() {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Email address <span className="text-destructive">*</span></label>
+              <label className="text-sm font-medium">
+                Email address <span className="text-destructive">*</span>
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="email"
                   required
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="pl-9 h-11"
                   placeholder="you@example.com"
                 />
@@ -208,7 +252,9 @@ function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Password <span className="text-destructive">*</span></label>
+              <label className="text-sm font-medium">
+                Password <span className="text-destructive">*</span>
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -216,14 +262,18 @@ function LoginPage() {
                   required
                   minLength={6}
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="pl-9 h-11"
                   placeholder={mode === "signin" ? "Your password" : "Min. 6 characters"}
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-11 text-sm font-medium rounded-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full h-11 text-sm font-medium rounded-full"
+              disabled={loading}
+            >
               {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
           </form>
@@ -247,7 +297,8 @@ function LoginPage() {
           </div>
 
           <p className="mt-8 text-xs text-center text-muted-foreground leading-relaxed">
-            By continuing, you agree to our terms of service. Your data is private and only accessible to your account.
+            By continuing, you agree to our terms of service. Your data is private and only
+            accessible to your account.
           </p>
         </div>
       </div>

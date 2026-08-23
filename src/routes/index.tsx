@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import logo from "@/assets/hamro-rent-logo.jpeg";
 import { SiteHeader } from "@/components/SiteHeader";
+import { AmbientBackdrop } from "@/components/AmbientBackdrop";
 import { HeroScene } from "@/components/three/HeroScene";
 import { useLanguage } from "@/lib/language-context";
 
@@ -166,7 +167,7 @@ function Footer() {
       <div className="max-w-6xl mx-auto px-4">
         <AdSlot placement="landing" className="my-8" />
       </div>
-      <footer className="border-t border-border bg-muted/20">
+      <footer className="border-t border-white/60 bg-white/40 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <img src={logo} alt="" className="h-5 w-5 rounded-full object-cover opacity-70" />
@@ -358,7 +359,8 @@ function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div className="relative min-h-screen bg-background text-foreground font-sans">
+      <AmbientBackdrop />
       {toastMsg && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] bg-foreground text-background text-xs font-medium px-4 py-2 rounded-full shadow-lg">
           {toastMsg}
@@ -369,15 +371,6 @@ function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-          <div className="absolute inset-0 hr-dots opacity-70 [mask-image:radial-gradient(ellipse_65%_60%_at_50%_35%,black,transparent)]" />
-          <div className="absolute -top-40 right-[-8%] h-[480px] w-[480px] rounded-full bg-primary/15 hr-orb" />
-          <div
-            className="absolute top-72 left-[-12%] h-[380px] w-[380px] rounded-full bg-accent/50 hr-orb"
-            style={{ animationDelay: "-4.5s" }}
-          />
-        </div>
-
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-14 sm:pt-24 pb-16 sm:pb-24 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-10 items-center">
           <div>
             <p className="hr-reveal inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-3.5 py-1.5 text-[11px] uppercase tracking-widest text-primary font-semibold mb-7">
@@ -427,7 +420,7 @@ function LandingPage() {
               className="absolute inset-x-10 bottom-6 h-40 rounded-full bg-primary/20 blur-[90px]"
               aria-hidden="true"
             />
-            <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-b from-card to-muted/40 shadow-2xl shadow-foreground/10">
+            <div className="glass-deep relative overflow-hidden rounded-3xl">
               <HeroScene className="h-72 sm:h-96 lg:h-[440px] xl:h-[500px] w-full" />
               <div
                 className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
@@ -435,7 +428,7 @@ function LandingPage() {
               />
             </div>
 
-            <div className="hr-float absolute -left-3 sm:-left-8 top-8 flex items-center gap-2.5 rounded-xl border border-border bg-background/90 backdrop-blur px-3.5 py-2.5 shadow-lg">
+            <div className="glass-deep hr-float absolute -left-3 sm:-left-8 top-8 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/10 text-success">
                 <Check className="h-3.5 w-3.5" />
               </span>
@@ -446,7 +439,7 @@ function LandingPage() {
             </div>
 
             <div
-              className="hr-float absolute -right-2 sm:-right-6 bottom-10 flex items-center gap-2.5 rounded-xl border border-border bg-background/90 backdrop-blur px-3.5 py-2.5 shadow-lg"
+              className="glass-deep hr-float absolute -right-2 sm:-right-6 bottom-10 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5"
               style={{ animationDelay: "-2s" }}
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -462,14 +455,14 @@ function LandingPage() {
       </section>
 
       {/* ── Live stats ── */}
-      <section className="border-y border-border bg-muted/20">
+      <section className="relative border-y border-white/60">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 grid sm:grid-cols-3 gap-4">
           {liveStats.map(({ value, label }, i) => {
             const Icon = statIcons[i];
             return (
               <div
                 key={label}
-                className="hr-card hr-pop group relative overflow-hidden rounded-2xl border border-border bg-background p-6 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-foreground/5"
+                className="glass glass-hover hr-pop group relative overflow-hidden rounded-2xl p-6"
                 style={{ animationDelay: `${i * 90}ms` }}
               >
                 <div
@@ -503,7 +496,7 @@ function LandingPage() {
           {features.map(({ title, body, Icon }, i) => (
             <div
               key={title}
-              className="hr-card group relative rounded-2xl border border-border bg-card p-6 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-foreground/5"
+              className="glass glass-hover group relative rounded-2xl p-6"
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
@@ -567,7 +560,7 @@ function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="border-t border-border bg-muted/30">
+      <section id="pricing" className="relative border-t border-white/60">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
           <div className="max-w-xl mb-12">
             <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">
@@ -586,11 +579,11 @@ function LandingPage() {
                 className={`hr-pop hr-card rounded-[1.3rem] hover:-translate-y-1 ${
                   pl.featured
                     ? "bg-gradient-to-b from-primary/70 via-primary/25 to-primary/5 p-[1.5px] shadow-xl shadow-primary/10"
-                    : "border border-border bg-background hover:border-primary/25 hover:shadow-lg"
+                    : "glass glass-hover"
                 }`}
               >
                 <div
-                  className={`relative flex flex-col h-full rounded-[calc(1.3rem-1.5px)] p-6 ${pl.featured ? "bg-background" : ""}`}
+                  className={`relative flex flex-col h-full rounded-[calc(1.3rem-1.5px)] p-6 ${pl.featured ? "glass-deep" : ""}`}
                 >
                   {pl.featured && (
                     <>
@@ -621,7 +614,7 @@ function LandingPage() {
                     className={`mt-7 inline-flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-full transition-all duration-300 ${
                       pl.featured
                         ? "bg-primary text-primary-foreground hr-glow hover:-translate-y-0.5 hover:shadow-xl"
-                        : "border border-border hover:bg-muted hover:border-primary/30"
+                        : "border border-foreground/10 bg-white/50 backdrop-blur hover:bg-white/80 hover:border-primary/30"
                     }`}
                   >
                     {pl.cta}
@@ -651,10 +644,8 @@ function LandingPage() {
             {faqs.map((f, i) => (
               <div
                 key={f.q}
-                className={`hr-card rounded-xl border transition-colors ${
-                  faqOpen === i
-                    ? "border-primary/30 bg-muted/40 shadow-sm"
-                    : "border-border bg-background hover:border-primary/20"
+                className={`glass rounded-xl transition-all duration-300 ${
+                  faqOpen === i ? "border-primary/30 shadow-lg" : "hover:border-primary/20"
                 }`}
               >
                 <button
@@ -718,8 +709,8 @@ function LandingPage() {
 
       {/* ── Demo Modal ── */}
       {demoOpen && demoData && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 sm:p-8 overflow-y-auto">
-          <div className="bg-background border border-border rounded-2xl w-full max-w-3xl my-4 overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-md flex items-start justify-center p-4 sm:p-8 overflow-y-auto">
+          <div className="glass-deep rounded-2xl w-full max-w-3xl my-4 overflow-hidden">
             {/* Modal header */}
             <div className="border-b border-border px-5 sm:px-7 py-4 flex items-center justify-between">
               <div>

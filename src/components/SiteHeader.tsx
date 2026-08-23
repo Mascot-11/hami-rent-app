@@ -50,7 +50,7 @@ export function SiteHeader({ active, onDemo }: { active?: ActivePage; onDemo?: (
       : "rounded-full px-3 py-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/75 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 border-b border-white/60 bg-background/55 backdrop-blur-2xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/40">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 group">
           <img
@@ -148,7 +148,7 @@ export function SiteHeader({ active, onDemo }: { active?: ActivePage; onDemo?: (
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t bg-background/95 px-4 py-4 flex flex-col gap-4 text-sm">
+        <div className="md:hidden border-t border-white/50 bg-background/80 backdrop-blur-2xl px-4 py-4 flex flex-col gap-4 text-sm">
           {NAV_LINKS.map((l) => (
             <Link key={l.key} to={l.to} onClick={() => setOpen(false)} className={linkClass(l.key)}>
               {l.label}
